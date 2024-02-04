@@ -30,7 +30,7 @@ The following are the options for `venv3x`.
 
 3. Deactivate the currently active virtual environment.
    ```bash
-      -da, --deactivate
+   -da, --deactivate
    ```
 
 4. List all available virtual environments in `VENV_DIR`.
@@ -43,7 +43,9 @@ The following are the options for `venv3x`.
    -del, --delete-venv
    ```
 
-6. Navigate to the site-packages directory or specified package directory.
+6. If a `[package]` is entered, then you will be navigated to that 
+   package within the site-package directory. If `[package]` is not specified,
+   then you will be navigated to the site-packages folder.
    ```bash
    -sp, --site-packages [package]:
    ```
