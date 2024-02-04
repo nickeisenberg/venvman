@@ -29,9 +29,9 @@ The following are the options for `venv3x`.
    ```
 
 3. Deactivate the currently active virtual environment.
-```bash
-   -da, --deactivate
-```
+   ```bash
+      -da, --deactivate
+   ```
 
 4. List all available virtual environments in `VENV_DIR`.
    ```bash
