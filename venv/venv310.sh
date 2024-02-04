@@ -9,7 +9,7 @@
 # 6) list all available venv's with ls 
 
 function venv310() {
-    VENV_DIR="$HOME/.venv"
+    VENV_DIR="$HOME/.venv310"
 
     # Check the number of arguments passed
     if [[ $# -lt 1 ]]; then
@@ -31,7 +31,7 @@ function venv310() {
                 echo "Error: The directory specified in VENV_DIR ('$VENV_DIR') does not exist. Please create this directory and try again."
                 return 1
             fi
-            python3 -m venv "$VENV_DIR/$2"
+            python3.10 -m venv "$VENV_DIR/$2"
             # Check the return status of the last command
             if [[ $? -ne 0 ]]; then
                 echo "Error: Failed to create virtual environment. Ensure the venv module is installed for Python3."

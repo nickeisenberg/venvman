@@ -8,10 +8,8 @@
 # 5) go to a specific foler in the site packages with -sp <packagename>
 # 6) list all available venv's with ls 
 
-function venv() {
-    VENV_DIR="$HOME/.venv"
-    DEFAULT_REQ_FILE="requirements.txt"
-    REQ_FILE="$DEFAULT_REQ_FILE"
+function venv311() {
+    VENV_DIR="$HOME/.venv311"
 
     # Check the number of arguments passed
     if [[ $# -lt 1 ]]; then
@@ -28,7 +26,12 @@ function venv() {
                 echo "Usage: venv -m/--make <venv_name>"
                 return 1
             fi
-            python3 -m venv "$VENV_DIR/$2"
+            # Check if $VENV_DIR exists
+            if [[ ! -d "$VENV_DIR" ]]; then
+                echo "Error: The directory specified in VENV_DIR ('$VENV_DIR') does not exist. Please create this directory and try again."
+                return 1
+            fi
+            python3.11 -m venv "$VENV_DIR/$2"
             # Check the return status of the last command
             if [[ $? -ne 0 ]]; then
                 echo "Error: Failed to create virtual environment. Ensure the venv module is installed for Python3."
@@ -107,19 +110,6 @@ function venv() {
             fi
             ;;
 
-        -req|--make-req)
-            if [[ $# -gt 2 ]]; then
-                echo "Usage: venv -req/--make-req [output_file]"
-                return 1
-            fi
-            if [[ $# -eq 2 ]]; then
-                REQ_FILE="$2"
-            fi
-            echo "Creating $REQ_FILE with pip freeze..."
-            pip freeze > "$REQ_FILE"
-            echo "$REQ_FILE created with the current Python environment's packages."
-            ;;
-
 
         -h|--help)
             echo "Usage: venv <option> [argument]"
@@ -130,7 +120,6 @@ function venv() {
             echo "  -da, --deactivate                     : Deactivate the currently active virtual environment."
             echo "  -ls, --list-all-environments          : List all available virtual environments in $VENV_DIR."
             echo "  -del, --delete-venv                   : Delete the specified venv."
-            echo "  -req, --make-req                      : Make a requirements.txt file to CWD"
             echo "  -h, --help                            : Display this help message."
             ;;
 
