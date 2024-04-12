@@ -115,11 +115,11 @@ function venv310() {
             echo "Usage: venv <option> [argument]"
             echo "Options:"
             echo "  -m, --make <venv_name>                : Create a new virtual environment."
+            echo "  -del, --delete-venv                   : Delete the specified venv."
             echo "  -a, --activate <venv_name>            : Activate the specified virtual environment."
-            echo "  -sp, --site-packages [package]: Navigate to the site-packages directory or specified package directory."
             echo "  -da, --deactivate                     : Deactivate the currently active virtual environment."
             echo "  -ls, --list-all-environments          : List all available virtual environments in $VENV_DIR."
-            echo "  -del, --delete-venv                   : Delete the specified venv."
+            echo "  -sp, --site-packages [package]        : Navigate to the site-packages directory or specified package directory."
             echo "  -h, --help                            : Display this help message."
             ;;
 
