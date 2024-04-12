@@ -1,16 +1,16 @@
 An easy way to store and manage python virtual enviornments. Inside of `./venv`
 are `bash` scripts titled `venv3x.sh` where `3x` is the version of python you
-want to use.
+want to use, ie `310` or `311`.
 
 # Instructions
-The following uses `./venv/venv310.sh` for reference but the same instructions
+The following uses `./venv/venv3x.sh` for reference but the same instructions
 apply for any of the versions of python.
 
-1. Place `./venv/venv310.sh` anywhere on your computer and source 
+1. Place `./venv/venv3x.sh` anywhere on your computer and source 
    it from your ~/.bashrc`.
 
-2. Create the folder `~/.venv310`. If by coincidence you already are using a
-   folder with that same name, then edit the top line of `./venv/venv310.sh`
+2. Create the folder `~/.venv3x`. If by coincidence you already are using a
+   folder with that same name, then edit the top line of `./venv/venv3x.sh`
    that says `VENV_DIR="$HOME/.venv310` and point the `VENV_DIR` elsewhere.
    This is where all the virtual enviornments will be saved.
 
