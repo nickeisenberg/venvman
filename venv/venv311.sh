@@ -45,7 +45,9 @@ function venv311() {
                 echo "Usage: venv -a/--activate <venv_name>"
                 return 1
             fi
-            if [[ -d "$VENV_DIR/$2" ]]; then
+            if [[ $2 == '.' ]]; then
+                source ".venv/bin/activate"
+            elif [[ -d "$VENV_DIR/$2" ]]; then
                 source "$VENV_DIR/$2/bin/activate"
             else
                 echo "Error: Virtual environment '$2' does not exist in $VENV_DIR"
@@ -124,7 +126,7 @@ function venv311() {
             ;;
 
         *)
-            echo "Invalid option. Use 'venv -h' or 'venv --help' for a list of available options."
+            echo "Invalid option. Use 'venv h' or 'venv help' for a list of available options."
             return 1
             ;;
     esac
