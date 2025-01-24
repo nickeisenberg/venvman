@@ -17,6 +17,11 @@ function venv() {
     VENV_DIR="$HOME/.venv$PYTHON_VERSION"
     PYTHON_EXEC="python${PYTHON_VERSION:0:1}.${PYTHON_VERSION:1}"
 
+    if [ ! -d $VENV_DIR ]; then
+        echo "$VENV_DIR does not exist. Create it"
+        return 1
+    fi
+
     # Check the action to perform
     case $1 in
         m)
