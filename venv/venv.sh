@@ -1,30 +1,36 @@
-function venv311() {
-    VENV_DIR="$HOME/.venv311"
-
-    # Check the number of arguments passed
-    if [[ $# -lt 1 ]]; then
-        echo "Usage: venv <option> [argument]"
-        echo "Use 'venv h' for a list of available options."
+function venv() {
+    # Validate Python version
+    if [[ $# -lt 2 ]]; then
+        echo "Usage: venv <python_version> <option> [argument]"
+        echo "Use 'venv <python_version> h' for a list of available options."
         return 1
     fi
 
-    # Check the first argument to determine the action
-    case $1 in
+    PYTHON_VERSION=$1
+    shift
 
+    if [[ "$PYTHON_VERSION" != "310" && "$PYTHON_VERSION" != "311" ]]; then
+        echo "Error: Unsupported Python version. Use '310' or '311'."
+        return 1
+    fi
+
+    VENV_DIR="$HOME/.venv$PYTHON_VERSION"
+    PYTHON_EXEC="python${PYTHON_VERSION:0:1}.${PYTHON_VERSION:1}"
+
+    # Check the action to perform
+    case $1 in
         m|make)
             if [[ $# -ne 2 ]]; then
-                echo "Usage: venv -m/--make <venv_name>"
+                echo "Usage: venv $PYTHON_VERSION make <venv_name>"
                 return 1
             fi
-            # Check if $VENV_DIR exists
             if [[ ! -d "$VENV_DIR" ]]; then
                 echo "Error: The directory specified in VENV_DIR ('$VENV_DIR') does not exist. Please create this directory and try again."
                 return 1
             fi
-            python3.11 -m venv "$VENV_DIR/$2"
-            # Check the return status of the last command
+            $PYTHON_EXEC -m venv "$VENV_DIR/$2"
             if [[ $? -ne 0 ]]; then
-                echo "Error: Failed to create virtual environment. Ensure the venv module is installed for Python3."
+                echo "Error: Failed to create virtual environment. Ensure the venv module is installed for Python $PYTHON_EXEC."
                 return 1
             fi
             echo "Virtual environment '$2' successfully created in $VENV_DIR/$2"
@@ -32,7 +38,7 @@ function venv311() {
 
         a|activate)
             if [[ $# -ne 2 ]]; then
-                echo "Usage: venv -a/--activate <venv_name>"
+                echo "Usage: venv $PYTHON_VERSION activate <venv_name>"
                 return 1
             fi
             if [[ $2 == '.' ]]; then
@@ -45,24 +51,22 @@ function venv311() {
             ;;
 
         sp|site-packages)
-            SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
-
+            SITE_PACKAGES_DIR=$($PYTHON_EXEC -m site --user-site)
             if [[ ! $SITE_PACKAGES_DIR ]]; then
-                echo "Error: pip is not installed or the location cannot be determined"
+                echo "Error: Could not determine site-packages location for Python $PYTHON_EXEC."
                 return 1
             fi
-
             if [[ $# -eq 1 ]]; then
-                cd "$SITE_PACKAGES_DIR"
+                cd "$SITE_PACKAGES_DIR" || return
             elif [[ $# -eq 2 ]]; then
                 if [[ -d "$SITE_PACKAGES_DIR/$2" ]]; then
-                    cd "$SITE_PACKAGES_DIR/$2"
+                    cd "$SITE_PACKAGES_DIR/$2" || return
                 else
                     echo "Error: Package '$2' does not exist in $SITE_PACKAGES_DIR"
                     return 1
                 fi
             else
-                echo "Usage: venv -sp/--site-package-location [package_name]"
+                echo "Usage: venv $PYTHON_VERSION site-packages [package_name]"
                 return 1
             fi
             ;;
@@ -76,7 +80,7 @@ function venv311() {
             ;;
 
         ls)
-            echo "Available virtual environments:"
+            echo "Available virtual environments for Python $PYTHON_VERSION:"
             if [[ -d "$VENV_DIR" ]]; then
                 ls "$VENV_DIR"
             else
@@ -86,7 +90,7 @@ function venv311() {
 
         del)
             if [[ $# -ne 2 ]]; then
-                echo "Usage: venv -del/--delete-venv <venv_name>"
+                echo "Usage: venv $PYTHON_VERSION delete <venv_name>"
                 return 1
             fi
             if [[ ! -d "$VENV_DIR/$2" ]]; then
@@ -102,12 +106,11 @@ function venv311() {
             fi
             ;;
 
-
         h|help)
-            echo "Usage: venv <option> [argument]"
+            echo "Usage: venv <python_version> <option> [argument]"
             echo "Options:"
             echo "  m, make <venv_name>            : Create a new virtual environment."
-            echo "  del                            : Delete the specified venv."
+            echo "  del                            : Delete the specified virtual environment."
             echo "  a, activate <venv_name>        : Activate the specified virtual environment."
             echo "  da, deactivate                 : Deactivate the currently active virtual environment."
             echo "  ls                             : List all available virtual environments in $VENV_DIR."
@@ -116,7 +119,7 @@ function venv311() {
             ;;
 
         *)
-            echo "Invalid option. Use 'venv h' or 'venv help' for a list of available options."
+            echo "Invalid option. Use 'venv $PYTHON_VERSION h' or 'venv $PYTHON_VERSION help' for a list of available options."
             return 1
             ;;
     esac

@@ -21,7 +21,7 @@ function venv310() {
     # Check the first argument to determine the action
     case $1 in
 
-        -m|--make)
+        m)
             if [[ $# -ne 2 ]]; then
                 echo "Usage: venv -m/--make <venv_name>"
                 return 1
@@ -40,7 +40,7 @@ function venv310() {
             echo "Virtual environment '$2' successfully created in $VENV_DIR/$2"
             ;;
 
-        -a|--activate)
+        a)
             if [[ $# -ne 2 ]]; then
                 echo "Usage: venv -a/--activate <venv_name>"
                 return 1
@@ -52,7 +52,7 @@ function venv310() {
             fi
             ;;
 
-        -sp|--site-packages)
+        sp)
             SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
 
             if [[ ! $SITE_PACKAGES_DIR ]]; then
@@ -75,7 +75,7 @@ function venv310() {
             fi
             ;;
 
-        -da|--deactivate)
+        da)
             if [[ -z "$VIRTUAL_ENV" ]]; then
                 echo "No virtual environment is currently activated."
                 return 1
@@ -83,7 +83,7 @@ function venv310() {
             deactivate
             ;;
 
-        -ls|--list-all-environments)
+        ls)
             echo "Available virtual environments:"
             if [[ -d "$VENV_DIR" ]]; then
                 ls "$VENV_DIR"
@@ -92,7 +92,7 @@ function venv310() {
             fi
             ;;
 
-        -del|--delete-venv)
+        del)
             if [[ $# -ne 2 ]]; then
                 echo "Usage: venv -del/--delete-venv <venv_name>"
                 return 1
@@ -111,16 +111,16 @@ function venv310() {
             ;;
 
 
-        -h|--help)
+        h)
             echo "Usage: venv <option> [argument]"
             echo "Options:"
-            echo "  -m, --make <venv_name>                : Create a new virtual environment."
-            echo "  -del, --delete-venv                   : Delete the specified venv."
-            echo "  -a, --activate <venv_name>            : Activate the specified virtual environment."
-            echo "  -da, --deactivate                     : Deactivate the currently active virtual environment."
-            echo "  -ls, --list-all-environments          : List all available virtual environments in $VENV_DIR."
-            echo "  -sp, --site-packages [package]        : Navigate to the site-packages directory or specified package directory."
-            echo "  -h, --help                            : Display this help message."
+            echo "  m                : Create a new virtual environment."
+            echo "  del              : Delete the specified venv."
+            echo "  a                : Activate the specified virtual environment."
+            echo "  da               : Deactivate the currently active virtual environment."
+            echo "  ls               : List all available virtual environments in $VENV_DIR."
+            echo "  sp               : Navigate to the site-packages directory or specified package directory."
+            echo "  h                : Display this help message."
             ;;
 
         *)
