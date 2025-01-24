@@ -125,13 +125,12 @@ function venv() {
     esac
 }
 
-# Bash Completion for `venv`
+
 _venv_completion() {
     local current_word prev_word words
     local venv_versions="310 311"
     local commands="m a sp da ls del h"
 
-    # Get the current word being completed
     current_word="${COMP_WORDS[COMP_CWORD]}"
     prev_word="${COMP_WORDS[COMP_CWORD-1]}"
     words=("${COMP_WORDS[@]}")
@@ -142,6 +141,14 @@ _venv_completion() {
     elif [[ ${#words[@]} -eq 3 && "$prev_word" =~ ^(310|311)$ ]]; then
         # Complete commands after `venv <version>`
         COMPREPLY=($(compgen -W "$commands" -- "$current_word"))
+    elif [[ ${#words[@]} -eq 4 && "$prev_word" == "ls" ]]; then
+        # Suggest virtual environment names for `venv <version> ls <TAB>`
+        VENV_DIR="$HOME/.venv${COMP_WORDS[1]}"
+        if [[ -d "$VENV_DIR" ]]; then
+            COMPREPLY=($(compgen -W "$(ls "$VENV_DIR")" -- "$current_word"))
+        else
+            COMPREPLY=()
+        fi
     else
         # Fallback: no completion
         COMPREPLY=()
