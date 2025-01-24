@@ -19,7 +19,7 @@ function venv() {
 
     # Check the action to perform
     case $1 in
-        m|make)
+        m)
             if [[ $# -ne 2 ]]; then
                 echo "Usage: venv $PYTHON_VERSION make <venv_name>"
                 return 1
@@ -36,7 +36,7 @@ function venv() {
             echo "Virtual environment '$2' successfully created in $VENV_DIR/$2"
             ;;
 
-        a|activate)
+        a)
             if [[ $# -ne 2 ]]; then
                 echo "Usage: venv $PYTHON_VERSION activate <venv_name>"
                 return 1
@@ -50,7 +50,7 @@ function venv() {
             fi
             ;;
 
-        sp|site-packages)
+        sp)
             SITE_PACKAGES_DIR=$($PYTHON_EXEC -m site --user-site)
             if [[ ! $SITE_PACKAGES_DIR ]]; then
                 echo "Error: Could not determine site-packages location for Python $PYTHON_EXEC."
@@ -71,7 +71,7 @@ function venv() {
             fi
             ;;
 
-        da|deactivate)
+        da)
             if [[ -z "$VIRTUAL_ENV" ]]; then
                 echo "No virtual environment is currently activated."
                 return 1
@@ -109,10 +109,10 @@ function venv() {
         h|help)
             echo "Usage: venv <python_version> <option> [argument]"
             echo "Options:"
-            echo "  m, make <venv_name>            : Create a new virtual environment."
+            echo "  m <venv_name>                  : Create a new virtual environment."
             echo "  del                            : Delete the specified virtual environment."
-            echo "  a, activate <venv_name>        : Activate the specified virtual environment."
-            echo "  da, deactivate                 : Deactivate the currently active virtual environment."
+            echo "  a <venv_name>                  : Activate the specified virtual environment."
+            echo "  da                             : Deactivate the currently active virtual environment."
             echo "  ls                             : List all available virtual environments in $VENV_DIR."
             echo "  sp [package]                   : Navigate to the site-packages directory or specified package directory."
             echo "  h, help                        : Display this help message."
@@ -124,3 +124,29 @@ function venv() {
             ;;
     esac
 }
+
+# Bash Completion for `venv`
+_venv_completion() {
+    local current_word prev_word words
+    local venv_versions="310 311"
+    local commands="m a sp da ls del h"
+
+    # Get the current word being completed
+    current_word="${COMP_WORDS[COMP_CWORD]}"
+    prev_word="${COMP_WORDS[COMP_CWORD-1]}"
+    words=("${COMP_WORDS[@]}")
+
+    if [[ ${#words[@]} -eq 2 ]]; then
+        # Complete Python versions after `venv`
+        COMPREPLY=($(compgen -W "$venv_versions" -- "$current_word"))
+    elif [[ ${#words[@]} -eq 3 && "$prev_word" =~ ^(310|311)$ ]]; then
+        # Complete commands after `venv <version>`
+        COMPREPLY=($(compgen -W "$commands" -- "$current_word"))
+    else
+        # Fallback: no completion
+        COMPREPLY=()
+    fi
+}
+
+# Attach the completion function to `venv`
+complete -F _venv_completion venv
