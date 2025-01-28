@@ -57,7 +57,7 @@ function venv() {
             ;;
 
         sp)
-            SITE_PACKAGES_DIR=$($PYTHON_EXEC -m site --user-site)
+            SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
             if [[ ! $SITE_PACKAGES_DIR ]]; then
                 echo "Error: Could not determine site-packages location for Python $PYTHON_EXEC."
                 return 1
