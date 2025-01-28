@@ -131,7 +131,6 @@ function venv() {
     esac
 }
 
-
 _venv_completion() {
     local current_word prev_word words
     local venv_versions="310 311"
@@ -147,7 +146,7 @@ _venv_completion() {
     elif [[ ${#words[@]} -eq 3 && "$prev_word" =~ ^(310|311)$ ]]; then
         # Complete commands after `venv <version>`
         COMPREPLY=($(compgen -W "$commands" -- "$current_word"))
-    elif [[ ${#words[@]} -eq 4 && "$prev_word" =~ ^(ls|a|del)$ ]]; then
+    elif [[ ${#words[@]} -eq 4 && "$prev_word" =~ ^(a|del)$ ]]; then
         # Suggest virtual environment names for `venv <version> ls <TAB>`
         VENV_DIR="$HOME/.venv${COMP_WORDS[1]}"
         if [[ -d "$VENV_DIR" ]]; then
