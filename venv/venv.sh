@@ -14,8 +14,13 @@ function venv() {
         return 1
     fi
 
-    VENV_DIR="$HOME/.venv$PYTHON_VERSION"
     PYTHON_EXEC="python${PYTHON_VERSION:0:1}.${PYTHON_VERSION:1}"
+    VENV_DIR="$HOME/.venv$PYTHON_VERSION"
+
+    if [[ ! -d "$VENV_DIR" ]]; then
+        echo "Error: The directory specified in VENV_DIR ('$VENV_DIR') does not exist. Please create this directory and try again."
+        return 1
+    fi
 
     if [ ! -d $VENV_DIR ]; then
         echo "$VENV_DIR does not exist. Create it"
@@ -27,10 +32,6 @@ function venv() {
         m)
             if [[ $# -ne 2 ]]; then
                 echo "Usage: venv $PYTHON_VERSION make <venv_name>"
-                return 1
-            fi
-            if [[ ! -d "$VENV_DIR" ]]; then
-                echo "Error: The directory specified in VENV_DIR ('$VENV_DIR') does not exist. Please create this directory and try again."
                 return 1
             fi
             $PYTHON_EXEC -m venv "$VENV_DIR/$2"
