@@ -1,4 +1,18 @@
-function check_system_availablity_of_py_version() {
+function _venv_remove_trailing_dir_sep() {
+    local LEN LEN_MINUS_ONE LAST_CHAR
+    LEN=${#1}
+    LEN_MINUS_ONE=$((LEN - 1))
+    LAST_CHAR=${1:LEN_MINUS_ONE:LEN}
+    if [[ $LAST_CHAR == "/"  ]]; then
+        _venv_remove_trailing_dir_sep ${1:0:LEN_MINUS_ONE}
+    else
+        echo $1
+    fi
+}
+
+
+function _venv_check_system_availablity_of_py_version() {
+    local COMMAND VERSION
     if [[ $# -ne 1 ]]; then
         echo "Enter a python version"
         return 1
@@ -12,61 +26,76 @@ function check_system_availablity_of_py_version() {
 }
 
 
-function get_py_versions_in_venv_dir() {
-    x=$(ls $HOME/.venv)
-    for VAR in $x 
-    do
-        echo "$VAR"
-    done
+function _venv_get_py_versions_in_venv_dir() {
+    if [[ -d $HOME/.venv ]]; then
+        x=$(ls $HOME/.venv)
+        for VAR in $x 
+        do
+            echo "$VAR"
+        done
+    else
+        echo "$HOME/.venv does not exist. Create it."
+        return 1
+    fi
 }
 
 
-function check_py_version_in_venv_dir() {
-    found="false"
-    for VAR in $(get_py_versions_in_venv_dir); do
+function _venv_check_py_version_in_venv_dir() {
+    local FOUND="false"
+    for VAR in $(_venv_get_py_versions_in_venv_dir); do
         if [[ $VAR == "$1" ]]; then
-            found="true"
+            FOUND="true"
         fi
     done
-    if [[ $found == "false" ]]; then
-        echo "python version not found in ~/.venv"
+    if [[ $FOUND == "false" ]]; then
+        echo "python version not found in $HOME/.venv"
         return 1
     fi
 }
 
 
 function venv() {
+    local COMMAND PYTHON_VERSION PYTHON_EXEC VENV_DIR SITE_PACKAGES_DIR
+
     if [[ $# -lt 1 ]]; then
         echo "Usage: venv <command> <python_version> [argument]"
         echo "Use 'venv h' for a list of available commands."
         return 1
     fi
-
+    
     COMMAND=$1
     PYTHON_VERSION=$2
     shift 2
     
     if [[ $PYTHON_VERSION ]]; then
-        # if [[ "$PYTHON_VERSION" != "310" && "$PYTHON_VERSION" != "311" ]]; then
-        #     echo "Error: Unsupported Python version. Use '310' or '311'."
-        #     return 1
-        # fi
-        PYTHON_EXEC="python${PYTHON_VERSION:0:1}.${PYTHON_VERSION:1}"
+        _venv_check_system_availablity_of_py_version $PYTHON_VERSION
+        _venv_check_py_version_in_venv_dir $PYTHON_VERSION
+        PYTHON_EXEC="python$PYTHON_VERSION"
         VENV_DIR="$HOME/.venv/$PYTHON_VERSION"
-        if [[ ! -d "$VENV_DIR" ]]; then
-            echo "Error: The directory '$VENV_DIR' does not exist. Please create this directory and try again."
-            return 1
-        fi
     fi
-
+    
     case $COMMAND in
         m)
-            if [[ $# -ne 1 ]]; then
-                echo "Usage: venv m $PYTHON_VERSION"
+            if [[ $# -ge 3 ]]; then
+                echo "Usage: venv m $PYTHON_VERSION [path]"
                 return 1
             fi
-            $PYTHON_EXEC -m venv "$VENV_DIR/default"
-            echo "Virtual environment 'default' successfully created in $VENV_DIR/default"
+            if [[ $# == 1 ]]; then
+                $PYTHON_EXEC -m venv "$VENV_DIR/$1"
+                echo "Virtual environment '$1' successfully created in $VENV_DIR/$1"
+            elif [[ $# == 2 ]]; then
+                if [[ $2 == "/" ]]; then
+                    echo "Cannot create an venv in /"
+                    return 1
+                fi
+                local SAVE_TO=$(_venv_remove_trailing_dir_sep $2)
+                if [[ -d $SAVE_TO ]]; then
+                    $PYTHON_EXEC -m venv "$SAVE_TO/$1"
+                    echo "Virtual environment '$1' successfully created in $SAVE_TO/$1"
+                else
+                    echo "$2 is not a dir"
+                fi
+            fi
             ;;
 
         a)
@@ -78,7 +107,11 @@ function venv() {
                     return 1
                 fi
             elif [[ -d "$VENV_DIR/$1" ]]; then
-                source "$VENV_DIR/$1/bin/activate"
+                if [[ -f "$VENV_DIR/$1/bin/activate" ]]; then
+                    source "$VENV_DIR/$1/bin/activate"
+                else
+                    echo ""$VENV_DIR/$1/bin/activate" does not exist"
+                fi
             else
                 echo "Error: Virtual environment '$1' does not exist in $VENV_DIR"
                 return 1
@@ -151,6 +184,7 @@ function venv() {
     esac
 }
 
+
 _venv_completion() {
     local current_word prev_word prevprevword words
     local venv_versions=$(ls ~/.venv)
@@ -180,9 +214,6 @@ _venv_completion() {
     fi
 }
 
+
 # Attach the completion function to `venv`
 complete -F _venv_completion venv
-
-unset -f check_system_availablity_of_py_version
-unset -f get_py_versions_in_venv_dir 
-unset -f check_py_version_in_venv_dir 
