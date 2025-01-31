@@ -43,16 +43,22 @@ function venv() {
             ;;
 
         a)
-            if [[ $# -ne 2 ]]; then
-                echo "Usage: venv $PYTHON_VERSION activate <venv_name>"
+            if [[ $# == 1 ]]; then
+                if [[ -f ".venv/bin/activate" ]]; then
+                    source ".venv/bin/activate"
+                else
+                    echo ".venv/bin/activate was not found. Specify a venv directly"
+                    return 1
+                fi
+            elif [[ $# -ne 2 ]]; then 
+                echo "echo "Usage: venv $PYTHON_VERSION make <venv_name>""
                 return 1
-            fi
-            if [[ $2 == '.' ]]; then
-                source ".venv/bin/activate"
-            elif [[ -d "$VENV_DIR/$2" ]]; then
-                source "$VENV_DIR/$2/bin/activate"
             else
-                echo "Error: Virtual environment '$2' does not exist in $VENV_DIR"
+                if [[ -d "$VENV_DIR/$2" ]]; then
+                    source "$VENV_DIR/$2/bin/activate"
+                else
+                    echo "Error: Virtual environment '$2' does not exist in $VENV_DIR"
+                fi
             fi
             ;;
 
