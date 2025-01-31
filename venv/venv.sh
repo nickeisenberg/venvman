@@ -1,85 +1,74 @@
 function venv() {
-    # Validate Python version
-    if [[ $# -lt 2 ]]; then
-        echo "Usage: venv <python_version> <option> [argument]"
-        echo "Use 'venv <python_version> h' for a list of available options."
+    if [[ $# -lt 1 ]]; then
+        echo "Usage: venv <command> <python_version> [argument]"
+        echo "Use 'venv h' for a list of available commands."
         return 1
     fi
 
-    PYTHON_VERSION=$1
-    shift
-
-    if [[ "$PYTHON_VERSION" != "310" && "$PYTHON_VERSION" != "311" ]]; then
-        echo "Error: Unsupported Python version. Use '310' or '311'."
-        return 1
+    COMMAND=$1
+    PYTHON_VERSION=$2
+    shift 2
+    
+    if [[ $PYTHON_VERSION ]]; then
+        if [[ "$PYTHON_VERSION" != "310" && "$PYTHON_VERSION" != "311" ]]; then
+            echo "Error: Unsupported Python version. Use '310' or '311'."
+            return 1
+        fi
+        PYTHON_EXEC="python${PYTHON_VERSION:0:1}.${PYTHON_VERSION:1}"
+        VENV_DIR="$HOME/.venv$PYTHON_VERSION"
+        if [[ ! -d "$VENV_DIR" ]]; then
+            echo "Error: The directory '$VENV_DIR' does not exist. Please create this directory and try again."
+            return 1
+        fi
     fi
 
-    PYTHON_EXEC="python${PYTHON_VERSION:0:1}.${PYTHON_VERSION:1}"
-    VENV_DIR="$HOME/.venv$PYTHON_VERSION"
 
-    if [[ ! -d "$VENV_DIR" ]]; then
-        echo "Error: The directory specified in VENV_DIR ('$VENV_DIR') does not exist. Please create this directory and try again."
-        return 1
-    fi
-
-    if [ ! -d $VENV_DIR ]; then
-        echo "$VENV_DIR does not exist. Create it"
-        return 1
-    fi
-
-    # Check the action to perform
-    case $1 in
+    case $COMMAND in
         m)
-            if [[ $# -ne 2 ]]; then
-                echo "Usage: venv $PYTHON_VERSION make <venv_name>"
+            if [[ $# -ne 1 ]]; then
+                echo "Usage: venv m $PYTHON_VERSION"
                 return 1
             fi
-            $PYTHON_EXEC -m venv "$VENV_DIR/$2"
-            if [[ $? -ne 0 ]]; then
-                echo "Error: Failed to create virtual environment. Ensure the venv module is installed for Python $PYTHON_EXEC."
-                return 1
-            fi
-            echo "Virtual environment '$2' successfully created in $VENV_DIR/$2"
+            $PYTHON_EXEC -m venv "$VENV_DIR/default"
+            echo "Virtual environment 'default' successfully created in $VENV_DIR/default"
             ;;
 
         a)
-            if [[ $# == 1 ]]; then
+            if [[ $# -eq 1 ]]; then
                 if [[ -f ".venv/bin/activate" ]]; then
                     source ".venv/bin/activate"
                 else
-                    echo ".venv/bin/activate was not found. Specify a venv directly"
+                    echo "Error: .venv/bin/activate not found. Specify a venv directly."
                     return 1
                 fi
-            elif [[ $# -ne 2 ]]; then 
-                echo "echo "Usage: venv $PYTHON_VERSION make <venv_name>""
-                return 1
+            elif [[ -d "$VENV_DIR/$1" ]]; then
+                source "$VENV_DIR/$1/bin/activate"
             else
-                if [[ -d "$VENV_DIR/$2" ]]; then
-                    source "$VENV_DIR/$2/bin/activate"
-                else
-                    echo "Error: Virtual environment '$2' does not exist in $VENV_DIR"
-                fi
+                echo "Error: Virtual environment '$1' does not exist in $VENV_DIR"
+                return 1
             fi
             ;;
 
-        sp)
-            SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
-            if [[ ! $SITE_PACKAGES_DIR ]]; then
-                echo "Error: Could not determine site-packages location for Python $PYTHON_EXEC."
+        ls)
+            echo "Available virtual environments for Python $PYTHON_VERSION:"
+            ls "$VENV_DIR"
+            ;;
+
+        del)
+            if [[ $# -ne 1 ]]; then
+                echo "Usage: venv del $PYTHON_VERSION <venv_name>"
                 return 1
             fi
-            if [[ $# -eq 1 ]]; then
-                cd "$SITE_PACKAGES_DIR" || return
-            elif [[ $# -eq 2 ]]; then
-                if [[ -d "$SITE_PACKAGES_DIR/$2" ]]; then
-                    cd "$SITE_PACKAGES_DIR/$2" || return
-                else
-                    echo "Error: Package '$2' does not exist in $SITE_PACKAGES_DIR"
-                    return 1
-                fi
-            else
-                echo "Usage: venv $PYTHON_VERSION site-packages [package_name]"
+            if [[ ! -d "$VENV_DIR/$1" ]]; then
+                echo "Error: Virtual environment '$1' does not exist in $VENV_DIR"
                 return 1
+            fi
+            read -p "Are you sure you want to delete virtual environment '$1'? [y/N]: " response
+            if [[ "$response" =~ ^[Yy]$ ]]; then
+                rm -rf "$VENV_DIR/$1"
+                echo "Virtual environment '$1' has been deleted."
+            else
+                echo "Deletion cancelled."
             fi
             ;;
 
@@ -91,47 +80,36 @@ function venv() {
             deactivate
             ;;
 
-        ls)
-            echo "Available virtual environments for Python $PYTHON_VERSION:"
-            if [[ -d "$VENV_DIR" ]]; then
-                ls "$VENV_DIR"
-            else
-                echo "No virtual environments found in $VENV_DIR"
-            fi
-            ;;
-
-        del)
-            if [[ $# -ne 2 ]]; then
-                echo "Usage: venv $PYTHON_VERSION delete <venv_name>"
+        sp)
+            SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
+            if [[ ! $SITE_PACKAGES_DIR ]]; then
+                echo "Error: Could not determine site-packages location for Python $PYTHON_EXEC."
                 return 1
             fi
-            if [[ ! -d "$VENV_DIR/$2" ]]; then
-                echo "Error: Virtual environment '$2' does not exist in $VENV_DIR"
-                return 1
-            fi
-            read -p "Are you sure you want to delete virtual environment '$2'? [y/N]: " response
-            if [[ "$response" =~ ^[Yy]$ ]]; then
-                rm -rf "$VENV_DIR/$2"
-                echo "Virtual environment '$2' has been deleted."
+            if [[ $# -eq 0 ]]; then
+                cd "$SITE_PACKAGES_DIR" || return
+            elif [[ -d "$SITE_PACKAGES_DIR/$1" ]]; then
+                cd "$SITE_PACKAGES_DIR/$1" || return
             else
-                echo "Deletion cancelled."
+                echo "Error: Package '$1' does not exist in $SITE_PACKAGES_DIR"
+                return 1
             fi
             ;;
 
         h|help)
-            echo "Usage: venv <python_version> <option> [argument]"
-            echo "Options:"
-            echo "  m <venv_name>                  : Create a new virtual environment."
-            echo "  del                            : Delete the specified virtual environment."
-            echo "  a <venv_name>                  : Activate the specified virtual environment."
-            echo "  da                             : Deactivate the currently active virtual environment."
-            echo "  ls                             : List all available virtual environments in $VENV_DIR."
-            echo "  sp [package]                   : Navigate to the site-packages directory or specified package directory."
-            echo "  h, help                        : Display this help message."
+            echo "Usage: venv <command> <python_version> [argument]"
+            echo "Commands:"
+            echo "  m <python_version>                  : Create a new virtual environment."
+            echo "  del <python_version> <venv_name>     : Delete the specified virtual environment."
+            echo "  a <python_version> <venv_name>       : Activate the specified virtual environment."
+            echo "  da                                   : Deactivate the currently active virtual environment."
+            echo "  ls <python_version>                  : List all available virtual environments."
+            echo "  sp <python_version> [package]        : Navigate to the site-packages directory."
+            echo "  h, help                              : Display this help message."
             ;;
 
         *)
-            echo "Invalid option. Use 'venv $PYTHON_VERSION h' or 'venv $PYTHON_VERSION help' for a list of available options."
+            echo "Invalid command. Use 'venv h' or 'venv help' for a list of available commands."
             return 1
             ;;
     esac
@@ -144,24 +122,24 @@ _venv_completion() {
 
     current_word="${COMP_WORDS[COMP_CWORD]}"
     prev_word="${COMP_WORDS[COMP_CWORD-1]}"
+    prevprev_word="${COMP_WORDS[COMP_CWORD-2]}"
     words=("${COMP_WORDS[@]}")
 
     if [[ ${#words[@]} -eq 2 ]]; then
-        # Complete Python versions after `venv`
-        COMPREPLY=($(compgen -W "$venv_versions" -- "$current_word"))
-    elif [[ ${#words[@]} -eq 3 && "$prev_word" =~ ^(310|311)$ ]]; then
-        # Complete commands after `venv <version>`
+        # Complete commands after `venv`
         COMPREPLY=($(compgen -W "$commands" -- "$current_word"))
-    elif [[ ${#words[@]} -eq 4 && "$prev_word" =~ ^(a|del)$ ]]; then
-        # Suggest virtual environment names for `venv <version> ls <TAB>`
-        VENV_DIR="$HOME/.venv${COMP_WORDS[1]}"
+    elif [[ ${#words[@]} -eq 3 && "$prev_word" =~ ^(m|a|sp|ls|del)$ ]]; then
+        # Complete Python versions after `venv <command>`
+        COMPREPLY=($(compgen -W "$venv_versions" -- "$current_word"))
+    elif [[ ${#words[@]} -eq 4 && "$prevprev_word" =~ ^(a|del)$ ]]; then
+        # Suggest virtual environment names
+        VENV_DIR="$HOME/.venv${COMP_WORDS[2]}"
         if [[ -d "$VENV_DIR" ]]; then
             COMPREPLY=($(compgen -W "$(ls "$VENV_DIR")" -- "$current_word"))
         else
             COMPREPLY=()
         fi
     else
-        # Fallback: no completion
         COMPREPLY=()
     fi
 }
