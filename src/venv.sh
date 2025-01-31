@@ -54,6 +54,32 @@ function _venv_check_py_version_in_venv_dir() {
 }
 
 
+_venv_completion() {
+    local VENV_VERSIONS=$(ls ~/.venv)
+    local WORDS=("${COMP_WORDS[@]}")
+    local COMMANDS="m a sp da ls del h"
+
+
+    if [[ ${#WORDS[@]} -eq 2 ]]; then
+        # Complete commands after `venv`
+        COMPREPLY=($(compgen -W "$COMMANDS" -- "${COMP_WORDS[COMP_CWORD]}"))
+    elif [[ ${#WORDS[@]} -eq 3 && "${COMP_WORDS[COMP_CWORD-1]}" =~ ^(m|a|sp|ls|del)$ ]]; then
+        # Complete Python versions after `venv <command>`
+        COMPREPLY=($(compgen -W "$VENV_VERSIONS" -- "${COMP_WORDS[COMP_CWORD]}"))
+    elif [[ ${#WORDS[@]} -eq 4 && "${COMP_WORDS[COMP_CWORD-2]}" =~ ^(a|del)$ ]]; then
+        # Suggest virtual environment names
+        VENV_DIR="$HOME/.venv/${COMP_WORDS[2]}"
+        if [[ -d "$VENV_DIR" ]]; then
+            COMPREPLY=($(compgen -W "$(ls "$VENV_DIR")" -- "${COMP_WORDS[COMP_CWORD]}"))
+        else
+            COMPREPLY=()
+        fi
+    else
+        COMPREPLY=()
+    fi
+}
+
+
 function venv() {
     local COMMAND PYTHON_VERSION PYTHON_EXEC VENV_DIR SITE_PACKAGES_DIR
 
@@ -166,9 +192,11 @@ function venv() {
             ;;
 
         h|help)
-            echo "Usage: venv <command> <python_version> [argument]"
+            echo "Usage:"
+            echo "  venv <command> <python_version> [argument]"
+            echo
             echo "Commands:"
-            echo "  m <python_version>                  : Create a new virtual environment."
+            echo "  m <python_version> [PATH]            : Create a new virtual environment."
             echo "  del <python_version> <venv_name>     : Delete the specified virtual environment."
             echo "  a <python_version> <venv_name>       : Activate the specified virtual environment."
             echo "  da                                   : Deactivate the currently active virtual environment."
@@ -185,35 +213,4 @@ function venv() {
 }
 
 
-_venv_completion() {
-    local current_word prev_word prevprevword words
-    local venv_versions=$(ls ~/.venv)
-    local commands="m a sp da ls del h"
-
-    current_word="${COMP_WORDS[COMP_CWORD]}"
-    prev_word="${COMP_WORDS[COMP_CWORD-1]}"
-    prevprev_word="${COMP_WORDS[COMP_CWORD-2]}"
-    words=("${COMP_WORDS[@]}")
-
-    if [[ ${#words[@]} -eq 2 ]]; then
-        # Complete commands after `venv`
-        COMPREPLY=($(compgen -W "$commands" -- "$current_word"))
-    elif [[ ${#words[@]} -eq 3 && "$prev_word" =~ ^(m|a|sp|ls|del)$ ]]; then
-        # Complete Python versions after `venv <command>`
-        COMPREPLY=($(compgen -W "$venv_versions" -- "$current_word"))
-    elif [[ ${#words[@]} -eq 4 && "$prevprev_word" =~ ^(a|del)$ ]]; then
-        # Suggest virtual environment names
-        VENV_DIR="$HOME/.venv/${COMP_WORDS[2]}"
-        if [[ -d "$VENV_DIR" ]]; then
-            COMPREPLY=($(compgen -W "$(ls "$VENV_DIR")" -- "$current_word"))
-        else
-            COMPREPLY=()
-        fi
-    else
-        COMPREPLY=()
-    fi
-}
-
-
-# Attach the completion function to `venv`
 complete -F _venv_completion venv
