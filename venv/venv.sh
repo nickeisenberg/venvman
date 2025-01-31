@@ -1,3 +1,40 @@
+function check_system_availablity_of_py_version() {
+    if [[ $# -ne 1 ]]; then
+        echo "Enter a python version"
+        return 1
+    fi
+    VERSION=$1
+    COMMAND=python$1
+    if ! command -v $COMMAND &> /dev/null; then
+        echo "Python version not available on system"
+        return 1
+    fi
+}
+
+
+function get_py_versions_in_venv_dir() {
+    x=$(ls $HOME/.venv)
+    for VAR in $x 
+    do
+        echo "$VAR"
+    done
+}
+
+
+function check_py_version_in_venv_dir() {
+    found="false"
+    for VAR in $(get_py_versions_in_venv_dir); do
+        if [[ $VAR == "$1" ]]; then
+            found="true"
+        fi
+    done
+    if [[ $found == "false" ]]; then
+        echo "python version not found in ~/.venv"
+        return 1
+    fi
+}
+
+
 function venv() {
     if [[ $# -lt 1 ]]; then
         echo "Usage: venv <command> <python_version> [argument]"
@@ -10,18 +47,17 @@ function venv() {
     shift 2
     
     if [[ $PYTHON_VERSION ]]; then
-        if [[ "$PYTHON_VERSION" != "310" && "$PYTHON_VERSION" != "311" ]]; then
-            echo "Error: Unsupported Python version. Use '310' or '311'."
-            return 1
-        fi
+        # if [[ "$PYTHON_VERSION" != "310" && "$PYTHON_VERSION" != "311" ]]; then
+        #     echo "Error: Unsupported Python version. Use '310' or '311'."
+        #     return 1
+        # fi
         PYTHON_EXEC="python${PYTHON_VERSION:0:1}.${PYTHON_VERSION:1}"
-        VENV_DIR="$HOME/.venv$PYTHON_VERSION"
+        VENV_DIR="$HOME/.venv/$PYTHON_VERSION"
         if [[ ! -d "$VENV_DIR" ]]; then
             echo "Error: The directory '$VENV_DIR' does not exist. Please create this directory and try again."
             return 1
         fi
     fi
-
 
     case $COMMAND in
         m)
@@ -34,7 +70,7 @@ function venv() {
             ;;
 
         a)
-            if [[ $# -eq 1 ]]; then
+            if [[ $# -eq 0 ]]; then
                 if [[ -f ".venv/bin/activate" ]]; then
                     source ".venv/bin/activate"
                 else
@@ -116,8 +152,8 @@ function venv() {
 }
 
 _venv_completion() {
-    local current_word prev_word words
-    local venv_versions="310 311"
+    local current_word prev_word prevprevword words
+    local venv_versions=$(ls ~/.venv)
     local commands="m a sp da ls del h"
 
     current_word="${COMP_WORDS[COMP_CWORD]}"
@@ -133,7 +169,7 @@ _venv_completion() {
         COMPREPLY=($(compgen -W "$venv_versions" -- "$current_word"))
     elif [[ ${#words[@]} -eq 4 && "$prevprev_word" =~ ^(a|del)$ ]]; then
         # Suggest virtual environment names
-        VENV_DIR="$HOME/.venv${COMP_WORDS[2]}"
+        VENV_DIR="$HOME/.venv/${COMP_WORDS[2]}"
         if [[ -d "$VENV_DIR" ]]; then
             COMPREPLY=($(compgen -W "$(ls "$VENV_DIR")" -- "$current_word"))
         else
@@ -146,3 +182,7 @@ _venv_completion() {
 
 # Attach the completion function to `venv`
 complete -F _venv_completion venv
+
+unset -f check_system_availablity_of_py_version
+unset -f get_py_versions_in_venv_dir 
+unset -f check_py_version_in_venv_dir 
