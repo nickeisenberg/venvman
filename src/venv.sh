@@ -58,7 +58,6 @@ function _venv_activate() {
     local NAME VERSION VENV_PATH
     while [ "$#" -gt 0 ]; do
         case $1 in
-
             -n | --name)
                 if [[ -n $2 ]]; then
                     NAME=$2
@@ -128,7 +127,6 @@ function _venv_make() {
     local NAME VERSION VENV_PATH PYTHON_EXEC
     while [ "$#" -gt 0 ]; do
         case $1 in
-
             -n | --name)
                 if [[ -n $2 ]]; then
                     NAME=$2
@@ -160,7 +158,7 @@ function _venv_make() {
                 fi
                 ;;
             -h | --help)
-                echo "help for activate"
+                echo "help for make"
                 return 0
                 ;;
             *)
@@ -179,6 +177,107 @@ function _venv_make() {
         $PYTHON_EXEC -m venv $VENV_PATH
     else 
         echo "invalid usage"
+    fi
+}
+
+
+function _venv_list() {
+    local VERSION VERSIONS NUM_VERSIONS VENV_PATH
+    local VENV_PATH="$HOME/.venv/"
+    while [ "$#" -gt 0 ]; do
+        case $1 in
+            -v | --version)
+                if [[ -n $2 ]]; then
+                    local VERSION=$2
+                    local VENV_PATH="$VENV_PATH/$VERSION"
+                    shift 2
+                else
+                    echo "Enter a version for --version"
+                    return 1
+                fi
+                ;;
+            -h | --help)
+                echo "help for list"
+                return 0
+                ;;
+            *)
+                echo "something is wrong"
+                return 1
+                ;;
+        esac
+    done
+
+    if [[ -n $VERSION ]]; then
+        echo "Available virtual environments for Python $VERSION:"
+        ls "$VENV_PATH"
+
+    else
+        local VERSIONS=($(ls "$HOME/.venv"))  # Store all versions in an array
+        local NUM_VERSIONS=${#VERSIONS[@]}    # Get the total number of versions
+    
+        for ((i = 0; i < $NUM_VERSIONS; i++)); do
+            local VERSION=${VERSIONS[i]}
+            echo "Available virtual environments for Python $VERSION:"
+            ls "$HOME/.venv/$VERSION"
+            
+            # Print echo unless it's the last item
+            if [[ $i -lt $((NUM_VERSIONS - 1)) ]]; then
+                echo
+            fi
+        done
+    fi
+}
+
+
+function _venv_delete() {
+    local NAME VERSION VENV_PATH
+    while [ "$#" -gt 0 ]; do
+        case $1 in
+            -n | --name)
+                if [[ -n $2 ]]; then
+                    NAME=$2
+                    shift 2
+                else
+                    echo "Enter a name for --name"
+                    return 1
+                fi
+                ;;
+            -v | --version)
+                if [[ -n $2 ]]; then
+                    VERSION=$2
+                    shift 2
+                else
+                    echo "Enter a version for --version"
+                    return 1
+                fi
+                ;;
+            -h | --help)
+                echo "help for delete"
+                return 0
+                ;;
+            *)
+                echo "something is wrong"
+                return 1
+                ;;
+        esac
+    done
+    
+    local VENV_PATH="$HOME/.venv/$VERSION/$NAME"
+
+    read -p "Are you sure you want to delete virtual environment $VENV_PATH? [y/N]: " response
+
+    if [[ "$response" =~ ^[Yy]$ ]]; then
+        rm -rf "$VENV_PATH"
+        if [[ ! -d $VENV_PATH ]]; then
+            echo "SUCCESS: Virtual environment $VENV_PATH has been deleted."
+            return 0
+        else
+            echo "FAIL: Virtual environment $VENV_PATH has not been deleted."
+            return 1
+        fi
+    else
+        echo "Deletion cancelled."
+        return 0
     fi
 }
 
@@ -221,22 +320,6 @@ function venv() {
     COMMAND=$1
     shift 1
     
-    # if [[ -n $2 ]]; then
-    #     if \
-    #         _venv_check_system_availablity_of_py_version $2 &> /dev/null && \
-    #         _venv_check_py_version_in_venv_dir &> /dev/null $2
-    #     then
-    #         PYTHON_VERSION=$2
-    #         PYTHON_EXEC="python$PYTHON_VERSION"
-    #         VENV_DIR="$HOME/.venv/$PYTHON_VERSION"
-    #         shift 1
-    #     else
-    #         shift 1
-    #     fi
-    # else
-    #     shift 1
-    # fi
-    
     case $COMMAND in
         m | make)
             _venv_make $@
@@ -247,47 +330,17 @@ function venv() {
             ;;
 
         list)
-            if [[ -n $PYTHON_VERSION ]]; then
-                echo "Available virtual environments for Python $PYTHON_VERSION:"
-                ls "$VENV_DIR"
-
-            else
-                versions=($(ls "$HOME/.venv"))  # Store all versions in an array
-                num_versions=${#versions[@]}    # Get the total number of versions
-            
-                for ((i = 0; i < num_versions; i++)); do
-                    version=${versions[i]}
-                    echo "Available virtual environments for Python $version:"
-                    ls "$HOME/.venv/$version"
-                    
-                    # Print echo unless it's the last item
-                    if [[ $i -lt $((num_versions - 1)) ]]; then
-                        echo
-                    fi
-                done
-            fi
+            _venv_list $@
             ;;
 
         d | delete)
-            if [[ $# -ne 1 ]]; then
-                echo "Usage: venv del $PYTHON_VERSION <venv_name>"
-                return 1
-            fi
-            if [[ ! -d "$VENV_DIR/$1" ]]; then
-                echo "Error: Virtual environment '$1' does not exist in $VENV_DIR"
-                return 1
-            fi
-            read -p "Are you sure you want to delete virtual environment '$1'? [y/N]: " response
-            if [[ "$response" =~ ^[Yy]$ ]]; then
-                rm -rf "$VENV_DIR/$1"
-                echo "Virtual environment '$1' has been deleted."
-            else
-                echo "Deletion cancelled."
-            fi
+            _venv_delete $@
             ;;
 
-
         sp | site-packages)
+            echo "not impletmented"
+            return 1
+
             SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
             if [[ ! $SITE_PACKAGES_DIR ]]; then
                 echo "Error: Could not determine site-packages location for Python $PYTHON_EXEC."
@@ -303,7 +356,7 @@ function venv() {
             fi
             ;;
 
-        h|help)
+        -h| --help)
             echo "Usage:"
             echo "  venv <command> <python_version> [argument]"
             echo
@@ -314,7 +367,7 @@ function venv() {
             echo "  da                                   : Deactivate the currently active virtual environment."
             echo "  ls <python_version>                  : List all available virtual environments."
             echo "  sp <python_version> [PACKAGE]        : Navigate to the site-packages directory."
-            echo "  h, help                              : Display this help message."
+            echo "  -h, --help                           : Display this help message."
             ;;
 
         *)
