@@ -57,16 +57,16 @@ function _venv_check_py_version_in_venv_dir() {
 _venv_completion() {
     local VENV_VERSIONS=$(ls ~/.venv)
     local WORDS=("${COMP_WORDS[@]}")
-    local COMMANDS="m a sp da ls del h"
+    local COMMANDS="make activate site-packages list delete help"
 
 
     if [[ ${#WORDS[@]} -eq 2 ]]; then
         # Complete commands after `venv`
         COMPREPLY=($(compgen -W "$COMMANDS" -- "${COMP_WORDS[COMP_CWORD]}"))
-    elif [[ ${#WORDS[@]} -eq 3 && "${COMP_WORDS[COMP_CWORD-1]}" =~ ^(m|a|sp|ls|del)$ ]]; then
+    elif [[ ${#WORDS[@]} -eq 3 && "${COMP_WORDS[COMP_CWORD-1]}" =~ ^(m|make|a|activate|sp|list|d|delete)$ ]]; then
         # Complete Python versions after `venv <command>`
         COMPREPLY=($(compgen -W "$VENV_VERSIONS" -- "${COMP_WORDS[COMP_CWORD]}"))
-    elif [[ ${#WORDS[@]} -eq 4 && "${COMP_WORDS[COMP_CWORD-2]}" =~ ^(a|del)$ ]]; then
+    elif [[ ${#WORDS[@]} -eq 4 && "${COMP_WORDS[COMP_CWORD-2]}" =~ ^(a|activate|d|delete)$ ]]; then
         # Suggest virtual environment names
         VENV_DIR="$HOME/.venv/${COMP_WORDS[2]}"
         if [[ -d "$VENV_DIR" ]]; then
@@ -101,7 +101,7 @@ function venv() {
     fi
     
     case $COMMAND in
-        m)
+        m | make)
             if [[ $# -ge 3 ]]; then
                 echo "Usage: venv m $PYTHON_VERSION [path]"
                 return 1
@@ -124,8 +124,8 @@ function venv() {
             fi
             ;;
 
-        a)
-            if [[ $# -eq 0 ]]; then
+        a | activate)
+            if [[ $# -eq 1 ]]; then
                 if [[ -f ".venv/bin/activate" ]]; then
                     source ".venv/bin/activate"
                 else
@@ -144,12 +144,12 @@ function venv() {
             fi
             ;;
 
-        ls)
+        list)
             echo "Available virtual environments for Python $PYTHON_VERSION:"
             ls "$VENV_DIR"
             ;;
 
-        del)
+        d | delete)
             if [[ $# -ne 1 ]]; then
                 echo "Usage: venv del $PYTHON_VERSION <venv_name>"
                 return 1
@@ -167,15 +167,8 @@ function venv() {
             fi
             ;;
 
-        da)
-            if [[ -z "$VIRTUAL_ENV" ]]; then
-                echo "No virtual environment is currently activated."
-                return 1
-            fi
-            deactivate
-            ;;
 
-        sp)
+        sp | site-packages)
             SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
             if [[ ! $SITE_PACKAGES_DIR ]]; then
                 echo "Error: Could not determine site-packages location for Python $PYTHON_EXEC."
@@ -196,12 +189,12 @@ function venv() {
             echo "  venv <command> <python_version> [argument]"
             echo
             echo "Commands:"
-            echo "  m <python_version> [PATH]            : Create a new virtual environment."
+            echo "  m <python_version> [PATH]            : Create a new virtual environment. Will create to PATH is specified"
             echo "  del <python_version> <venv_name>     : Delete the specified virtual environment."
             echo "  a <python_version> <venv_name>       : Activate the specified virtual environment."
             echo "  da                                   : Deactivate the currently active virtual environment."
             echo "  ls <python_version>                  : List all available virtual environments."
-            echo "  sp <python_version> [package]        : Navigate to the site-packages directory."
+            echo "  sp <python_version> [PACKAGE]        : Navigate to the site-packages directory."
             echo "  h, help                              : Display this help message."
             ;;
 
