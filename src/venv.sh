@@ -282,6 +282,43 @@ function _venv_delete() {
 }
 
 
+function _venv_site_packages() {
+    local PKG
+    local SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
+    while [ "$#" -gt 0 ]; do
+        case $1 in
+            -pkg | --package)
+                if [[ -n $2 ]]; then
+                    local PKG=$2
+                    shift 2
+                else
+                    echo "Enter a package for --package"
+                    return 1
+                fi
+                ;;
+            -h | --help)
+                echo "help for site-packages"
+                return 0
+                ;;
+            *)
+                echo "something is wrong"
+                return 1
+                ;;
+        esac
+    done
+    
+    if [[ ! -n $PKG ]]; then
+        cd "$SITE_PACKAGES_DIR" || return
+    elif [[ -d "$SITE_PACKAGES_DIR/$PKG" ]]; then
+        cd "$SITE_PACKAGES_DIR/$PKG" || return
+    else
+        echo "Error: Package '$PKG' does not exist in $SITE_PACKAGES_DIR"
+        return 1
+    fi
+
+}
+
+
 function _venv_completion() {
     local VENV_VERSIONS=$(ls ~/.venv)
     local WORDS=("${COMP_WORDS[@]}")
@@ -338,22 +375,7 @@ function venv() {
             ;;
 
         sp | site-packages)
-            echo "not impletmented"
-            return 1
-
-            SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
-            if [[ ! $SITE_PACKAGES_DIR ]]; then
-                echo "Error: Could not determine site-packages location for Python $PYTHON_EXEC."
-                return 1
-            fi
-            if [[ $# -eq 0 ]]; then
-                cd "$SITE_PACKAGES_DIR" || return
-            elif [[ -d "$SITE_PACKAGES_DIR/$1" ]]; then
-                cd "$SITE_PACKAGES_DIR/$1" || return
-            else
-                echo "Error: Package '$1' does not exist in $SITE_PACKAGES_DIR"
-                return 1
-            fi
+            _venv_site_packages $@
             ;;
 
         -h| --help)
