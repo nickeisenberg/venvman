@@ -320,28 +320,165 @@ function _venv_site_packages() {
 
 
 function _venv_completion() {
-    local VENV_VERSIONS=$(ls ~/.venv)
-    local WORDS=("${COMP_WORDS[@]}")
-    local COMMANDS="make activate site-packages list delete help"
+    local cur prev words
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    words=("${COMP_WORDS[@]}")
 
+    # Available commands
+    local commands="make activate list delete site-packages help"
 
-    if [[ ${#WORDS[@]} -eq 2 ]]; then
-        # Complete commands after `venv`
-        COMPREPLY=($(compgen -W "$COMMANDS" -- "${COMP_WORDS[COMP_CWORD]}"))
-    elif [[ ${#WORDS[@]} -eq 3 && "${COMP_WORDS[COMP_CWORD-1]}" =~ ^(m|make|a|activate|sp|list|d|delete)$ ]]; then
-        # Complete Python versions after `venv <command>`
-        COMPREPLY=($(compgen -W "$VENV_VERSIONS" -- "${COMP_WORDS[COMP_CWORD]}"))
-    elif [[ ${#WORDS[@]} -eq 4 && "${COMP_WORDS[COMP_CWORD-2]}" =~ ^(a|activate|d|delete)$ ]]; then
-        # Suggest virtual environment names
-        VENV_DIR="$HOME/.venv/${COMP_WORDS[2]}"
-        if [[ -d "$VENV_DIR" ]]; then
-            COMPREPLY=($(compgen -W "$(ls "$VENV_DIR")" -- "${COMP_WORDS[COMP_CWORD]}"))
-        else
-            COMPREPLY=()
-        fi
-    else
-        COMPREPLY=()
+    # List available Python versions dynamically
+    local version_options=$(ls -1 "$HOME/.venv" 2>/dev/null)
+
+    # Track entered flags in the correct order
+    local has_version=false
+    local has_name=false
+    local has_path=false
+    local version_provided=""
+    local name_provided=""
+
+    for ((i = 1; i < COMP_CWORD; i++)); do
+        case "${COMP_WORDS[i]}" in
+            --version)
+                has_version=true
+                if [[ -n "${COMP_WORDS[i+1]}" && ! "${COMP_WORDS[i+1]}" =~ ^-- ]]; then
+                    version_provided="${COMP_WORDS[i+1]}"
+                fi
+                ;;
+            --name)
+                has_name=true
+                if [[ -n "${COMP_WORDS[i+1]}" && ! "${COMP_WORDS[i+1]}" =~ ^-- ]]; then
+                    name_provided="${COMP_WORDS[i+1]}"
+                fi
+                ;;
+            --path) has_path=true ;;
+        esac
+    done
+
+    # Top-level command completion
+    if [[ ${COMP_CWORD} -eq 1 ]]; then
+        COMPREPLY=($(compgen -W "$commands" -- "$cur"))
+        return 0
     fi
+
+    # Identify which command is being used
+    local subcommand="${COMP_WORDS[1]}"
+
+    case "$subcommand" in
+        make)
+            # Only allow `--version` first
+            if [[ "$prev" == "make" && "$has_version" == false ]]; then
+                COMPREPLY=($(compgen -W "--version" -- "$cur"))
+                return 0
+            elif [[ "$prev" == "--version" ]]; then
+                COMPREPLY=($(compgen -W "$version_options" -- "$cur"))
+                return 0
+            elif [[ "$has_version" == true && "$has_name" == false && "$prev" != "--name" ]]; then
+                COMPREPLY=($(compgen -W "--name" -- "$cur"))
+                return 0
+            elif [[ "$prev" == "--name" ]]; then
+                # Don't auto-complete, let the user enter a name manually
+                return 0
+            elif [[ "$has_version" == true && "$has_name" == true && "$has_path" == false ]]; then
+                COMPREPLY=($(compgen -W "--path" -- "$cur"))
+                return 0
+            elif [[ "$prev" == "--path" ]]; then
+                COMPREPLY=($(compgen -o filenames -o nospace -A directory -- "$cur"))
+                return 0
+            fi
+            ;;
+
+
+        activate)
+            # First tab should suggest --version or --path
+            if [[ "$prev" == "activate" && "$has_version" == false && "$has_path" == false ]]; then
+                COMPREPLY=($(compgen -W "--version --path" -- "$cur"))
+                return 0
+            fi
+
+            # If --version is given, suggest only --name
+            if [[ "$prev" == "--version" ]]; then
+                COMPREPLY=($(compgen -W "$version_options" -- "$cur"))
+                return 0
+            elif [[ "$has_version" == true && "$has_name" == false ]]; then
+                COMPREPLY=($(compgen -W "--name" -- "$cur"))
+                return 0
+            fi
+
+            # If --name is given, suggest available environments under the selected version
+            if [[ "$prev" == "--name" ]]; then
+                if [[ -n "$version_provided" ]]; then
+                    local venv_dir="$HOME/.venv/$version_provided"
+                    if [[ -d "$venv_dir" ]]; then
+                        local name_options=$(ls -1 "$venv_dir" 2>/dev/null)
+                        COMPREPLY=($(compgen -W "$name_options" -- "$cur"))
+                        return 0
+                    fi
+                fi
+            fi
+
+            # If --path is given, no more options (user enters a custom path)
+            if [[ "$prev" == "--path" ]]; then
+                COMPREPLY=($(compgen -o filenames -o nospace -A directory -- "$cur"))
+                return 0
+            fi
+            ;;
+
+
+        list)
+            if [[ "$prev" == "list" ]]; then
+                COMPREPLY=($(compgen -W "--version" -- "$cur"))
+                return 0
+            elif [[ "$prev" == "--version" ]]; then
+                COMPREPLY=($(compgen -W "$version_options" -- "$cur"))
+                return 0
+            fi
+            ;;
+
+        delete)
+            if [[ "$prev" == "delete" ]]; then
+                COMPREPLY=($(compgen -W "--version" -- "$cur"))
+                return 0
+            elif [[ "$prev" == "--version" ]]; then
+                COMPREPLY=($(compgen -W "$version_options" -- "$cur"))
+                return 0
+            elif [[ "$prev" == "--name" ]]; then
+                if [[ -n "$version_provided" ]]; then
+                    local venv_dir="$HOME/.venv/$version_provided"
+                    if [[ -d "$venv_dir" ]]; then
+                        local name_options=$(ls -1 "$venv_dir" 2>/dev/null)
+                        COMPREPLY=($(compgen -W "$name_options" -- "$cur"))
+                        return 0
+                    fi
+                fi
+            elif [[ "$has_version" == true && "$has_name" == false ]]; then
+                COMPREPLY=($(compgen -W "--name" -- "$cur"))
+                return 0
+            fi
+            ;;
+
+
+        site-packages)
+            if [[ "$prev" == "site-packages" ]]; then
+                COMPREPLY=($(compgen -W "--package" -- "$cur"))
+                return 0
+            elif [[ "$prev" == "--package" ]]; then
+                # Get the correct site-packages directory of the active virtual environment
+                local site_packages_dir=$(python -c "import sys; print(next(p for p in sys.path if 'site-packages' in p))" 2>/dev/null)
+
+                # Check if the site-packages directory exists
+                if [[ -d "$site_packages_dir" ]]; then
+                    local packages=$(ls -1 "$site_packages_dir" 2>/dev/null)
+                    COMPREPLY=($(compgen -W "$packages" -- "$cur"))
+                    return 0
+                fi
+            fi
+    ;;
+
+    esac
+
+    COMPREPLY=()
 }
 
 
