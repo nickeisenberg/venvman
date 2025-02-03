@@ -88,7 +88,18 @@ function _venv_activate() {
                 fi
                 ;;
             -h | --help)
-                echo "help for activate"
+                echo "Usage:"
+                echo "  venv a [options]"
+                echo
+                echo "Options:"
+                echo "  -n, --name <venv_name>        : Specify the name of the virtual environment to activate."
+                echo "  -v, --version <python_version>: Specify the Python version of the virtual environment."
+                echo "  -p, --path <venv_path>        : Manually specify the path of the virtual environment."
+                echo "  -h, --help                    : Display this help message."
+                echo
+                echo "Examples:"
+                echo "  venv a -n myenv -v 3.10        : Activate 'myenv' created with Python 3.10"
+                echo "  venv a -p /custom/path/to/venv: Activate virtual environment at a custom path."
                 return 0
                 ;;
             *)
@@ -158,7 +169,18 @@ function _venv_make() {
                 fi
                 ;;
             -h | --help)
-                echo "help for make"
+                echo "Usage:"
+                echo "  venv m [options]"
+                echo
+                echo "Options:"
+                echo "  -n, --name <venv_name>        : Specify the name of the virtual environment to create."
+                echo "  -v, --version <python_version>: Specify the Python version to use for the virtual environment."
+                echo "  -p, --path <venv_path>        : Manually specify the directory where the virtual environment should be created."
+                echo "  -h, --help                    : Display this help message."
+                echo
+                echo "Examples:"
+                echo "  venv m -n project_env -v 3.10 : Create a virtual environment named 'project_env' using Python 3.10."
+                echo "  venv m -n myenv -v 3.9 -p /custom/path : Create 'myenv' using Python 3.9 at '/custom/path'."
                 return 0
                 ;;
             *)
@@ -197,7 +219,16 @@ function _venv_list() {
                 fi
                 ;;
             -h | --help)
-                echo "help for list"
+                echo "Usage:"
+                echo "  venv ls [options]"
+                echo
+                echo "Options:"
+                echo "  -v, --version <python_version>: List virtual environments for a specific Python version."
+                echo "  -h, --help                    : Display this help message."
+                echo
+                echo "Examples:"
+                echo "  venv ls                        : List all available virtual environments grouped by Python version."
+                echo "  venv ls -v 3.10                : List virtual environments created with Python 3.10."
                 return 0
                 ;;
             *)
@@ -252,7 +283,16 @@ function _venv_delete() {
                 fi
                 ;;
             -h | --help)
-                echo "help for delete"
+                echo "Usage:"
+                echo "  venv delete [options]"
+                echo
+                echo "Options:"
+                echo "  -n, --name <venv_name>        : Specify the name of the virtual environment to delete."
+                echo "  -v, --version <python_version>: Specify the Python version associated with the virtual environment."
+                echo "  -h, --help                    : Display this help message."
+                echo
+                echo "Examples:"
+                echo "  venv delete -n myenv -v 3.10      : Delete the virtual environment 'myenv' created with Python 3.10."
                 return 0
                 ;;
             *)
@@ -297,7 +337,16 @@ function _venv_site_packages() {
                 fi
                 ;;
             -h | --help)
-                echo "help for site-packages"
+                echo "Usage:"
+                echo "  venv site-package [options]"
+                echo
+                echo "Options:"
+                echo "  -pkg, --package <package_name> : Navigate to the directory of a specific installed package."
+                echo "  -h, --help                     : Display this help message."
+                echo
+                echo "Examples:"
+                echo "venv site-package                : Navigate to the site-packages directory of the active virtual environment."
+                echo "  venv site-package -pkg numpy   : Navigate to the directory of the installed 'numpy' package."
                 return 0
                 ;;
             *)
@@ -315,7 +364,6 @@ function _venv_site_packages() {
         echo "Error: Package '$PKG' does not exist in $SITE_PACKAGES_DIR"
         return 1
     fi
-
 }
 
 
