@@ -1,57 +1,104 @@
-An easy way to store and manage python virtual enviornments. Inside of `./venv`
-are `bash` scripts titled `venv3x.sh` where `3x` is the version of python you
-want to use, ie `310` or `311`.
+# VENV Manager
 
-# Instructions
-The following uses `./venv/venv3x.sh` for reference but the same instructions
-apply for any of the versions of python.
+A simple Virtual Environment (VENV) manager written in pure Bash to simplify the creation, activation, listing, and deletion of Python virtual environments.
 
-1. Place `./venv/venv3x.sh` anywhere on your computer and source 
-   it from your ~/.bashrc`.
+## Features
+* Create virtual environments for specific Python versions.
 
-2. Create the folder `~/.venv3x`. If by coincidence you already are using a
-   folder with that same name, then edit the top line of `./venv/venv3x.sh`
-   that says `VENV_DIR="$HOME/.venv310` and point the `VENV_DIR` elsewhere.
-   This is where all the virtual enviornments will be saved.
+* Activate virtual environments by name and version.
 
-# Functionality
+* List all available virtual environments.
 
-The following are the options for `venv3x`.
+* Delete virtual environments safely.
 
-1. Create a new virtual environment.
-   ```bash
-   -m, --make <venv_name>"
-   ```
+* Navigate to the site-packages directory of installed packages.
 
-2. Activate the specified virtual environment.
-   ```bash
-   -a, --activate <venv_name>
-   ```
+* Tab-completion for commands and arguments.
 
-3. Deactivate the currently active virtual environment.
-   ```bash
-   -da, --deactivate
-   ```
+## Installation
 
-4. List all available virtual environments in `VENV_DIR`.
-   ```bash
-   -ls, --list-all-environments
-   ```
+Copy the script into your Bash profile (~/.bashrc or ~/.bash_profile).
 
-5. Delete the specified venv.
-   ```bash
-   -del, --delete-venv
-   ```
+Source the profile:
 
-6. If a `[package]` is entered, then you will be navigated to that 
-   package within the site-package directory. If `[package]` is not specified,
-   then you will be navigated to the site-packages folder.
-   ```bash
-   -sp, --site-packages [package]:
-   ```
+source ~/.bashrc
 
-7. Display this help message.
-   ```bash
-   -h, --help
-   ```
+The venv command will now be available in your shell.
 
+## Usage
+
+The venv command provides multiple subcommands for managing virtual environments.
+
+### Create a Virtual Environment
+
+venv make -n <venv_name> -v <python_version>
+
+Example:
+
+venv make -n myenv -v 3.10
+
+Creates a virtual environment named myenv using Python 3.10 and stores it in ~/.venv/3.10/myenv/.
+
+### Activate a Virtual Environment
+
+venv activate -n <venv_name> -v <python_version>
+
+Example:
+
+venv activate -n myenv -v 3.10
+
+Activates the virtual environment named myenv created with Python 3.10.
+
+### List Available Virtual Environments
+
+venv list
+
+Lists all available virtual environments categorized by Python versions.
+
+To list virtual environments for a specific Python version:
+
+venv list -v <python_version>
+
+Example:
+
+venv list -v 3.10
+
+### Delete a Virtual Environment
+
+venv delete -n <venv_name> -v <python_version>
+
+Example:
+
+venv delete -n myenv -v 3.10
+
+Deletes the virtual environment myenv created with Python 3.10 after confirmation.
+
+### Navigate to site-packages
+
+venv site-packages
+
+Navigates to the site-packages directory of the currently activated virtual environment.
+
+To navigate to a specific package:
+
+venv site-packages --package <package_name>
+
+Example:
+
+venv site-packages --package numpy
+
+Navigates to the installed numpy package directory.
+
+### Help
+
+To display the help message:
+
+venv --help
+
+## Completion
+
+This script includes Bash tab-completion for easier command input. Press Tab to auto-complete commands and arguments.
+
+## Directory Structure
+
+Virtual environments are stored under ~/.venv/<python_version>/<venv_name>/. This ensures multiple Python versions are managed independently.
