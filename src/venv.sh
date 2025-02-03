@@ -54,7 +54,136 @@ function _venv_check_py_version_in_venv_dir() {
 }
 
 
-_venv_completion() {
+function _venv_activate() {
+    local NAME VERSION VENV_PATH
+    while [ "$#" -gt 0 ]; do
+        case $1 in
+
+            -n | --name)
+                if [[ -n $2 ]]; then
+                    NAME=$2
+                    shift 2
+                else
+                    echo "Enter a name for --name"
+                    return 1
+                fi
+                ;;
+            -v | --version)
+                if [[ -n $2 ]]; then
+                    VERSION=$2
+                    shift 2
+                else
+                    echo "Enter a version for --version"
+                    return 1
+                fi
+                ;;
+            -p | --path)
+                if [[ -n $2 ]]; then
+                    VENV_PATH=$2
+                    shift 2
+                elif [[ ! -n $2 ]]; then
+                    VENV_PATH="./.venv"
+                else
+                    echo "Enter a path for --path"
+                    return 1
+                fi
+                ;;
+            -h | --help)
+                echo "help for activate"
+                return 0
+                ;;
+            *)
+                echo "something is wrong"
+                return 1
+                ;;
+        esac
+    done
+    
+    if [[ -n $VENV_PATH  && -n $VERSION ]] || [[ -n $VENV_PATH  && -n $NAME ]]; then
+        echo bad
+        return 1
+    elif [[ -n $NAME  && ! -n $VERSION ]] || [[ -n $VERSION  && ! -n $NAME ]]; then
+        echo bad
+        return 1
+    fi
+
+    if [[ -n $NAME  && -n $VERSION && ! -n $VENV_PATH ]]; then
+        VENV_PATH="$HOME/.venv/$VERSION/$NAME"
+        if [[ -f "$VENV_PATH/bin/activate" ]]; then
+            source "$VENV_PATH/bin/activate"
+        else
+            echo ""$VENV_PATH/bin/activate" does not exist"
+        fi
+    elif [[ -n $VENV_PATH ]]; then
+        if [[ -f "$VENV_PATH/bin/activate" ]]; then
+            source "$VENV_PATH/bin/activate"
+        else
+            echo ""$VENV_PATH/bin/activate" does not exist"
+        fi
+    fi
+}
+
+
+function _venv_make() {
+    local NAME VERSION VENV_PATH PYTHON_EXEC
+    while [ "$#" -gt 0 ]; do
+        case $1 in
+
+            -n | --name)
+                if [[ -n $2 ]]; then
+                    NAME=$2
+                    shift 2
+                else
+                    echo "Enter a name for --name"
+                    return 1
+                fi
+                ;;
+            -v | --version)
+                if [[ -n $2 ]]; then
+                    VERSION=$2
+                    PYTHON_EXEC="python$VERSION"
+                    shift 2
+                else
+                    echo "Enter a version for --version"
+                    return 1
+                fi
+                ;;
+            -p | --path)
+                if [[ -n $2 ]]; then
+                    VENV_PATH=$2
+                    shift 2
+                elif [[ ! -n $2 ]]; then
+                    VENV_PATH="./.venv"
+                else
+                    echo "Enter a path for --path"
+                    return 1
+                fi
+                ;;
+            -h | --help)
+                echo "help for activate"
+                return 0
+                ;;
+            *)
+                echo "something is wrong"
+                return 1
+                ;;
+        esac
+    done
+
+    if [[ -n $NAME  && -n $VERSION && ! -n $VENV_PATH ]]; then
+        VENV_PATH="$HOME/.venv/$VERSION/$NAME"
+        $PYTHON_EXEC -m venv $VENV_PATH
+
+    elif [[ -n $NAME  && -n $VERSION && -n $VENV_PATH ]]; then
+        VENV_PATH="$VENV_PATH/$NAME"
+        $PYTHON_EXEC -m venv $VENV_PATH
+    else 
+        echo "invalid usage"
+    fi
+}
+
+
+function _venv_completion() {
     local VENV_VERSIONS=$(ls ~/.venv)
     local WORDS=("${COMP_WORDS[@]}")
     local COMMANDS="make activate site-packages list delete help"
@@ -90,67 +219,31 @@ function venv() {
     fi
     
     COMMAND=$1
+    shift 1
     
-    if [[ -n $2 ]]; then
-        if \
-            _venv_check_system_availablity_of_py_version $2 &> /dev/null && \
-            _venv_check_py_version_in_venv_dir &> /dev/null $2
-        then
-            PYTHON_VERSION=$2
-            PYTHON_EXEC="python$PYTHON_VERSION"
-            VENV_DIR="$HOME/.venv/$PYTHON_VERSION"
-            shift 2
-        else
-            shift 1
-        fi
-    else
-        shift 1
-    fi
+    # if [[ -n $2 ]]; then
+    #     if \
+    #         _venv_check_system_availablity_of_py_version $2 &> /dev/null && \
+    #         _venv_check_py_version_in_venv_dir &> /dev/null $2
+    #     then
+    #         PYTHON_VERSION=$2
+    #         PYTHON_EXEC="python$PYTHON_VERSION"
+    #         VENV_DIR="$HOME/.venv/$PYTHON_VERSION"
+    #         shift 1
+    #     else
+    #         shift 1
+    #     fi
+    # else
+    #     shift 1
+    # fi
     
     case $COMMAND in
         m | make)
-            if [[ -n $PYTHON_VERSION && $# -ge 3 ]]; then
-                echo "Usage: venv make $PYTHON_VERSION <name> [path]"
-                return 1
-            fi
-            if [[ -n $PYTHON_VERSION && $# == 1 ]]; then
-                $PYTHON_EXEC -m venv "$VENV_DIR/$1"
-                echo "Virtual environment '$1' successfully created in $VENV_DIR/$1"
-            elif [[ -n $PYTHON_VERSION && $# == 2 ]]; then
-                if [[ $2 == "/" ]]; then
-                    echo "Cannot create an venv in /"
-                    return 1
-                fi
-                local SAVE_TO=$(_venv_remove_trailing_dir_sep $2)
-                if [[ -d $SAVE_TO ]]; then
-                    $PYTHON_EXEC -m venv "$SAVE_TO/$1"
-                    echo "Virtual environment '$1' successfully created in $SAVE_TO/$1"
-                else
-                    echo "$2 is not a dir"
-                fi
-            fi
+            _venv_make $@
             ;;
 
         a | activate)
-            if [[ ! -n $PYTHON_VERSION ]]; then
-                if [[ -f ".venv/bin/activate" && $# == 0 ]]; then
-                    source ".venv/bin/activate"
-                elif [[ -f $1/bin/activate && $# == 1 ]]; then
-                    source "$1/bin/activate"
-                else
-                    echo "Error: activate file not found. Specify a venv directly."
-                    return 1
-                fi
-            elif [[ -n $PYTHON_VERSION && -d "$VENV_DIR/$1" ]]; then
-                if [[ -f "$VENV_DIR/$1/bin/activate" ]]; then
-                    source "$VENV_DIR/$1/bin/activate"
-                else
-                    echo ""$VENV_DIR/$1/bin/activate" does not exist"
-                fi
-            else
-                echo "Error: Virtual environment '$1' does not exist in $VENV_DIR"
-                return 1
-            fi
+            _venv_activate $@
             ;;
 
         list)
