@@ -326,7 +326,7 @@ function _venv_completion() {
     words=("${COMP_WORDS[@]}")
 
     # Available commands
-    local commands="make activate list delete site-packages help"
+    local commands="make activate list delete site-packages"
 
     # List available Python versions dynamically
     local version_options=$(ls -1 "$HOME/.venv" 2>/dev/null)
