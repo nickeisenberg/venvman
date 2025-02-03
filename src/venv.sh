@@ -90,28 +90,33 @@ function venv() {
     fi
     
     COMMAND=$1
-    PYTHON_VERSION=$2
     
-    if [[ -n $PYTHON_VERSION ]]; then
-        _venv_check_system_availablity_of_py_version $PYTHON_VERSION
-        _venv_check_py_version_in_venv_dir $PYTHON_VERSION
-        PYTHON_EXEC="python$PYTHON_VERSION"
-        VENV_DIR="$HOME/.venv/$PYTHON_VERSION"
-        shift 2
+    if [[ -n $2 ]]; then
+        if \
+            _venv_check_system_availablity_of_py_version $2 &> /dev/null && \
+            _venv_check_py_version_in_venv_dir &> /dev/null $2
+        then
+            PYTHON_VERSION=$2
+            PYTHON_EXEC="python$PYTHON_VERSION"
+            VENV_DIR="$HOME/.venv/$PYTHON_VERSION"
+            shift 2
+        else
+            shift 1
+        fi
     else
         shift 1
     fi
     
     case $COMMAND in
         m | make)
-            if [[ $# -ge 3 ]]; then
-                echo "Usage: venv m $PYTHON_VERSION [path]"
+            if [[ -n $PYTHON_VERSION && $# -ge 3 ]]; then
+                echo "Usage: venv make $PYTHON_VERSION <name> [path]"
                 return 1
             fi
-            if [[ $# == 1 ]]; then
+            if [[ -n $PYTHON_VERSION && $# == 1 ]]; then
                 $PYTHON_EXEC -m venv "$VENV_DIR/$1"
                 echo "Virtual environment '$1' successfully created in $VENV_DIR/$1"
-            elif [[ $# == 2 ]]; then
+            elif [[ -n $PYTHON_VERSION && $# == 2 ]]; then
                 if [[ $2 == "/" ]]; then
                     echo "Cannot create an venv in /"
                     return 1
@@ -127,14 +132,16 @@ function venv() {
             ;;
 
         a | activate)
-            if [[ $# -eq 0 ]]; then
-                if [[ -f ".venv/bin/activate" ]]; then
+            if [[ ! -n $PYTHON_VERSION ]]; then
+                if [[ -f ".venv/bin/activate" && $# == 0 ]]; then
                     source ".venv/bin/activate"
+                elif [[ -f $1/bin/activate && $# == 1 ]]; then
+                    source "$1/bin/activate"
                 else
-                    echo "Error: .venv/bin/activate not found. Specify a venv directly."
+                    echo "Error: activate file not found. Specify a venv directly."
                     return 1
                 fi
-            elif [[ -d "$VENV_DIR/$1" ]]; then
+            elif [[ -n $PYTHON_VERSION && -d "$VENV_DIR/$1" ]]; then
                 if [[ -f "$VENV_DIR/$1/bin/activate" ]]; then
                     source "$VENV_DIR/$1/bin/activate"
                 else
