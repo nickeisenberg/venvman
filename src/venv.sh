@@ -91,13 +91,15 @@ function venv() {
     
     COMMAND=$1
     PYTHON_VERSION=$2
-    shift 2
     
-    if [[ $PYTHON_VERSION ]]; then
+    if [[ -n $PYTHON_VERSION ]]; then
         _venv_check_system_availablity_of_py_version $PYTHON_VERSION
         _venv_check_py_version_in_venv_dir $PYTHON_VERSION
         PYTHON_EXEC="python$PYTHON_VERSION"
         VENV_DIR="$HOME/.venv/$PYTHON_VERSION"
+        shift 2
+    else
+        shift 1
     fi
     
     case $COMMAND in
@@ -125,7 +127,7 @@ function venv() {
             ;;
 
         a | activate)
-            if [[ $# -eq 1 ]]; then
+            if [[ $# -eq 0 ]]; then
                 if [[ -f ".venv/bin/activate" ]]; then
                     source ".venv/bin/activate"
                 else
