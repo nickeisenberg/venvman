@@ -145,8 +145,25 @@ function venv() {
             ;;
 
         list)
-            echo "Available virtual environments for Python $PYTHON_VERSION:"
-            ls "$VENV_DIR"
+            if [[ -n $PYTHON_VERSION ]]; then
+                echo "Available virtual environments for Python $PYTHON_VERSION:"
+                ls "$VENV_DIR"
+
+            else
+                versions=($(ls "$HOME/.venv"))  # Store all versions in an array
+                num_versions=${#versions[@]}    # Get the total number of versions
+            
+                for ((i = 0; i < num_versions; i++)); do
+                    version=${versions[i]}
+                    echo "Available virtual environments for Python $version:"
+                    ls "$HOME/.venv/$version"
+                    
+                    # Print echo unless it's the last item
+                    if [[ $i -lt $((num_versions - 1)) ]]; then
+                        echo
+                    fi
+                done
+            fi
             ;;
 
         d | delete)
