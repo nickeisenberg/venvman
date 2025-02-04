@@ -480,7 +480,7 @@ function _venv_completion() {
 
 
 function venv() {
-    local COMMAND PYTHON_VERSION PYTHON_EXEC VENV_DIR SITE_PACKAGES_DIR
+    local COMMAND
 
     if [[ $# -lt 1 ]]; then
         echo "Usage: venv <command> <python_version> [argument]"
@@ -488,7 +488,7 @@ function venv() {
         return 1
     fi
     
-    COMMAND=$1
+    local COMMAND=$1
     shift 1
     
     case $COMMAND in
