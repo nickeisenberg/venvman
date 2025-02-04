@@ -5,7 +5,7 @@ the creation, activation, listing, and deletion of Python virtual environments.
 
 ## Table of Contents
 - [Introduction](#introduction)
-- [Installation](#installation)
+- [Installation and Setup](#installation\wand\wsetup)
 - [Usage](#usage)
 
 ## Introduction
@@ -20,13 +20,21 @@ also simple enough to copy and paste into any online LLM so that the LLM can
 guide you through any modifications that you seem fit.
 
 
-## Installation
-
+## Installation and Setup
+To install `venvman`, simply
 ```bash
-git clone 
-cd
-mkdir $HOME/.venvman
+git clone https://github.com/nickeisenberg/venvman.git
+source venvman/src/venv.sh
 ```
+or to make this persistent, add the following to your `bashrc` or `bash_profile`
+```bash
+source <path_to_venvman>/src/venv.sh
+```
+
+`venvman` will save all `pythonX.XX` virtual enviornments to
+`$HOME/.venvman/X.XX`. For example, `venvman make --version 3.11 --name base`
+will save this enviornment to `$HOME/.venvman/3.11/base`. 
+
 
 Copy the script into your Bash profile (~/.bashrc or ~/.bash_profile).
 

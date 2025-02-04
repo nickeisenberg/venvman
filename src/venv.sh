@@ -56,6 +56,7 @@ function _venvman_activate() {
     if [[ -n $VENV_PATH  && -n $VERSION ]] || [[ -n $VENV_PATH  && -n $NAME ]]; then
         echo "--path should not be used with --version and --name and vice versa."
         return 1
+
     elif [[ -n $NAME  && ! -n $VERSION ]] || [[ -n $VERSION  && ! -n $NAME ]]; then
         echo "--path should not be used with --version and --name and vice versa."
         return 1
@@ -68,6 +69,7 @@ function _venvman_activate() {
         else
             echo ""$VENV_PATH/bin/activate" does not exist"
         fi
+
     elif [[ -n $VENV_PATH ]]; then
         if [[ -f "$VENV_PATH/bin/activate" ]]; then
             source "$VENV_PATH/bin/activate"
@@ -141,11 +143,22 @@ function _venvman_make() {
 
     if [[ -n $NAME  && -n $VERSION && ! -n $VENV_PATH ]]; then
         local VENV_PATH="$HOME/.venvman/$VERSION/$NAME"
+        if [[ ! -d $VENV_PATH ]]; then
+            echo "$HOME/.venvman/$VERSION does not exit. Creating now."
+            mkdir -p $VENV_PATH
+            if [[ -d $VENV_PATH ]]; then
+                echo "SUCCESS: $HOME/.venvman/$VERSION has been created."
+            else
+                echo "FAIL: $HOME/.venvman/$VERSION has not been created."
+                return 1
+            fi
+        fi
         $PYTHON_EXEC -m venv $VENV_PATH
 
     elif [[ -n $NAME  && -n $VERSION && -n $VENV_PATH ]]; then
         local VENV_PATH="$VENV_PATH/$NAME"
         $PYTHON_EXEC -m venv $VENV_PATH
+
     else 
         echo "invalid usage"
     fi
