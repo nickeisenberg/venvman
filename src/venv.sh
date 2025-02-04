@@ -1,66 +1,10 @@
-function _venv_remove_trailing_dir_sep() {
-    local LEN LEN_MINUS_ONE LAST_CHAR
-    LEN=${#1}
-    LEN_MINUS_ONE=$((LEN - 1))
-    LAST_CHAR=${1:LEN_MINUS_ONE:LEN}
-    if [[ $LAST_CHAR == "/"  ]]; then
-        _venv_remove_trailing_dir_sep ${1:0:LEN_MINUS_ONE}
-    else
-        echo $1
-    fi
-}
-
-
-function _venv_check_system_availablity_of_py_version() {
-    local COMMAND VERSION
-    if [[ $# -ne 1 ]]; then
-        echo "Enter a python version"
-        return 1
-    fi
-    VERSION=$1
-    COMMAND=python$1
-    if ! command -v $COMMAND &> /dev/null; then
-        echo "Python version not available on system"
-        return 1
-    fi
-}
-
-
-function _venv_get_py_versions_in_venv_dir() {
-    if [[ -d $HOME/.venv ]]; then
-        x=$(ls $HOME/.venv)
-        for VAR in $x 
-        do
-            echo "$VAR"
-        done
-    else
-        echo "$HOME/.venv does not exist. Create it."
-        return 1
-    fi
-}
-
-
-function _venv_check_py_version_in_venv_dir() {
-    local FOUND="false"
-    for VAR in $(_venv_get_py_versions_in_venv_dir); do
-        if [[ $VAR == "$1" ]]; then
-            FOUND="true"
-        fi
-    done
-    if [[ $FOUND == "false" ]]; then
-        echo "python version not found in $HOME/.venv"
-        return 1
-    fi
-}
-
-
 function _venv_activate() {
     local NAME VERSION VENV_PATH
     while [ "$#" -gt 0 ]; do
         case $1 in
             -n | --name)
                 if [[ -n $2 ]]; then
-                    NAME=$2
+                    local NAME=$2
                     shift 2
                 else
                     echo "Enter a name for --name"
@@ -69,7 +13,7 @@ function _venv_activate() {
                 ;;
             -v | --version)
                 if [[ -n $2 ]]; then
-                    VERSION=$2
+                    local VERSION=$2
                     shift 2
                 else
                     echo "Enter a version for --version"
@@ -78,10 +22,10 @@ function _venv_activate() {
                 ;;
             -p | --path)
                 if [[ -n $2 ]]; then
-                    VENV_PATH=$2
+                    local VENV_PATH=$2
                     shift 2
                 elif [[ ! -n $2 ]]; then
-                    VENV_PATH="./.venv"
+                    local VENV_PATH="./.venv"
                 else
                     echo "Enter a path for --path"
                     return 1
@@ -89,7 +33,7 @@ function _venv_activate() {
                 ;;
             -h | --help)
                 echo "Usage:"
-                echo "  venv a [options]"
+                echo "  venv activate [options]"
                 echo
                 echo "Options:"
                 echo "  -n, --name <venv_name>        : Specify the name of the virtual environment to activate."
@@ -98,8 +42,8 @@ function _venv_activate() {
                 echo "  -h, --help                    : Display this help message."
                 echo
                 echo "Examples:"
-                echo "  venv a -n myenv -v 3.10        : Activate 'myenv' created with Python 3.10"
-                echo "  venv a -p /custom/path/to/venv: Activate virtual environment at a custom path."
+                echo "  venv activate -n myenv -v 3.10        : Activate 'myenv' created with Python 3.10"
+                echo "  venv activate -p /custom/path/to/venv: Activate virtual environment at a custom path."
                 return 0
                 ;;
             *)
@@ -110,15 +54,15 @@ function _venv_activate() {
     done
     
     if [[ -n $VENV_PATH  && -n $VERSION ]] || [[ -n $VENV_PATH  && -n $NAME ]]; then
-        echo bad
+        echo "--path should not be used with --version and --name and vice versa."
         return 1
     elif [[ -n $NAME  && ! -n $VERSION ]] || [[ -n $VERSION  && ! -n $NAME ]]; then
-        echo bad
+        echo "--path should not be used with --version and --name and vice versa."
         return 1
     fi
 
     if [[ -n $NAME  && -n $VERSION && ! -n $VENV_PATH ]]; then
-        VENV_PATH="$HOME/.venv/$VERSION/$NAME"
+        local VENV_PATH="$HOME/.venv/$VERSION/$NAME"
         if [[ -f "$VENV_PATH/bin/activate" ]]; then
             source "$VENV_PATH/bin/activate"
         else
@@ -140,7 +84,7 @@ function _venv_make() {
         case $1 in
             -n | --name)
                 if [[ -n $2 ]]; then
-                    NAME=$2
+                    local NAME=$2
                     shift 2
                 else
                     echo "Enter a name for --name"
@@ -149,8 +93,8 @@ function _venv_make() {
                 ;;
             -v | --version)
                 if [[ -n $2 ]]; then
-                    VERSION=$2
-                    PYTHON_EXEC="python$VERSION"
+                    local VERSION=$2
+                    local PYTHON_EXEC="python$VERSION"
                     shift 2
                 else
                     echo "Enter a version for --version"
@@ -159,10 +103,10 @@ function _venv_make() {
                 ;;
             -p | --path)
                 if [[ -n $2 ]]; then
-                    VENV_PATH=$2
+                    local VENV_PATH=$2
                     shift 2
                 elif [[ ! -n $2 ]]; then
-                    VENV_PATH="./.venv"
+                    local VENV_PATH="./.venv"
                 else
                     echo "Enter a path for --path"
                     return 1
@@ -170,7 +114,7 @@ function _venv_make() {
                 ;;
             -h | --help)
                 echo "Usage:"
-                echo "  venv m [options]"
+                echo "  venv make [options]"
                 echo
                 echo "Options:"
                 echo "  -n, --name <venv_name>        : Specify the name of the virtual environment to create."
@@ -179,8 +123,8 @@ function _venv_make() {
                 echo "  -h, --help                    : Display this help message."
                 echo
                 echo "Examples:"
-                echo "  venv m -n project_env -v 3.10 : Create a virtual environment named 'project_env' using Python 3.10."
-                echo "  venv m -n myenv -v 3.9 -p /custom/path : Create 'myenv' using Python 3.9 at '/custom/path'."
+                echo "  venv make -n project_env -v 3.10 : Create a virtual environment named 'project_env' using Python 3.10."
+                echo "  venv make -n myenv -v 3.9 -p /custom/path : Create 'myenv' using Python 3.9 at '/custom/path'."
                 return 0
                 ;;
             *)
@@ -190,12 +134,17 @@ function _venv_make() {
         esac
     done
 
+    if ! command -v $PYTHON_EXEC &> /dev/null; then
+        echo "Python version $VERSION not available on this system."
+        return 1
+    fi
+
     if [[ -n $NAME  && -n $VERSION && ! -n $VENV_PATH ]]; then
-        VENV_PATH="$HOME/.venv/$VERSION/$NAME"
+        local VENV_PATH="$HOME/.venv/$VERSION/$NAME"
         $PYTHON_EXEC -m venv $VENV_PATH
 
     elif [[ -n $NAME  && -n $VERSION && -n $VENV_PATH ]]; then
-        VENV_PATH="$VENV_PATH/$NAME"
+        local VENV_PATH="$VENV_PATH/$NAME"
         $PYTHON_EXEC -m venv $VENV_PATH
     else 
         echo "invalid usage"
@@ -266,7 +215,7 @@ function _venv_delete() {
         case $1 in
             -n | --name)
                 if [[ -n $2 ]]; then
-                    NAME=$2
+                    local NAME=$2
                     shift 2
                 else
                     echo "Enter a name for --name"
@@ -275,7 +224,7 @@ function _venv_delete() {
                 ;;
             -v | --version)
                 if [[ -n $2 ]]; then
-                    VERSION=$2
+                    local VERSION=$2
                     shift 2
                 else
                     echo "Enter a version for --version"
