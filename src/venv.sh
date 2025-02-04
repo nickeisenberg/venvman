@@ -513,17 +513,16 @@ function venv() {
             ;;
 
         -h| --help)
-            echo "Usage:"
-            echo "  venv <command> <python_version> [argument]"
-            echo
             echo "Commands:"
-            echo "  m <python_version> [PATH]            : Create a new virtual environment. Will create to PATH is specified"
-            echo "  del <python_version> <venv_name>     : Delete the specified virtual environment."
-            echo "  a <python_version> <venv_name>       : Activate the specified virtual environment."
-            echo "  da                                   : Deactivate the currently active virtual environment."
-            echo "  ls <python_version>                  : List all available virtual environments."
-            echo "  sp <python_version> [PACKAGE]        : Navigate to the site-packages directory."
-            echo "  -h, --help                           : Display this help message."
+            echo "  m , make             : Create a new virtual environment. Will create to PATH is specified."
+            echo "  d , delete           : Delete the specified virtual environment."
+            echo "  a , activate         : Activate the specified virtual environment."
+            echo "  list                 : List all available virtual environments."
+            echo "  sp , site-packages   : Navigate to the site-packages directory."
+            echo "  -h , --help          : Display this help message."
+            echo
+            echo "Usage:"
+            echo "  See \`venv <command> --help\` for usage of each command."
             ;;
 
         *)
