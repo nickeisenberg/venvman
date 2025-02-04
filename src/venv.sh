@@ -318,9 +318,9 @@ function _venv_site_packages() {
 
 function _venv_completion() {
     local cur prev words
-    cur="${COMP_WORDS[COMP_CWORD]}"
-    prev="${COMP_WORDS[COMP_CWORD-1]}"
-    words=("${COMP_WORDS[@]}")
+    local cur="${COMP_WORDS[COMP_CWORD]}"
+    local prev="${COMP_WORDS[COMP_CWORD-1]}"
+    local words=("${COMP_WORDS[@]}")
 
     # Available commands
     local commands="make activate list delete site-packages"
@@ -338,18 +338,18 @@ function _venv_completion() {
     for ((i = 1; i < COMP_CWORD; i++)); do
         case "${COMP_WORDS[i]}" in
             --version)
-                has_version=true
+                local has_version=true
                 if [[ -n "${COMP_WORDS[i+1]}" && ! "${COMP_WORDS[i+1]}" =~ ^-- ]]; then
-                    version_provided="${COMP_WORDS[i+1]}"
+                    local version_provided="${COMP_WORDS[i+1]}"
                 fi
                 ;;
             --name)
-                has_name=true
+                local has_name=true
                 if [[ -n "${COMP_WORDS[i+1]}" && ! "${COMP_WORDS[i+1]}" =~ ^-- ]]; then
-                    name_provided="${COMP_WORDS[i+1]}"
+                    local name_provided="${COMP_WORDS[i+1]}"
                 fi
                 ;;
-            --path) has_path=true ;;
+            --path) local has_path=true ;;
         esac
     done
 
