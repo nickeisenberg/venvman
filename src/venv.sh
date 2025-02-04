@@ -169,15 +169,15 @@ function _venv_list() {
                 ;;
             -h | --help)
                 echo "Usage:"
-                echo "  venv ls [options]"
+                echo "  venv list [options]"
                 echo
                 echo "Options:"
                 echo "  -v, --version <python_version>     : List virtual environments for a specific Python version."
                 echo "  -h, --help                         : Display this help message."
                 echo
                 echo "Examples:"
-                echo "  venv ls                            : List all available virtual environments grouped by Python version."
-                echo "  venv ls -v 3.10                    : List virtual environments created with Python 3.10."
+                echo "  venv list                            : List all available virtual environments grouped by Python version."
+                echo "  venv list -v 3.10                    : List virtual environments created with Python 3.10."
                 return 0
                 ;;
             *)
