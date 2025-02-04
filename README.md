@@ -1,5 +1,5 @@
 `venvman` is a minimal virtual environment manager that supports the creating,
-activation, and deletion of python virtual enviornments as well as
+activation, and deletion of `python` virtual enviornments as well as
 command-line tab-autocompletion. It and is written entirely `bash` and requires
 no installation of third-party software, other than `pythonX.XX` and
 `pythonX.XX-venv`. Because its simplicity, `venvman` is easily highly hackable.
