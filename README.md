@@ -1,39 +1,21 @@
-# VENV Manager
+`venvman` is a minimal virtual environment manager that supports the creating,
+activation, and deletion of python virtual enviornments as well as
+command-line tab-autocompletion. It and is written entirely `bash` and requires
+no installation of third-party software, other than `pythonX.XX` and
+`pythonX.XX-venv`. Because its simplicity, `venvman` is easily highly hackable.
 
-A simple Virtual Environment manager written in pure Bash to simplify
-the creation, activation, listing, and deletion of Python virtual environments.
 
 ## Table of Contents
 - [Introduction](#introduction)
 - [Installation](#installation)
+- [Setup](#setup)
 - [Usage](#usage)
+  - [Make a Virtual Environment](#make-a-virtual-environment)
+  - [Activate a Virtual Environment](#activate-a-virtual-environment)
+  - [List Available Virtual Enviornments](#list-available-virtual-environments)
+  - [Delete a Virtual Environment](#delete-a-virtual-environment)
+  - [Navigate to site-packages](#navigate-to-site-packages)
 
-
-## Introduction 
-I am often working in `bash` shells where installing software is a pain. I
-needed a quick way to manage some python vitural enviornments in a way that
-required no installation of external tools like `conda`, `virtualenv`,
-`pyenv-virtualenv`, etc. Plus `conda` sucks anyway and is bloated, unnecessary,
-and slow. For that reason I wrote `venvman`. It is written entirely in `bash`
-and requires no installation of third-party software, other than `pythonX.XX`
-and `pythonX.XX-venv` of course. Because of the simplicity of `venvman`, it is
-highly hackable into a version that satisfes the opinions of the user. It is
-also simple enough to copy and paste into any online LLM so that the LLM can
-guide you through any modifications that you seem fit.
-
-
-## Features
-* Create virtual environments for specific Python versions.
-
-* Activate virtual environments by name and version.
-
-* List all available virtual environments.
-
-* Delete virtual environments safely.
-
-* Navigate to the site-packages directory of installed packages.
-
-* Tab-completion for commands and arguments.
 
 
 
