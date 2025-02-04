@@ -1,88 +1,6 @@
 VENVMAN_SAVE_DIR=$HOME/.venvman
 
 
-function _venvman_activate() {
-    local NAME VERSION VENV_PATH
-    while [ "$#" -gt 0 ]; do
-        case $1 in
-            -n | --name)
-                if [[ -n $2 ]]; then
-                    local NAME=$2
-                    shift 2
-                else
-                    echo "Enter a name for --name"
-                    return 1
-                fi
-                ;;
-            -v | --version)
-                if [[ -n $2 ]]; then
-                    local VERSION=$2
-                    shift 2
-                else
-                    echo "Enter a version for --version"
-                    return 1
-                fi
-                ;;
-            -p | --path)
-                if [[ -n $2 ]]; then
-                    local VENV_PATH=$2
-                    shift 2
-                elif [[ ! -n $2 ]]; then
-                    local VENV_PATH="./.venvman"
-                else
-                    echo "Enter a path for --path"
-                    return 1
-                fi
-                ;;
-            -h | --help)
-                echo "Usage:"
-                echo "  venvman activate [options]"
-                echo
-                echo "Options:"
-                echo "  -n, --name <venv_name>                   : Specify the name of the virtual environment to activate."
-                echo "  -v, --version <python_version>           : Specify the Python version of the virtual environment."
-                echo "  -p, --path <venv_path>                   : Manually specify the path of the virtual environment."
-                echo "  -h, --help                               : Display this help message."
-                echo
-                echo "Examples:"
-                echo "  venvman activate -n myenv -v 3.10           : Activate 'myenv' created with Python 3.10"
-                echo "  venvman activate -p /custom/path/to/venv    : Activate virtual environment at a custom path."
-                return 0
-                ;;
-            *)
-                echo "something is wrong"
-                return 1
-                ;;
-        esac
-    done
-    
-    if [[ -n $VENV_PATH  && -n $VERSION ]] || [[ -n $VENV_PATH  && -n $NAME ]]; then
-        echo "--path should not be used with --version and --name and vice versa."
-        return 1
-
-    elif [[ -n $NAME  && ! -n $VERSION ]] || [[ -n $VERSION  && ! -n $NAME ]]; then
-        echo "--path should not be used with --version and --name and vice versa."
-        return 1
-    fi
-
-    if [[ -n $NAME  && -n $VERSION && ! -n $VENV_PATH ]]; then
-        local VENV_PATH="$VENVMAN_SAVE_DIR/$VERSION/$NAME"
-        if [[ -f "$VENV_PATH/bin/activate" ]]; then
-            source "$VENV_PATH/bin/activate"
-        else
-            echo ""$VENV_PATH/bin/activate" does not exist"
-        fi
-
-    elif [[ -n $VENV_PATH ]]; then
-        if [[ -f "$VENV_PATH/bin/activate" ]]; then
-            source "$VENV_PATH/bin/activate"
-        else
-            echo ""$VENV_PATH/bin/activate" does not exist"
-        fi
-    fi
-}
-
-
 function _venvman_make() {
     local NAME VERSION VENV_PATH PYTHON_EXEC
     while [ "$#" -gt 0 ]; do
@@ -161,6 +79,172 @@ function _venvman_make() {
     elif [[ -n $NAME  && -n $VERSION && -n $VENV_PATH ]]; then
         local VENV_PATH="$VENV_PATH/$NAME"
         $PYTHON_EXEC -m venv $VENV_PATH
+
+    else 
+        echo "invalid usage"
+    fi
+}
+
+
+function _venvman_activate() {
+    local NAME VERSION VENV_PATH
+    while [ "$#" -gt 0 ]; do
+        case $1 in
+            -n | --name)
+                if [[ -n $2 ]]; then
+                    local NAME=$2
+                    shift 2
+                else
+                    echo "ACTIVATION ERROR: Enter a name for --name"
+                    return 1
+                fi
+                ;;
+            -v | --version)
+                if [[ -n $2 ]]; then
+                    local VERSION=$2
+                    shift 2
+                else
+                    echo "Enter a version for --version"
+                    return 1
+                fi
+                ;;
+            -p | --path)
+                if [[ -n $2 ]]; then
+                    local VENV_PATH=$2
+                    shift 2
+                elif [[ ! -n $2 ]]; then
+                    local VENV_PATH="./.venvman"
+                else
+                    echo "Enter a path for --path"
+                    return 1
+                fi
+                ;;
+            -h | --help)
+                echo "Usage:"
+                echo "  venvman activate [options]"
+                echo
+                echo "Options:"
+                echo "  -n, --name <venv_name>                   : Specify the name of the virtual environment to activate."
+                echo "  -v, --version <python_version>           : Specify the Python version of the virtual environment."
+                echo "  -p, --path <venv_path>                   : Manually specify the path of the virtual environment."
+                echo "  -h, --help                               : Display this help message."
+                echo
+                echo "Examples:"
+                echo "  venvman activate -n myenv -v 3.10           : Activate 'myenv' created with Python 3.10"
+                echo "  venvman activate -p /custom/path/to/venv    : Activate virtual environment at a custom path."
+                return 0
+                ;;
+            *)
+                echo "something is wrong"
+                return 1
+                ;;
+        esac
+    done
+    
+    if [[ -n $VENV_PATH  && -n $VERSION ]] || [[ -n $VENV_PATH  && -n $NAME ]]; then
+        echo "--path should not be used with --version and --name and vice versa."
+        return 1
+
+    elif [[ -n $NAME  && ! -n $VERSION ]] || [[ -n $VERSION  && ! -n $NAME ]]; then
+        echo "--path should not be used with --version and --name and vice versa."
+        return 1
+    fi
+
+    if [[ -n $NAME  && -n $VERSION && ! -n $VENV_PATH ]]; then
+        local VENV_PATH="$VENVMAN_SAVE_DIR/$VERSION/$NAME"
+        local PATH_TO_ACTIVATE=$(find $VENV_PATH -type f -name "activate")
+        if [[ -n $PATH_TO_ACTIVATE ]]; then
+            source $PATH_TO_ACTIVATE
+        else
+            echo "activate script cannot be found"
+        fi
+
+    elif [[ -n $VENV_PATH && ! -n $NAME  && ! -n $VERSION  ]]; then
+        local PATH_TO_ACTIVATE=$(find $VENV_PATH -type f -name "activate")
+        if [[ -n $PATH_TO_ACTIVATE ]]; then
+            source $PATH_TO_ACTIVATE
+        else
+            echo "activate script cannot be found does"
+        fi
+    fi
+}
+
+
+function _venvman_clone() {
+    local PARENT VERSION VENV_PATH PYTHON_EXEC
+    while [ "$#" -gt 0 ]; do
+        case $1 in
+            -p | --parent)
+                if [[ -n $2 ]]; then
+                    local PARENT=$2
+                    shift 2
+                else
+                    echo "Enter a name for the parent venv with --parent"
+                    return 1
+                fi
+                ;;
+            -v | --version)
+                if [[ -n $2 ]]; then
+                    local VERSION=$2
+                    local PYTHON_EXEC="python$VERSION"
+                    shift 2
+                else
+                    echo "Enter a version for --version"
+                    return 1
+                fi
+                ;;
+            -to | --clone-to)
+                if [[ -n $2 ]]; then
+                    local CLONE_TO=$2
+                    shift 2
+                else
+                    echo "Enter a version for --clone-to"
+                    return 1
+                fi
+                ;;
+            -h | --help)
+                echo "Usage:"
+                echo "  venvman clone [options]"
+                echo
+                echo "Options:"
+                echo "  -p, --parent <venv_name>               : Specify the name of the parent virtual environment that will be cloned."
+                echo "  -v, --version <python_version>         : Specify the Python version to use for the virtual environment."
+                echo "  -to, --clone-to <venv_path>            : Specify the name of the name of the new enviornment"
+                echo "  -h, --help                             : Display this help message."
+                echo
+                echo "Examples:"
+                echo "venvman clone --parent myenv --version 3.10 --clone-to myenv_test   : Will clone myenv to myenv_test"
+                return 0
+                ;;
+            *)
+                echo "something is wrong"
+                return 1
+                ;;
+        esac
+    done
+
+    if ! command -v $PYTHON_EXEC &> /dev/null; then
+        echo "Python version $VERSION not available on this system."
+        return 1
+    fi
+
+    if [[ $PARENT == $CLONE_TO ]]; then
+        echo "The name of the child repo must have a different name than its parent"
+        return 1
+    fi
+
+    if [[ -n $PARENT && -n $VERSION && -n $CLONE_TO ]]; then
+
+        _venvman_activate --version $VERSION --name $PARENT
+        local PARENT_SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
+        deactivate
+
+        _venvman_make --version $VERSION --name $CLONE_TO
+        _venvman_activate --version $VERSION --name $CLONE_TO
+        local CLONE_SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
+        deactivate
+
+        cp -r $PARENT_SITE_PACKAGES_DIR/* $CLONE_SITE_PACKAGES_DIR/
 
     else 
         echo "invalid usage"
@@ -339,7 +423,7 @@ function _venvman_completion() {
     local words=("${COMP_WORDS[@]}")
 
     # Available commands
-    local commands="make activate list delete site-packages"
+    local commands="make clone activate list delete site-packages"
 
     # List available Python versions dynamically
     local version_options=$(ls -1 "$VENVMAN_SAVE_DIR" 2>/dev/null)
@@ -348,8 +432,11 @@ function _venvman_completion() {
     local has_version=false
     local has_name=false
     local has_path=false
+    local has_parent=false
+    local has_clone_to=false
     local version_provided=""
     local name_provided=""
+    local parent_provided=""
 
     for ((i = 1; i < COMP_CWORD; i++)); do
         case "${COMP_WORDS[i]}" in
@@ -365,7 +452,18 @@ function _venvman_completion() {
                     local name_provided="${COMP_WORDS[i+1]}"
                 fi
                 ;;
-            --path) local has_path=true ;;
+            --parent)
+                local has_parent=true
+                if [[ -n "${COMP_WORDS[i+1]}" && ! "${COMP_WORDS[i+1]}" =~ ^-- ]]; then
+                    local name_parent="${COMP_WORDS[i+1]}"
+                fi
+                ;;
+            --clone-to)
+                local has_clone_to=true 
+                ;;
+            --path) 
+                local has_path=true 
+                ;;
         esac
     done
 
@@ -398,6 +496,36 @@ function _venvman_completion() {
                 return 0
             elif [[ "$prev" == "--path" ]]; then
                 COMPREPLY=($(compgen -o filenames -o nospace -A directory -- "$cur"))
+                return 0
+            fi
+            ;;
+
+        clone)
+            # Only allow `--version` first
+            if [[ "$prev" == "clone" && "$has_version" == false ]]; then
+                COMPREPLY=($(compgen -W "--version" -- "$cur"))
+                return 0
+
+            elif [[ "$prev" == "--version" ]]; then
+                COMPREPLY=($(compgen -W "$version_options" -- "$cur"))
+                return 0
+
+            elif [[ "$has_version" == true && "$has_parent" == false && "$prev" != "--parent" ]]; then
+                COMPREPLY=($(compgen -W "--parent" -- "$cur"))
+                return 0
+
+            elif [[ "$prev" == "--parent" ]]; then
+                if [[ -n "$version_provided" ]]; then
+                    local venv_dir="$VENVMAN_SAVE_DIR/$version_provided"
+                    if [[ -d "$venv_dir" ]]; then
+                        local name_options=$(ls -1 "$venv_dir" 2>/dev/null)
+                        COMPREPLY=($(compgen -W "$name_options" -- "$cur"))
+                        return 0
+                    fi
+                fi
+
+            elif [[ "$has_version" == true && "$has_parent" == true && $has_clone_to == false && "$prev" != "--clone-to" ]]; then
+                COMPREPLY=($(compgen -W "--clone-to" -- "$cur"))
                 return 0
             fi
             ;;
@@ -448,6 +576,7 @@ function _venvman_completion() {
                 return 0
             fi
             ;;
+
 
         delete)
             if [[ "$prev" == "delete" ]]; then
@@ -514,6 +643,10 @@ function venvman() {
 
         a | activate)
             _venvman_activate $@
+            ;;
+
+        c | clone)
+            _venvman_clone $@
             ;;
 
         list)
