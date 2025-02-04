@@ -47,6 +47,7 @@ done. The following are the available commands of `venvman`.
 ```bash
 venvman make 
 venvman activate
+venvman clone 
 venvman delete 
 venvman list
 venvman site-packages
@@ -76,14 +77,14 @@ There are a couple options for making a virtual enviornment.
 1. If you want to the virtual enviornment to save to `VENVMAN_SAVE_DIR/X.XX`, then
 use the following:
 ```bash
-venvman make --name <venv_name> --version <python_version>
+venvman make --name <venv_name> --version X.XX
 ```
 For example,
 ```bash
 venvman make --name myenv --version 3.10
 ```
 will create an enviornment named `myenv` with `python3.10 -m venv
-VENVMAN_SAVE_DIR/myenv`, thus saving it to `VENVMAN_SAVE_DIR/3.10/myenv`.
+VENVMAN_SAVE_DIR/X.XX/myenv`, thus saving it to `VENVMAN_SAVE_DIR/3.10/myenv`.
 
 2. Suppose you want to save one-off virtual enviornment to a location other than
 `VENVMAN_SAVE_DIR`, then you can specify that directory to save it to with the
@@ -94,6 +95,19 @@ venvman make --name myenv --version 3.10 --path <custom_path>
 ```
 will create an enviornment named `myenv` with `python3.10 -m venv
 <custom_path>/myenv` and it will save it to `<custom_path>/myenv`.
+
+
+### Clone a Virtual Environment
+To clone a virtual enviornment, you do the following:
+
+```bash
+venvman clone --version X.XX --parent <parent_venv_name> --clone-to <child_venv_name>
+```
+This will create an enviornment named `<child_venv_name>` that will be localed
+at `VENVMAN_SAVE_DIR/X.XX/<child_venv_name>` that will have the same packages
+as `<parent_venv_name>`. Note that this requires that
+`VENVMAN_SAVE_DIR/X.XX/<parent_venv_name>` exists and that 
+`<parent_venv_name> != <child_venv_name>`.
 
 
 ### Activate a Virtual Environment
