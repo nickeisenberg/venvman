@@ -1,3 +1,6 @@
+VENVMAN_SAVE_DIR=$HOME/.venvman
+
+
 function _venvman_activate() {
     local NAME VERSION VENV_PATH
     while [ "$#" -gt 0 ]; do
@@ -63,7 +66,7 @@ function _venvman_activate() {
     fi
 
     if [[ -n $NAME  && -n $VERSION && ! -n $VENV_PATH ]]; then
-        local VENV_PATH="$HOME/.venvman/$VERSION/$NAME"
+        local VENV_PATH="$VENVMAN_SAVE_DIR/$VERSION/$NAME"
         if [[ -f "$VENV_PATH/bin/activate" ]]; then
             source "$VENV_PATH/bin/activate"
         else
@@ -142,14 +145,14 @@ function _venvman_make() {
     fi
 
     if [[ -n $NAME  && -n $VERSION && ! -n $VENV_PATH ]]; then
-        local VENV_PATH="$HOME/.venvman/$VERSION/$NAME"
-        if [[ ! -d $VENV_PATH ]]; then
-            echo "$HOME/.venvman/$VERSION does not exit. Creating now."
+        local VENV_PATH="$VENVMAN_SAVE_DIR/$VERSION/$NAME"
+        if [[ ! -d $VENVMAN_SAVE_DIR/$VERSION ]]; then
+            echo "The directory $VENVMAN_SAVE_DIR/$VERSION does not exit. Creating now."
             mkdir -p $VENV_PATH
             if [[ -d $VENV_PATH ]]; then
-                echo "SUCCESS: $HOME/.venvman/$VERSION has been created."
+                echo "SUCCESS: $VENVMAN_SAVE_DIR/$VERSION has been created."
             else
-                echo "FAIL: $HOME/.venvman/$VERSION has not been created."
+                echo "FAIL: $VENVMAN_SAVE_DIR/$VERSION has not been created."
                 return 1
             fi
         fi
@@ -167,7 +170,7 @@ function _venvman_make() {
 
 function _venvman_list() {
     local VERSION VERSIONS NUM_VERSIONS VENV_PATH
-    local VENV_PATH="$HOME/.venvman/"
+    local VENV_PATH="$VENVMAN_SAVE_DIR/"
     while [ "$#" -gt 0 ]; do
         case $1 in
             -v | --version)
@@ -205,13 +208,13 @@ function _venvman_list() {
         ls "$VENV_PATH"
 
     else
-        local VERSIONS=($(ls "$HOME/.venvman"))  # Store all versions in an array
+        local VERSIONS=($(ls "$VENVMAN_SAVE_DIR"))  # Store all versions in an array
         local NUM_VERSIONS=${#VERSIONS[@]}    # Get the total number of versions
     
         for ((i = 0; i < $NUM_VERSIONS; i++)); do
             local VERSION=${VERSIONS[i]}
             echo "Available virtual environments for Python $VERSION:"
-            ls "$HOME/.venvman/$VERSION"
+            ls "$VENVMAN_SAVE_DIR/$VERSION"
             
             # Print echo unless it's the last item
             if [[ $i -lt $((NUM_VERSIONS - 1)) ]]; then
@@ -264,7 +267,7 @@ function _venvman_delete() {
         esac
     done
     
-    local VENV_PATH="$HOME/.venvman/$VERSION/$NAME"
+    local VENV_PATH="$VENVMAN_SAVE_DIR/$VERSION/$NAME"
 
     read -p "Are you sure you want to delete virtual environment $VENV_PATH? [y/N]: " response
 
@@ -339,7 +342,7 @@ function _venvman_completion() {
     local commands="make activate list delete site-packages"
 
     # List available Python versions dynamically
-    local version_options=$(ls -1 "$HOME/.venvman" 2>/dev/null)
+    local version_options=$(ls -1 "$VENVMAN_SAVE_DIR" 2>/dev/null)
 
     # Track entered flags in the correct order
     local has_version=false
@@ -419,7 +422,7 @@ function _venvman_completion() {
             # If --name is given, suggest available environments under the selected version
             if [[ "$prev" == "--name" ]]; then
                 if [[ -n "$version_provided" ]]; then
-                    local venv_dir="$HOME/.venvman/$version_provided"
+                    local venv_dir="$VENVMAN_SAVE_DIR/$version_provided"
                     if [[ -d "$venv_dir" ]]; then
                         local name_options=$(ls -1 "$venv_dir" 2>/dev/null)
                         COMPREPLY=($(compgen -W "$name_options" -- "$cur"))
@@ -455,7 +458,7 @@ function _venvman_completion() {
                 return 0
             elif [[ "$prev" == "--name" ]]; then
                 if [[ -n "$version_provided" ]]; then
-                    local venv_dir="$HOME/.venvman/$version_provided"
+                    local venv_dir="$VENVMAN_SAVE_DIR/$version_provided"
                     if [[ -d "$venv_dir" ]]; then
                         local name_options=$(ls -1 "$venv_dir" 2>/dev/null)
                         COMPREPLY=($(compgen -W "$name_options" -- "$cur"))

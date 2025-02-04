@@ -5,44 +5,21 @@ the creation, activation, listing, and deletion of Python virtual environments.
 
 ## Table of Contents
 - [Introduction](#introduction)
-- [Installation and Setup](#installation\wand\wsetup)
+- [Installation](#installation)
 - [Usage](#usage)
 
-## Introduction
-I am often working on machines where installing software is a pain. I needed a
-quick way to manage some python vitural enviornments in a way that required no
-installation of external tools like `conda`, `pyenv-virtualenv`, etc. For that
-reason I wrote `venvman`. It is written entirely in `bash` and requires no
-installation of third-party software, other than `pythonX.XX` and
-`pythonX.XX-venv` of course. Because of the simplicity of `venvman`, it is
-highly hackable into a version that satisfes the opinion of the user. It is
+
+## Introduction 
+I am often working in `bash` shells where installing software is a pain. I
+needed a quick way to manage some python vitural enviornments in a way that
+required no installation of external tools like `conda`, `virtualenv`,
+`pyenv-virtualenv`, etc. Plus `conda` sucks anyway and is bloated, unnecessary,
+and slow. For that reason I wrote `venvman`. It is written entirely in `bash`
+and requires no installation of third-party software, other than `pythonX.XX`
+and `pythonX.XX-venv` of course. Because of the simplicity of `venvman`, it is
+highly hackable into a version that satisfes the opinions of the user. It is
 also simple enough to copy and paste into any online LLM so that the LLM can
 guide you through any modifications that you seem fit.
-
-
-## Installation and Setup
-To install `venvman`, simply
-```bash
-git clone https://github.com/nickeisenberg/venvman.git
-source venvman/src/venv.sh
-```
-or to make this persistent, add the following to your `bashrc` or `bash_profile`
-```bash
-source <path_to_venvman>/src/venv.sh
-```
-
-`venvman` will save all `pythonX.XX` virtual enviornments to
-`$HOME/.venvman/X.XX`. For example, `venvman make --version 3.11 --name base`
-will save this enviornment to `$HOME/.venvman/3.11/base`. 
-
-
-Copy the script into your Bash profile (~/.bashrc or ~/.bash_profile).
-
-Source the profile:
-
-source ~/.bashrc
-
-The venv command will now be available in your shell.
 
 
 ## Features
@@ -59,80 +36,136 @@ The venv command will now be available in your shell.
 * Tab-completion for commands and arguments.
 
 
+
+## Installation
+To install `venvman`, simply
+```bash
+git clone https://github.com/nickeisenberg/venvman.git
+source venvman/src/venvman.sh
+```
+or to make this persistent, add the following to your `bashrc` or `bash_profile`
+```bash
+source <path_to_venvman>/src/venvman.sh
+```
+`venvman` will now be available to use.
+
+## Setup
+
+`venvman` will save all `pythonX.XX` virtual enviornments to
+`$HOME/.venvman/X.XX`. For example, `venvman make --version 3.11 --name base`
+will save this enviornment to `$HOME/.venvman/3.11/base`. Moreover, if
+`$HOME/.venvman/X.XX` does not exist then `venvman` will create this directory.
+If you do not want `$HOME/.venvman` as the location to save the virtual
+enviornments, then overwrite the variable `VENVMAN_SAVE_DIR` in your `bashrc`
+or `bash_profile` after sourcing `<path_to_venvman>/src/venvman.sh`.
+
 ## Usage
 
-The venv command provides multiple subcommands for managing virtual environments.
+`venvman` does not offer much, but from my experience it seems to get the job
+done. The following are the available commands of `venvman`.
+```bash
+venvman make 
+venvman activate
+venvman delete 
+venvman list
+venvman site-packages
+venvman --help
+```
+Each command of `venvman` has a `--help` option as well that gives the basic
+usage along with an example or two. For example,
+```bash
+>>> venvman make --help
+Usage:
+  venvman make [options]
 
-### Create a Virtual Environment
+Options:
+  -n, --name <venv_name>                       : Specify the name of the virtual environment to create.
+  -v, --version <python_version>               : Specify the Python version to use for the virtual environment.
+  -p, --path <venv_path>                       : Manually specify the directory where the virtual environment should be created.
+  -h, --help                                   : Display this help message.
 
-venv make -n <venv_name> -v <python_version>
+Examples:
+  venvman make -n project_env -v 3.10             : Create a virtual environment named 'project_env' using Python 3.10.
+  venvman make -n myenv -v 3.9 -p /custom/path    : Create 'myenv' using Python 3.9 at '/custom/path'.
+```
 
-Example:
+### Make a Virtual Environment
+There are a couple options for making a virtual enviornment.
 
-venv make -n myenv -v 3.10
+1. If you want to the virtual enviornment to save to `VENVMAN_SAVE_DIR/X.XX`, then
+use the following:
+```bash
+venvman make --name <venv_name> --version <python_version>
+```
+For example,
+```bash
+venvman make --name myenv --version 3.10
+```
+will create an enviornment named `myenv` with `python3.10 -m venv
+VENVMAN_SAVE_DIR/myenv`, thus saving it to `VENVMAN_SAVE_DIR/3.10/myenv`.
 
-Creates a virtual environment named myenv using Python 3.10 and stores it in ~/.venv/3.10/myenv/.
+2. Suppose you want to save one-off virtual enviornment to a location other than
+`VENVMAN_SAVE_DIR`, then you can specify that directory to save it to with the
+`--path` option. For example,
+For example,
+```bash
+venvman make --name myenv --version 3.10 --path <custom_path>
+```
+will create an enviornment named `myenv` with `python3.10 -m venv
+<custom_path>/myenv` and it will save it to `<custom_path>/myenv`.
+
 
 ### Activate a Virtual Environment
+There are a couple options with activating an enviornment.
 
-venv activate -n <venv_name> -v <python_version>
+1. Recall from above that `venvman make --name myenv --version 3.10` will create
+and enviornment called `myenv` and will save it to `VENVMAN_SAVE_DIR`. Suppose 
+we want to activate this enviornment. Then we would run
+```bash
+venvman activate --version 3.10 --name myenv
+```
+and what this does is runs `source VENVMAN_SAVE_DIR/3.10/myenv/bin/activate`.
 
-Example:
-
-venv activate -n myenv -v 3.10
-
-Activates the virtual environment named myenv created with Python 3.10.
+2. Now suppose we want to quickly activate an enviornment that is saved in a location
+other than `VENVMAN_SAVE_DIR`. For example, maybe we have an enviornment saved
+in a projects root directoy such as `<path_to_project>/.venv`. We can quickly source
+with enviornment with 
+```bash
+venvman activate --path <path_to_project>/.venv
+```
+and if we are already `cd` into the project's root, then
+```bash
+venvman activate --path .venv
+```
+will activate `.venv`. Doing this is not much easier than straight up running
+`source .venv/bin/activate` but the option is there if you want it.
 
 ### List Available Virtual Environments
-
-venv list
-
-Lists all available virtual environments categorized by Python versions.
-
-To list virtual environments for a specific Python version:
-
-venv list -v <python_version>
-
-Example:
-
-venv list -v 3.10
+To list all the enviornments saved in `VENVMAN_SAVE_DIR`, use `venvman list`.
+If you want to list all of the saved enviornments in `VENVMAN_SAVE_DIR` for a 
+specific `python` version, then you can use `venvman list --version X.XX`.
 
 ### Delete a Virtual Environment
-
-venv delete -n <venv_name> -v <python_version>
-
-Example:
-
-venv delete -n myenv -v 3.10
-
-Deletes the virtual environment myenv created with Python 3.10 after confirmation.
+To delete an enviornment that is saved at `VENVMAN_SAVE_DIR/X.XX/<venv_name>`,
+do the following:
+```bash
+venvman delete --version X.XX --name <venv_name> 
+```
 
 ### Navigate to site-packages
+Some may find this feature useful. Suppose a virtual enviornment is activated,
+for example lets consider that we have activated `VENVMAN_SAVE_DIR/3.10/myenv`.
+Then running `venvman site-packages` will `cd` you into
+`VENVMAN_SAVE_DIR/3.10/myenv/lib/python3.10/site-packages
+`
+Moreover, running the following 
+```bash
+venvman site-packages --package <package_name>
+```
+will `cd` you into
+`VENVMAN_SAVE_DIR/3.10/myenv/lib/python3.10/site-packages/<package_name>`
 
-venv site-packages
-
-Navigates to the site-packages directory of the currently activated virtual environment.
-
-To navigate to a specific package:
-
-venv site-packages --package <package_name>
-
-Example:
-
-venv site-packages --package numpy
-
-Navigates to the installed numpy package directory.
 
 ### Help
 
-To display the help message:
-
-venv --help
-
-## Completion
-
-This script includes Bash tab-completion for easier command input. Press Tab to auto-complete commands and arguments.
-
-## Directory Structure
-
-Virtual environments are stored under ~/.venv/<python_version>/<venv_name>/. This ensures multiple Python versions are managed independently.
+`venvman --help` will display a help message.
