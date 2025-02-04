@@ -1,4 +1,4 @@
-function _venv_activate() {
+function _venvman_activate() {
     local NAME VERSION VENV_PATH
     while [ "$#" -gt 0 ]; do
         case $1 in
@@ -25,7 +25,7 @@ function _venv_activate() {
                     local VENV_PATH=$2
                     shift 2
                 elif [[ ! -n $2 ]]; then
-                    local VENV_PATH="./.venv"
+                    local VENV_PATH="./.venvman"
                 else
                     echo "Enter a path for --path"
                     return 1
@@ -33,7 +33,7 @@ function _venv_activate() {
                 ;;
             -h | --help)
                 echo "Usage:"
-                echo "  venv activate [options]"
+                echo "  venvman activate [options]"
                 echo
                 echo "Options:"
                 echo "  -n, --name <venv_name>                   : Specify the name of the virtual environment to activate."
@@ -42,8 +42,8 @@ function _venv_activate() {
                 echo "  -h, --help                               : Display this help message."
                 echo
                 echo "Examples:"
-                echo "  venv activate -n myenv -v 3.10           : Activate 'myenv' created with Python 3.10"
-                echo "  venv activate -p /custom/path/to/venv    : Activate virtual environment at a custom path."
+                echo "  venvman activate -n myenv -v 3.10           : Activate 'myenv' created with Python 3.10"
+                echo "  venvman activate -p /custom/path/to/venv    : Activate virtual environment at a custom path."
                 return 0
                 ;;
             *)
@@ -62,7 +62,7 @@ function _venv_activate() {
     fi
 
     if [[ -n $NAME  && -n $VERSION && ! -n $VENV_PATH ]]; then
-        local VENV_PATH="$HOME/.venv/$VERSION/$NAME"
+        local VENV_PATH="$HOME/.venvman/$VERSION/$NAME"
         if [[ -f "$VENV_PATH/bin/activate" ]]; then
             source "$VENV_PATH/bin/activate"
         else
@@ -78,7 +78,7 @@ function _venv_activate() {
 }
 
 
-function _venv_make() {
+function _venvman_make() {
     local NAME VERSION VENV_PATH PYTHON_EXEC
     while [ "$#" -gt 0 ]; do
         case $1 in
@@ -106,7 +106,7 @@ function _venv_make() {
                     local VENV_PATH=$2
                     shift 2
                 elif [[ ! -n $2 ]]; then
-                    local VENV_PATH="./.venv"
+                    local VENV_PATH="./.venvman"
                 else
                     echo "Enter a path for --path"
                     return 1
@@ -114,7 +114,7 @@ function _venv_make() {
                 ;;
             -h | --help)
                 echo "Usage:"
-                echo "  venv make [options]"
+                echo "  venvman make [options]"
                 echo
                 echo "Options:"
                 echo "  -n, --name <venv_name>                       : Specify the name of the virtual environment to create."
@@ -123,8 +123,8 @@ function _venv_make() {
                 echo "  -h, --help                                   : Display this help message."
                 echo
                 echo "Examples:"
-                echo "  venv make -n project_env -v 3.10             : Create a virtual environment named 'project_env' using Python 3.10."
-                echo "  venv make -n myenv -v 3.9 -p /custom/path    : Create 'myenv' using Python 3.9 at '/custom/path'."
+                echo "  venvman make -n project_env -v 3.10             : Create a virtual environment named 'project_env' using Python 3.10."
+                echo "  venvman make -n myenv -v 3.9 -p /custom/path    : Create 'myenv' using Python 3.9 at '/custom/path'."
                 return 0
                 ;;
             *)
@@ -140,7 +140,7 @@ function _venv_make() {
     fi
 
     if [[ -n $NAME  && -n $VERSION && ! -n $VENV_PATH ]]; then
-        local VENV_PATH="$HOME/.venv/$VERSION/$NAME"
+        local VENV_PATH="$HOME/.venvman/$VERSION/$NAME"
         $PYTHON_EXEC -m venv $VENV_PATH
 
     elif [[ -n $NAME  && -n $VERSION && -n $VENV_PATH ]]; then
@@ -152,9 +152,9 @@ function _venv_make() {
 }
 
 
-function _venv_list() {
+function _venvman_list() {
     local VERSION VERSIONS NUM_VERSIONS VENV_PATH
-    local VENV_PATH="$HOME/.venv/"
+    local VENV_PATH="$HOME/.venvman/"
     while [ "$#" -gt 0 ]; do
         case $1 in
             -v | --version)
@@ -169,15 +169,15 @@ function _venv_list() {
                 ;;
             -h | --help)
                 echo "Usage:"
-                echo "  venv list [options]"
+                echo "  venvman list [options]"
                 echo
                 echo "Options:"
                 echo "  -v, --version <python_version>     : List virtual environments for a specific Python version."
                 echo "  -h, --help                         : Display this help message."
                 echo
                 echo "Examples:"
-                echo "  venv list                            : List all available virtual environments grouped by Python version."
-                echo "  venv list -v 3.10                    : List virtual environments created with Python 3.10."
+                echo "  venvman list                            : List all available virtual environments grouped by Python version."
+                echo "  venvman list -v 3.10                    : List virtual environments created with Python 3.10."
                 return 0
                 ;;
             *)
@@ -192,13 +192,13 @@ function _venv_list() {
         ls "$VENV_PATH"
 
     else
-        local VERSIONS=($(ls "$HOME/.venv"))  # Store all versions in an array
+        local VERSIONS=($(ls "$HOME/.venvman"))  # Store all versions in an array
         local NUM_VERSIONS=${#VERSIONS[@]}    # Get the total number of versions
     
         for ((i = 0; i < $NUM_VERSIONS; i++)); do
             local VERSION=${VERSIONS[i]}
             echo "Available virtual environments for Python $VERSION:"
-            ls "$HOME/.venv/$VERSION"
+            ls "$HOME/.venvman/$VERSION"
             
             # Print echo unless it's the last item
             if [[ $i -lt $((NUM_VERSIONS - 1)) ]]; then
@@ -209,7 +209,7 @@ function _venv_list() {
 }
 
 
-function _venv_delete() {
+function _venvman_delete() {
     local NAME VERSION VENV_PATH
     while [ "$#" -gt 0 ]; do
         case $1 in
@@ -233,7 +233,7 @@ function _venv_delete() {
                 ;;
             -h | --help)
                 echo "Usage:"
-                echo "  venv delete [options]"
+                echo "  venvman delete [options]"
                 echo
                 echo "Options:"
                 echo "  -n, --name <venv_name>            : Specify the name of the virtual environment to delete."
@@ -241,7 +241,7 @@ function _venv_delete() {
                 echo "  -h, --help                        : Display this help message."
                 echo
                 echo "Examples:"
-                echo "  venv delete -n myenv -v 3.10      : Delete the virtual environment 'myenv' created with Python 3.10."
+                echo "  venvman delete -n myenv -v 3.10      : Delete the virtual environment 'myenv' created with Python 3.10."
                 return 0
                 ;;
             *)
@@ -251,7 +251,7 @@ function _venv_delete() {
         esac
     done
     
-    local VENV_PATH="$HOME/.venv/$VERSION/$NAME"
+    local VENV_PATH="$HOME/.venvman/$VERSION/$NAME"
 
     read -p "Are you sure you want to delete virtual environment $VENV_PATH? [y/N]: " response
 
@@ -271,7 +271,7 @@ function _venv_delete() {
 }
 
 
-function _venv_site_packages() {
+function _venvman_site_packages() {
     local PKG
     local SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
     while [ "$#" -gt 0 ]; do
@@ -287,15 +287,15 @@ function _venv_site_packages() {
                 ;;
             -h | --help)
                 echo "Usage:"
-                echo "  venv site-package [options]"
+                echo "  venvman site-package [options]"
                 echo
                 echo "Options:"
                 echo "  -pkg, --package <package_name>   : Navigate to the directory of a specific installed package."
                 echo "  -h, --help                       : Display this help message."
                 echo
                 echo "Examples:"
-                echo "venv site-package                  : Navigate to the site-packages directory of the active virtual environment."
-                echo "  venv site-package -pkg numpy     : Navigate to the directory of the installed 'numpy' package."
+                echo "venvman site-package                  : Navigate to the site-packages directory of the active virtual environment."
+                echo "venvman site-package -pkg numpy     : Navigate to the directory of the installed 'numpy' package."
                 return 0
                 ;;
             *)
@@ -316,7 +316,7 @@ function _venv_site_packages() {
 }
 
 
-function _venv_completion() {
+function _venvman_completion() {
     local cur prev words
     local cur="${COMP_WORDS[COMP_CWORD]}"
     local prev="${COMP_WORDS[COMP_CWORD-1]}"
@@ -326,7 +326,7 @@ function _venv_completion() {
     local commands="make activate list delete site-packages"
 
     # List available Python versions dynamically
-    local version_options=$(ls -1 "$HOME/.venv" 2>/dev/null)
+    local version_options=$(ls -1 "$HOME/.venvman" 2>/dev/null)
 
     # Track entered flags in the correct order
     local has_version=false
@@ -406,7 +406,7 @@ function _venv_completion() {
             # If --name is given, suggest available environments under the selected version
             if [[ "$prev" == "--name" ]]; then
                 if [[ -n "$version_provided" ]]; then
-                    local venv_dir="$HOME/.venv/$version_provided"
+                    local venv_dir="$HOME/.venvman/$version_provided"
                     if [[ -d "$venv_dir" ]]; then
                         local name_options=$(ls -1 "$venv_dir" 2>/dev/null)
                         COMPREPLY=($(compgen -W "$name_options" -- "$cur"))
@@ -442,7 +442,7 @@ function _venv_completion() {
                 return 0
             elif [[ "$prev" == "--name" ]]; then
                 if [[ -n "$version_provided" ]]; then
-                    local venv_dir="$HOME/.venv/$version_provided"
+                    local venv_dir="$HOME/.venvman/$version_provided"
                     if [[ -d "$venv_dir" ]]; then
                         local name_options=$(ls -1 "$venv_dir" 2>/dev/null)
                         COMPREPLY=($(compgen -W "$name_options" -- "$cur"))
@@ -479,12 +479,12 @@ function _venv_completion() {
 }
 
 
-function venv() {
+function venvman() {
     local COMMAND
 
     if [[ $# -lt 1 ]]; then
-        echo "Usage: venv <command> <python_version> [argument]"
-        echo "Use 'venv h' for a list of available commands."
+        echo "Usage: venvman <command> <python_version> [argument]"
+        echo "Use 'venvman h' for a list of available commands."
         return 1
     fi
     
@@ -493,23 +493,23 @@ function venv() {
     
     case $COMMAND in
         m | make)
-            _venv_make $@
+            _venvman_make $@
             ;;
 
         a | activate)
-            _venv_activate $@
+            _venvman_activate $@
             ;;
 
         list)
-            _venv_list $@
+            _venvman_list $@
             ;;
 
         d | delete)
-            _venv_delete $@
+            _venvman_delete $@
             ;;
 
         sp | site-packages)
-            _venv_site_packages $@
+            _venvman_site_packages $@
             ;;
 
         -h| --help)
@@ -522,15 +522,15 @@ function venv() {
             echo "  -h , --help          : Display this help message."
             echo
             echo "Usage:"
-            echo "  See \`venv <command> --help\` for usage of each command."
+            echo "  See \`venvman <command> --help\` for usage of each command."
             ;;
 
         *)
-            echo "Invalid command. Use 'venv h' or 'venv help' for a list of available commands."
+            echo "Invalid command. Use 'venvman h' or 'venvman help' for a list of available commands."
             return 1
             ;;
     esac
 }
 
 
-complete -F _venv_completion venv
+complete -F _venvman_completion venvman

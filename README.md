@@ -1,6 +1,41 @@
 # VENV Manager
 
-A simple Virtual Environment (VENV) manager written in pure Bash to simplify the creation, activation, listing, and deletion of Python virtual environments.
+A simple Virtual Environment manager written in pure Bash to simplify
+the creation, activation, listing, and deletion of Python virtual environments.
+
+## Table of Contents
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Usage](#usage)
+
+## Introduction
+I am often working on machines where installing software is a pain. I needed a
+quick way to manage some python vitural enviornments in a way that required no
+installation of external tools like `conda`, `pyenv-virtualenv`, etc. For that
+reason I wrote `venvman`. It is written entirely in `bash` and requires no
+installation of third-party software, other than `pythonX.XX` and
+`pythonX.XX-venv` of course. Because of the simplicity of `venvman`, it is
+highly hackable into a version that satisfes the opinion of the user. It is
+also simple enough to copy and paste into any online LLM so that the LLM can
+guide you through any modifications that you seem fit.
+
+
+## Installation
+
+```bash
+git clone 
+cd
+mkdir $HOME/.venvman
+```
+
+Copy the script into your Bash profile (~/.bashrc or ~/.bash_profile).
+
+Source the profile:
+
+source ~/.bashrc
+
+The venv command will now be available in your shell.
+
 
 ## Features
 * Create virtual environments for specific Python versions.
@@ -15,15 +50,6 @@ A simple Virtual Environment (VENV) manager written in pure Bash to simplify the
 
 * Tab-completion for commands and arguments.
 
-## Installation
-
-Copy the script into your Bash profile (~/.bashrc or ~/.bash_profile).
-
-Source the profile:
-
-source ~/.bashrc
-
-The venv command will now be available in your shell.
 
 ## Usage
 
