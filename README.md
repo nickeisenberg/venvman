@@ -100,13 +100,12 @@ will create an enviornment named `myenv` with `python3.10 -m venv
 ### Activate a Virtual Environment
 There are a couple options with activating an enviornment.
 
-1. Recall from above that `venvman make --name myenv --version 3.10` will create
-and enviornment called `myenv` and will save it to `VENVMAN_SAVE_DIR`. Suppose 
-we want to activate this enviornment. Then we would run
+1. The following will activate the enviornment saved at
+   `VENVMAN_SAVE_DIR/X.XX/<venv_name>`
 ```bash
-venvman activate --version 3.10 --name myenv
+venvman activate --version X.XX --name <venv_name>
 ```
-and what this does is runs `source VENVMAN_SAVE_DIR/3.10/myenv/bin/activate`.
+On the backend, it runs `source VENVMAN_SAVE_DIR/X.XX/<venv_name>/bin/activate`.
 
 2. Now suppose we want to quickly activate an enviornment that is saved in a location
 other than `VENVMAN_SAVE_DIR`. For example, maybe we have an enviornment saved
@@ -135,18 +134,20 @@ venvman delete --version X.XX --name <venv_name>
 ```
 
 ### Navigate to site-packages
-Some may find this feature useful. Suppose a virtual enviornment is activated,
-for example lets consider that we have activated `VENVMAN_SAVE_DIR/3.10/myenv`.
-Then running `venvman site-packages` will `cd` you into
-`VENVMAN_SAVE_DIR/3.10/myenv/lib/python3.10/site-packages
-`
+Some may find this feature useful. Suppose a virtual enviornment is activated.
+Then running 
+```bash
+venvman site-packages
+``` 
+will `cd` you into the directory that contains 
+this vitrual enviornment's site-packages, for example 
+`VENVMAN_SAVE_DIR/X.XX/<venv_name>/lib/pythonX.XX/site-packages`.
 Moreover, running the following 
 ```bash
 venvman site-packages --package <package_name>
 ```
 will `cd` you into
-`VENVMAN_SAVE_DIR/3.10/myenv/lib/python3.10/site-packages/<package_name>`
-
+`VENVMAN_SAVE_DIR/X.XX/<venv_name>/lib/pythonX.XX/site-packages/<package_name>`.
 
 ### Help
 
