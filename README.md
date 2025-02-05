@@ -26,19 +26,24 @@ must be using a `bash` shell. I hope to support `zsh` tab-completion soon.
 
 ## Installation
 
-The following two variables will need to be set:
+To install, run the following:
 ```bash
-VENVMAN_ROOT_DIR=$HOME/.venvman # there the repo will be cloned to
-VENVMAN_ENVS_DIR=$HOME/.venvman/envs  # where the virtual enviornments will be saved to
+curl -sSL https://raw.githubusercontent.com/nickeisenberg/venvman/master/install.sh -o install.sh 
+bash install.sh
 ```
 
-To install `venvman`, you can run the following:
-```bash.
+Or if you want to manually install, do the following:
+
+```bash
+VENVMAN_ROOT_DIR=$HOME/.venvman
 mkdir -p $VENVMAN_ROOT_DIR
-git clone https://github.com/nickeisenberg/venvman.git $VENVMAN_ROOT_DIR
+git clone https://github.com/nickeisenberg/venvman.git "${VENVMAN_ROOT_DIR}/venvman"
 ```
+
 Then add the following to your `bashrc` or `zshrc` etc:
 ```bash
+VENVMAN_ROOT_DIR=$HOME/.venvman
+VENVMAN_ENVS_DIR=$HOME/.venvman/envs  # where the virtual enviornments will be saved to
 source $VENVMAN_ROOT_DIR/venvman/src/venvman.sh
 source $VENVMAN_ROOT_DIR/venvman/src/completion/completion.sh  # adds completion is available for your shell
 ```

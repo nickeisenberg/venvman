@@ -82,8 +82,8 @@ source $VENVMAN_ROOT_DIR/venvman/src/venvman.sh
 source $VENVMAN_ROOT_DIR/venvman/src/completion/completion.sh  # adds completion for available shells" \
     $SHELL_PROFILE
 
-    printf "%s\n" "Installation complete. Open a new shell to use venvman or run \`source $SHELL_PROFILE\`
-to run in this current shell session"
+    printf "%s\n" "Installation complete. Open a new shell to use venvman
+or run \`source $SHELL_PROFILE\` to run in this current shell session"
 }
 
 install
