@@ -1,15 +1,31 @@
 source_shell_completion() {
     [[ -n $VENVMAN_ROOT_DIR ]] || VENVMAN_ROOT_DIR="$HOME/.venvman" 
-    local SHELL_NAME=$1
-    local COMPLETION_PATH=$VENVMAN_ROOT_DIR/venvman/src/completion/venvman_${SHELL_NAME}_completion.sh
-    source $COMPLETION_PATH || echo "ERROR: $COMPLETION_PATH could not be sourced. venvman will have no tab-completion."
-    complete -F _venvman_bash_completion venvman || echo "ERROR: completion could not be added to venvman."
+    if [[ $1 == "bash" ]]; then
+        source $VENVMAN_ROOT_DIR/venvman/src/completion/venvman_bash_completion.sh
+    elif [[ $1 == "zsh" ]]; then
+        source $VENVMAN_ROOT_DIR/venvman/src/completion/venvman_zsh_completion.zsh
+    fi
 }
 
-if [[ $SHELL == *"bash"*  ]]; then
-    source_shell_completion "bash"
-elif [[ $SHELL == *"zsh"*  ]]; then
-    source_shell_completion "zsh"
+add_completion_to_venvman() {
+    if [[ $1 == "bash" ]]; then
+        complete -F _venvman_bash_completion venvman
+    elif [[ $1 == "zsh" ]]; then
+        compdef _venvman_zsh_completion venvman
+    fi
+}
+
+main() {
+    source_shell_completion $1
+    add_completion_to_venvman $1
+}
+
+if [[ -n $BASH_VERSION ]]; then
+    main "bash"
+elif [[ -n $ZSH_VERSION ]]; then
+    main "zsh"
 fi
 
 unset -f source_shell_completion
+unset -f add_completion_to_venvman 
+unset -f main 

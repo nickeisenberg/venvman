@@ -11,17 +11,41 @@
 
 
 ## Introduction
-
-`venvman` is a minimal virtual environment manager that supports the creating,
-activation, and deletion of `python` virtual enviornments as well as
-command-line tab-autocompletion. It and is written entirely `bash` and requires
+`venvman` is a minimal virtual environment manager that supports the creation,
+activation, and deletion of python virtual environments, as well as
+command-line tab autocompletion. It is written entirely in `bash` and requires
 no installation of third-party software, other than `pythonX.XX` and
-`pythonX.XX-venv`. Because its simplicity, `venvman` is easily hackable.
+`pythonX.XX-venv`.
 
-The are several downsides of `venvman`. First is that it is unable to handle 
-multiple subversions of `python`, for example `python3.11.0 ` and `python3.11.1`.
-Second is that in order to take advantage of the command-line tab-completion, you
-must be using a `bash` shell. I hope to support `zsh` tab-completion soon. 
+There are plenty of other `python` virtual environment managers, such as
+`conda`, `virtualenv`, `pyenv-virtualenv`, `virtualenvwrapper`, etc. Moreover,
+each of these `venv` management tools is more feature-rich than `venvman`. So
+why use `venvman`? In my experience, there are several key advantages:
+
+  1) Minimal dependencies – `venvman` requires only pythonX.XX, pythonX.XX-venv,
+  and the bash binary. If you often work in shell environments where installing
+  software is difficult or outright prohibited, `venvman` is an obvious choice.
+  2) Simplicity and hackability – Due to its minimal design, `venvman` is easy
+  to modify and being written in `bash`, it is to some extent accessible to
+  pretty much anyone with UNIX/LINUX experience.
+  3) Customizability – Users often have strong preferences regarding how their
+  venv manager should behave. Because existing managers are so feature-rich,
+  understanding and modifying their codebases can be a significant undertaking.
+  `venvman`, on the other hand, is straightforward to customize.
+  4) Essential features only – Despite the extensive capabilities of other venv
+  managers, users typically utilize only a small fraction of their features.
+  `venvman` focuses on the most commonly used functionalities.
+  5) Small and robust codebase – The `venvman` codebase should take only 10–15
+  minutes to read and understand, while still being robust enough to handle the
+  vast majority of user needs.
+
+There are a few downsides to `venvman`. First, it does not support multiple
+subversions of python, such as `python3.11.0` and `python3.11.1`. Second, each
+shell requires its own command-line completion function. Currently, `bash` and
+`zsh` are supported. For other shells, users can create a function similar to
+those found in `.src/completion`. I may eventually write a `fish` completion
+function, as it is a popular shell. As a note, I personally use `bash`, so
+completion functions for other shells may occasionally have minor bugs.
 
 
 ## Installation
