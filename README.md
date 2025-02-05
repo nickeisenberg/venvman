@@ -26,16 +26,24 @@ must be using a `bash` shell. I hope to support `zsh` tab-completion soon.
 
 ## Installation
 
-To install `venvman`, simply
+To install, ensure that `$HOME/.local/bin` is in `$PATH`. This can be done by
+adding the following to your `bashrc` or `zshrc` etc: 
 ```bash
+PATH=$PATH:$HOME/.local/bin
+```
+Then to install `venvman`, you can run the following:
+```bash.
+mkdir -p $HOME/.local/bin
+mkdir -p $HOME/.venvman/envs
+cd $HOME/.venvman/
 git clone https://github.com/nickeisenberg/venvman.git
-source venvman/src/venvman.sh
+ln -s $(pwd)/venvman/src/venvman.sh $HOME/.local/bin/venvman
 ```
-or to make this persistent, add the following to your `bashrc` or `zshrc`, etc
+
+To add tab completion, you add the following to your `bashrc` or `zshrc` etc:
 ```bash
-source <path_to_venvman>/src/venvman.sh
+source $HOME/.venvman/venvman/src/completion/completion.sh
 ```
-`venvman` will now be available to use.
 
 
 ## Setup
