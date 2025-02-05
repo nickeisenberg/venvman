@@ -157,7 +157,6 @@ function _venvman_activate() {
         local VENV_PATH="$VENVMAN_SAVE_DIR/$VERSION/$NAME"
         local PATH_TO_ACTIVATE=$(find $VENV_PATH -type f -name "activate")
         if [[ -n $PATH_TO_ACTIVATE ]]; then
-            echo $PATH_TO_ACTIVATE
             source $PATH_TO_ACTIVATE
         else
             echo "activate script cannot be found"
@@ -474,6 +473,3 @@ function venvman() {
             ;;
     esac
 }
-
-
-venvman $@

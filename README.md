@@ -26,23 +26,16 @@ must be using a `bash` shell. I hope to support `zsh` tab-completion soon.
 
 ## Installation
 
-To install, ensure that `$HOME/.local/bin` is in `$PATH`. This can be done by
-adding the following to your `bashrc` or `zshrc` etc: 
-```bash
-PATH=$PATH:$HOME/.local/bin
-```
-Then to install `venvman`, you can run the following:
+To install `venvman`, you can run the following:
 ```bash.
-mkdir -p $HOME/.local/bin
 mkdir -p $HOME/.venvman/envs
 cd $HOME/.venvman/
 git clone https://github.com/nickeisenberg/venvman.git
-ln -s $(pwd)/venvman/src/venvman.sh $HOME/.local/bin/venvman
 ```
-
-To add tab completion, you add the following to your `bashrc` or `zshrc` etc:
+Then add the following to your `bashrc` or `zshrc` etc:
 ```bash
-source $HOME/.venvman/venvman/src/completion/completion.sh
+source $HOME/.venvman/venvman/src/venvman.sh
+source $HOME/.venvman/venvman/src/completion/completion.sh  # adds completion is available for your shell
 ```
 
 
