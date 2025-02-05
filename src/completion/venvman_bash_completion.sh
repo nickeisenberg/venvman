@@ -1,7 +1,6 @@
 function _venvman_bash_completion() {
-    if [[ ! -n $VENVMAN_SAVE_DIR ]]; then
-        local VENVMAN_SAVE_DIR="$HOME/.venvman/envs" 
-    fi
+    [[ -n $VENVMAN_ROOT_DIR ]] || local VENVMAN_ROOT_DIR="$HOME/.venvman" 
+    [[ -n $VENVMAN_ENVS_DIR ]] || local VENVMAN_ENVS_DIR="$VENVMAN_ROOT_DIR/envs" 
 
     local cur prev words
     local cur="${COMP_WORDS[COMP_CWORD]}"
@@ -12,7 +11,7 @@ function _venvman_bash_completion() {
     local commands="make clone activate list delete site-packages"
 
     # List available Python versions dynamically
-    local version_options=$(ls -1 "$VENVMAN_SAVE_DIR" 2>/dev/null)
+    local version_options=$(ls -1 "$VENVMAN_ENVS_DIR" 2>/dev/null)
 
     # Track entered flags in the correct order
     local has_version=false
@@ -102,7 +101,7 @@ function _venvman_bash_completion() {
 
             elif [[ "$prev" == "--parent" ]]; then
                 if [[ -n "$version_provided" ]]; then
-                    local venv_dir="$VENVMAN_SAVE_DIR/$version_provided"
+                    local venv_dir="$VENVMAN_ENVS_DIR/$version_provided"
                     if [[ -d "$venv_dir" ]]; then
                         local name_options=$(ls -1 "$venv_dir" 2>/dev/null)
                         COMPREPLY=($(compgen -W "$name_options" -- "$cur"))
@@ -136,7 +135,7 @@ function _venvman_bash_completion() {
             # If --name is given, suggest available environments under the selected version
             if [[ "$prev" == "--name" ]]; then
                 if [[ -n "$version_provided" ]]; then
-                    local venv_dir="$VENVMAN_SAVE_DIR/$version_provided"
+                    local venv_dir="$VENVMAN_ENVS_DIR/$version_provided"
                     if [[ -d "$venv_dir" ]]; then
                         local name_options=$(ls -1 "$venv_dir" 2>/dev/null)
                         COMPREPLY=($(compgen -W "$name_options" -- "$cur"))
@@ -173,7 +172,7 @@ function _venvman_bash_completion() {
                 return 0
             elif [[ "$prev" == "--name" ]]; then
                 if [[ -n "$version_provided" ]]; then
-                    local venv_dir="$VENVMAN_SAVE_DIR/$version_provided"
+                    local venv_dir="$VENVMAN_ENVS_DIR/$version_provided"
                     if [[ -d "$venv_dir" ]]; then
                         local name_options=$(ls -1 "$venv_dir" 2>/dev/null)
                         COMPREPLY=($(compgen -W "$name_options" -- "$cur"))
