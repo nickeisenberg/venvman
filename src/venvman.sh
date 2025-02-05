@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 
-VENVMAN_SAVE_DIR="$HOME/envs/.venvman" 
+VENVMAN_SAVE_DIR="$HOME/.venvman/envs" 
 
 
 function _venvman_make() {
