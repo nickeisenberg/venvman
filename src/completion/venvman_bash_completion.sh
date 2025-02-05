@@ -1,6 +1,6 @@
 function _venvman_bash_completion() {
     if [[ ! -n $VENVMAN_SAVE_DIR ]]; then
-        local VENVMAN_SAVE_DIR="$HOME/envs/.venvman" 
+        local VENVMAN_SAVE_DIR="$HOME/.venvman/envs" 
     fi
 
     local cur prev words
