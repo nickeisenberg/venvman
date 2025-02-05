@@ -61,14 +61,15 @@ install() {
 
     make_dir_if_not_exitst $VENVMAN_ROOT_DIR ]] || return 1
 
-    git clone https://github.com/nickeisenberg/venvman.git "${VENVMAN_ROOT_DIR}/venvman"
+    git clone https://github.com/nickeisenberg/venvman.git "${VENVMAN_ROOT_DIR}/venvman" || \
+        echo "ERROR: git clone https://github.com/nickeisenberg/venvman.git did not work." return 1
     
     local VENVMAN_SRC=${VENVMAN_ROOT_DIR}/venvman/src/venvman.sh
     local VENVMAN_COMPLETION=${VENVMAN_ROOT_DIR}/venvman/src/completion/completion.sh
     if [[ ! -f $VENVMAN_SRC || ! -f $VENVMAN_COMPLETION ]]; then
-        echo "ERROR: git clone https://github.com/nickeisenberg/venvman.git did not work.
-$VENVMAN_SRC and/or $VENVMAN_COMPLETION cannot be found.
-Removing $VENVMAN_ROOT_DIR." 
+        echo "ERROR: $VENVMAN_SRC and/or $VENVMAN_COMPLETION cannot be found.
+Removing $VENVMAN_ROOT_DIR.
+Trying installing using the manual steps." 
         rm -rf $VENVMAN_ROOT_DIR 
         return 1
     fi

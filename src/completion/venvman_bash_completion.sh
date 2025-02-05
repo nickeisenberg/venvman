@@ -7,13 +7,10 @@ function _venvman_bash_completion() {
     local prev="${COMP_WORDS[COMP_CWORD-1]}"
     local words=("${COMP_WORDS[@]}")
 
-    # Available commands
     local commands="make clone activate list delete site-packages"
 
-    # List available Python versions dynamically
     local version_options=$(ls -1 "$VENVMAN_ENVS_DIR" 2>/dev/null)
 
-    # Track entered flags in the correct order
     local has_version=false
     local has_name=false
     local has_path=false
@@ -58,12 +55,10 @@ function _venvman_bash_completion() {
         return 0
     fi
 
-    # Identify which command is being used
     local subcommand="${COMP_WORDS[1]}"
 
     case "$subcommand" in
         make)
-            # Only allow `--version` first
             if [[ "$prev" == "make" && "$has_version" == false ]]; then
                 COMPREPLY=($(compgen -W "--version" -- "$cur"))
                 return 0
@@ -86,7 +81,6 @@ function _venvman_bash_completion() {
             ;;
 
         clone)
-            # Only allow `--version` first
             if [[ "$prev" == "clone" && "$has_version" == false ]]; then
                 COMPREPLY=($(compgen -W "--version" -- "$cur"))
                 return 0
@@ -117,13 +111,11 @@ function _venvman_bash_completion() {
 
 
         activate)
-            # First tab should suggest --version or --path
             if [[ "$prev" == "activate" && "$has_version" == false && "$has_path" == false ]]; then
                 COMPREPLY=($(compgen -W "--version --path" -- "$cur"))
                 return 0
             fi
 
-            # If --version is given, suggest only --name
             if [[ "$prev" == "--version" ]]; then
                 COMPREPLY=($(compgen -W "$version_options" -- "$cur"))
                 return 0
@@ -144,7 +136,6 @@ function _venvman_bash_completion() {
                 fi
             fi
 
-            # If --path is given, no more options (user enters a custom path)
             if [[ "$prev" == "--path" ]]; then
                 COMPREPLY=($(compgen -o filenames -o nospace -A directory -- "$cur"))
                 return 0
@@ -194,7 +185,6 @@ function _venvman_bash_completion() {
                 # Get the correct site-packages directory of the active virtual environment
                 local site_packages_dir=$(python -c "import sys; print(next(p for p in sys.path if 'site-packages' in p))" 2>/dev/null)
 
-                # Check if the site-packages directory exists
                 if [[ -d "$site_packages_dir" ]]; then
                     local packages=$(ls -1 "$site_packages_dir" 2>/dev/null)
                     COMPREPLY=($(compgen -W "$packages" -- "$cur"))
