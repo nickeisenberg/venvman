@@ -684,4 +684,6 @@ function venvman() {
 }
 
 
-complete -F _venvman_completion venvman
+if [[ $SHELL == *"bash"* ]]; then
+    complete -F _venvman_completion venvman
+fi
