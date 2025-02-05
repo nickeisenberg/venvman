@@ -63,7 +63,7 @@ install() {
 
     git clone https://github.com/nickeisenberg/venvman.git "${VENVMAN_ROOT_DIR}/venvman"
     
-    local VENVMAN_SRC=${VENVMAN_ROOT_DIR}/src/venvman/venvman.sh
+    local VENVMAN_SRC=${VENVMAN_ROOT_DIR}/venvman/src/venvman.sh
     local VENVMAN_COMPLETION=${VENVMAN_ROOT_DIR}/venvman/src/completion/completion.sh
     if [[ ! -f $VENVMAN_SRC || ! -f $VENVMAN_COMPLETION ]]; then
         echo "ERROR: git clone https://github.com/nickeisenberg/venvman.git did not work.
