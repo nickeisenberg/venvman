@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 VENVMAN_SAVE_DIR=$HOME/.venvman
 
 
@@ -629,7 +631,7 @@ function venvman() {
 
     if [[ $# -lt 1 ]]; then
         echo "Usage: venvman <command> <python_version> [argument]"
-        echo "Use 'venvman h' for a list of available commands."
+        echo "Use 'venvman --help' for a list of available commands."
         return 1
     fi
     

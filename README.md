@@ -18,7 +18,16 @@ command-line tab-autocompletion. It and is written entirely `bash` and requires
 no installation of third-party software, other than `pythonX.XX` and
 `pythonX.XX-venv`. Because its simplicity, `venvman` is easily hackable.
 
+The are several downsides of `venvman`. First is that it is unable to handle 
+multiple subversions of `python`, for example `python3.11.0 ` and `python3.11.1`.
+Second is that in order to take advantage of the command-line tab-completion, you
+must be using a `bash` shell. I hope to support `zsh` soon. 
+
+
+
 ## Installation
+
+### If using a `bash` shell
 To install `venvman`, simply
 ```bash
 git clone https://github.com/nickeisenberg/venvman.git
@@ -29,6 +38,13 @@ or to make this persistent, add the following to your `bashrc` or `bash_profile`
 source <path_to_venvman>/src/venvman.sh
 ```
 `venvman` will now be available to use.
+
+### If using a non `bash` shell
+```bash
+git clone https://github.com/nickeisenberg/venvman.git
+chmod +x venvman/src/venv.sh
+ln -s venvman/src/venv.sh ~/.local/bin/venvman
+```
 
 ## Setup
 
