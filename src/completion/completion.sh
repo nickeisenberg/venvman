@@ -1,4 +1,5 @@
 source_shell_completion() {
+    [[ -n $VENVMAN_ROOT_DIR ]] || VENVMAN_ROOT_DIR="$HOME/.venvman" 
     local SHELL_NAME=$1
     local COMPLETION_PATH=$VENVMAN_ROOT_DIR/venvman/src/completion/venvman_${SHELL_NAME}_completion.sh
     source $COMPLETION_PATH || echo "ERROR: $COMPLETION_PATH could not be sourced. venvman will have no tab-completion."
