@@ -26,18 +26,34 @@ _venvman_zsh_completion() {
                         '--name[Specify environment name]' \
                         '--path[Specify custom path]:path:_files -/'
                     ;;
+
                 clone)
                     _arguments \
                         '--version[Select version]:version:(${versions})' \
                         '--parent[Specify parent environment]:env:_files -/' \
                         '--clone-to[Specify target clone path]:path:_files -/'
                     ;;
-                activate)
-                    _arguments \
-                        '--version[Select version]:version:(${versions})' \
-                        '--name[Specify environment name]:env:_files -/' \
-                        '--path[Specify custom path]:path:_files -/'
-                    ;;
+
+		        activate)
+
+		            local selected_version  # Stores the user-selected version
+	
+		            _arguments -C \
+		                '--path[Specify custom path]:path:_files -/' \
+		                '--version[Select version]:version:(${versions})'->version_selected \
+		                '::args:->select_version' 
+
+		            case $state in
+		                version_selected)
+		                    selected_version="${words[${#words[@]}-1]}"
+		                    if [[ " ${versions[@]} " == *" $selected_version "* ]]; then
+		                        _arguments \
+		                            '--name[Specify environment name]:env:_files -/ $VENVMAN_ENVS_DIR/$selected_version'
+		                    fi
+		                    ;;
+		            esac
+		            ;;
+
                 list)
                     _arguments '--version[Select version]:version:(${versions})'
                     ;;
@@ -53,4 +69,3 @@ _venvman_zsh_completion() {
             ;;
     esac
 }
-
