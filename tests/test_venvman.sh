@@ -17,8 +17,8 @@ setup_testing_directory() {
 set_env_variables_source_venvman() {
     VENVMAN_ROOT_DIR=$1
     VENVMAN_ENVS_DIR=$2
-    source /home/nicholas/.venvman/venvman/src/venvman.sh
-    source /home/nicholas/.venvman/venvman/src/completion/completion.sh
+    source ${VENVMAN_ROOT_DIR}/venvman/src/venvman.sh
+    source ${VENVMAN_ROOT_DIR}/venvman/src/completion/completion.sh
     if ! venvman --help &> /dev/null; then
         echo "venvman was not sourced"
         return 1
