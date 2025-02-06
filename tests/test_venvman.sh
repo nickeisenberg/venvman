@@ -124,7 +124,6 @@ test() {
     clone_venv_with_venvman "$VERSION" "$VENV" "$VENV_CLONE"
     activate_env_with_venvman_create_req_txt "$VERSION" "$VENV_CLONE"
     deactivate_enviornment
-    fail
     check_freeze_req_files "${VENV}_req.txt" "${VENV_CLONE}_req.txt"
     delete_venv_with_venvman "$VERSION" "$VENV" 
     delete_venv_with_venvman "$VERSION" "$VENV_CLONE"
