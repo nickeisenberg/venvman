@@ -6,7 +6,6 @@ echo "Running venvman activate test..."
 
 echo "Creating virtual environment..."
 venvman make -n test_env -v 3.11
-source ~/.bashrc
 
 echo "🚀 Activating virtual environment..."
 venvman activate -n test_env -v 3.11

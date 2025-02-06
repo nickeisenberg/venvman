@@ -3,10 +3,10 @@ name: venvman CI Test
 on:
   push:
     branches:
-      - master 
+      - main
   pull_request:
     branches:
-      - master 
+      - main
   workflow_dispatch:
 
 jobs:
@@ -15,16 +15,27 @@ jobs:
 
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4  # ✅ Clones repo automatically
 
       - name: Update System Packages
         run: |
           sudo apt update
           sudo apt upgrade -y
 
+      - name: Add deadsnakes PPA
+        run: |
+          sudo apt install -y software-properties-common
+          sudo add-apt-repository -y ppa:deadsnakes/ppa
+          sudo apt update
+
       - name: Install Python 3.11 and venv
         run: |
           sudo apt install -y python3.11 python3.11-venv python3.10-venv
+
+      - name: Verify Python Installation
+        run: |
+          python3.11 --version
+          python3.10 --version
 
       - name: Download and Install venvman
         run: |
@@ -36,3 +47,4 @@ jobs:
         run: |
           chmod +x tests/test_venvman.sh
           tests/test_venvman.sh
+
