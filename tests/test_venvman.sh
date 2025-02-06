@@ -17,6 +17,12 @@ setup_testing_directory() {
 set_env_variables_source_venvman() {
     VENVMAN_ROOT_DIR=$1
     VENVMAN_ENVS_DIR=$2
+    if [[ ! -n $VENVMAN_ROOT_DIR && ! -n $VENVMAN_ENVS_DIR ]]; then
+        echo "VENVMAN_ROOT_DIR VENVMAN_ENVS_DIR were not set"
+        return 1
+    fi
+    curl -sSL https://raw.githubusercontent.com/nickeisenberg/venvman/master/install.sh -o install.sh 
+    bash install.sh $VENVMAN_ROOT_DIR $VENVMAN_ENVS_DIR
     source ${VENVMAN_ROOT_DIR}/venvman/src/venvman.sh
     source ${VENVMAN_ROOT_DIR}/venvman/src/completion/completion.sh
     if ! venvman --help &> /dev/null; then
@@ -147,7 +153,7 @@ navigate_to_site_packages_with_venvman() {
 test() {
     set -e
     local TESTING_DIR="$(pwd)/_test_here"
-    local VENVMAN_ROOT_DIR=$HOME/.venvman
+    local VENVMAN_ROOT_DIR=$TESTING_DIR
     local VENVMAN_ENVS_DIR=${TESTING_DIR}/envs
     local VENV="test_env"
     local VENV_CLONE="test_env_clone"

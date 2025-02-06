@@ -56,15 +56,8 @@ append_text_to_file() {
 }
 
 install() {
-    local VENVMAN_ROOT_DIR=$1
-    local VENVMAN_ENVS_DIR=$2
-
-    if [[ ! -n $VENVMAN_ROOT_DIR ]]; then
-        VENVMAN_ROOT_DIR=$HOME/.venvman
-    fi
-    if [[ ! -n $2 ]]; then
-        local VENVMAN_ENVS_DIR=${VENVMAN_ROOT_DIR}/envs
-    fi
+    local VENVMAN_ROOT_DIR=$HOME/.venvman
+    local VENVMAN_ENVS_DIR=${VENVMAN_ROOT_DIR}/envs
 
     make_dir_if_not_exitst $VENVMAN_ROOT_DIR ]] || return 1
 
