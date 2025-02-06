@@ -37,15 +37,15 @@ _venvman_zsh_completion() {
 		        activate)
 
 		            local selected_version  # Stores the user-selected version
-	
+                    
 		            _arguments -C \
 		                '--path[Specify custom path]:path:_files -/' \
-		                '--version[Select version]:version:(${versions})'->version_selected \
-		                '::args:->select_version' 
+		                '--version[Select version]:version:->version'
 
 		            case $state in
-		                version_selected)
-		                    selected_version="${words[${#words[@]}-1]}"
+		                version)
+                            _values "version values" $versions
+		                    selected_version="${words[${#words[@]}]}"
 		                    if [[ " ${versions[@]} " == *" $selected_version "* ]]; then
 		                        _arguments \
 		                            '--name[Specify environment name]:env:_files -/ $VENVMAN_ENVS_DIR/$selected_version'
