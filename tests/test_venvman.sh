@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+
 setup_testing_directory() {
     local TESTING_DIR=$1
     local WE_ARE_HERE=$(pwd)
@@ -38,6 +39,7 @@ create_env_with_venvman() {
 activate_env_with_venvman_create_req_txt(){
     local VERSION=$1
     local NAME=$2
+    local PACKAGES=$3
 
     echo "🚀 Activating virtual environment..."
     venvman activate -v $VERSION -n $NAME
@@ -92,6 +94,23 @@ check_freeze_req_files() {
     fi
 }
 
+list_envs_with_venvman() {
+    local VERSION=$1
+    local VENV=$2
+    local VENV_CLONE=$3
+    local OUTPUT=$(venvman list --version $VERSION)
+    local EXPECTED="Available virtual environments for Python 3.11:
+$VENV
+$VENV_CLONE"
+    echo "Testing venvman list"
+    if [[ $OUTPUT != $EXPECTED ]]; then
+        echo "ERROR: venvman list is not working"
+        echo "output: $OUTPUT"
+        echo "expected: $EXPECTED"
+        return 1
+    fi
+}
+
 delete_venv_with_venvman() {
     local VERSION=$1
     local NAME=$2
@@ -104,6 +123,27 @@ delete_venv_with_venvman() {
     echo "venvman delete: SUCCESS deleteing $NAME"
 }
 
+navigate_to_site_packages_with_venvman() {
+    local VENV=$1
+    local PACKAGE=$2
+    local MY_PWD=$(pwd)
+    echo "Testing venvman site-packages"
+    venvman site-packages
+    if [[ ! $(pwd) == *"$VENV"* ]]; then
+        echo "venvman site-packages does not work"
+        echo $(pwd)
+        return 1
+    fi
+    cd $MY_PWD
+    venvman site-packages --package $PACKAGE
+    if [[ ! $(pwd) == *"$PACKAGE"* && ! $(pwd) == *"$VENV"* ]]; then
+        echo "venvman site-packages does not work"
+        echo $(pwd)
+        return 1
+    fi
+    cd $MY_PWD
+}
+
 test() {
     set -e
     local TESTING_DIR="$(pwd)/_test_here"
@@ -112,6 +152,8 @@ test() {
     local VENV="test_env"
     local VENV_CLONE="test_env_clone"
     local VERSION=3.11
+    local PACKAGES="numpy"
+    local PACKAGE_TO_CHECK="numpy"
 
     # Ensure cleanup happens if any command fails
     trap 'rm -rf "$TESTING_DIR"; echo "Test failed. Cleaned up $TESTING_DIR"; return 1' ERR
@@ -119,18 +161,22 @@ test() {
     setup_testing_directory "$TESTING_DIR"
     set_env_variables_source_venvman "$VENVMAN_ROOT_DIR" "$VENVMAN_ENVS_DIR"
     create_env_with_venvman "$VERSION" "$VENV"
-    activate_env_with_venvman_create_req_txt "$VERSION" "$VENV"
+    activate_env_with_venvman_create_req_txt "$VERSION" "$VENV" $PACKAGES
+    navigate_to_site_packages_with_venvman $VENV $PACKAGE_TO_CHECK
     deactivate_enviornment
     clone_venv_with_venvman "$VERSION" "$VENV" "$VENV_CLONE"
-    activate_env_with_venvman_create_req_txt "$VERSION" "$VENV_CLONE"
+    activate_env_with_venvman_create_req_txt "$VERSION" "$VENV_CLONE" $PACKAGES
+    navigate_to_site_packages_with_venvman $VENV_CLONE $PACKAGE_TO_CHECK
     deactivate_enviornment
     check_freeze_req_files "${VENV}_req.txt" "${VENV_CLONE}_req.txt"
+    list_envs_with_venvman $VERSION $VENV $VENV_CLONE
     delete_venv_with_venvman "$VERSION" "$VENV" 
     delete_venv_with_venvman "$VERSION" "$VENV_CLONE"
 
     # Disable trap on success
     trap - ERR
-    echo "🎉 All tests passed!"
+    echo "All tests passed!"
+    rm -rf $TESTING_DIR
 }
 
 test
