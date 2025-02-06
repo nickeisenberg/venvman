@@ -68,7 +68,8 @@ function _venvman_make() {
     if [[ -n $NAME  && -n $VERSION && ! -n $VENV_PATH ]]; then
         local VENV_PATH="$VENVMAN_ENVS_DIR/$VERSION/$NAME"
         if [[ ! -d $VENVMAN_ENVS_DIR/$VERSION ]]; then
-            read -p "WARNING: The directory $VENVMAN_ENVS_DIR/$VERSION does not exit. Do you want to create it now? [y/N]" response
+            echo -n "WARNING: The directory $VENVMAN_ENVS_DIR/$VERSION does not exit. Do you want to create it now? [y/N]: "
+            read -r response
 
             if [[ $response =~ ^[Yy]$ ]]; then
                 mkdir -p $VENV_PATH
@@ -373,7 +374,8 @@ function _venvman_delete() {
     
     local VENV_PATH="$VENVMAN_ENVS_DIR/$VERSION/$NAME"
 
-    read -p "Are you sure you want to delete virtual environment $VENV_PATH? [y/N]: " response
+    echo -n "Are you sure you want to delete virtual environment $VENV_PATH? [y/N]: " 
+    read -r response
 
     if [[ "$response" =~ ^[Yy]$ ]]; then
         rm -rf "$VENV_PATH"
