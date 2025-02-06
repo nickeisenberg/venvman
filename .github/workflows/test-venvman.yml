@@ -1,0 +1,38 @@
+name: venvman CI Test
+
+on:
+  push:
+    branches:
+      - master 
+  pull_request:
+    branches:
+      - master 
+  workflow_dispatch:
+
+jobs:
+  test-venvman:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Update System Packages
+        run: |
+          sudo apt update
+          sudo apt upgrade -y
+
+      - name: Install Python 3.11 and venv
+        run: |
+          sudo apt install -y python3.11 python3.11-venv python3.10-venv
+
+      - name: Download and Install venvman
+        run: |
+          curl -sSL https://raw.githubusercontent.com/nickeisenberg/venvman/master/install.sh -o install.sh
+          bash install.sh
+          source ~/.bashrc
+
+      - name: Run venvman Tests
+        run: |
+          chmod +x tests/test_venvman.sh
+          tests/test_venvman.sh

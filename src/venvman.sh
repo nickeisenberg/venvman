@@ -1,9 +1,7 @@
 #!/usr/bin/env bash
 
-
 [[ -n $VENVMAN_ROOT_DIR ]] || VENVMAN_ROOT_DIR="$HOME/.venvman" 
 [[ -n $VENVMAN_ENVS_DIR ]] || VENVMAN_ENVS_DIR="$VENVMAN_ROOT_DIR/envs" 
-
 
 function _venvman_make() {
     while [ "$#" -gt 0 ]; do
@@ -102,7 +100,6 @@ function _venvman_make() {
     fi
 }
 
-
 function _venvman_activate() {
     while [ "$#" -gt 0 ]; do
         case $1 in
@@ -190,7 +187,6 @@ function _venvman_activate() {
     fi
 }
 
-
 function _venvman_clone() {
     local PARENT VERSION VENV_PATH PYTHON_EXEC
     while [ "$#" -gt 0 ]; do
@@ -272,7 +268,6 @@ function _venvman_clone() {
     fi
 }
 
-
 function _venvman_list() {
     local VERSION VERSIONS NUM_VERSIONS VENV_PATH
     local VENV_PATH="$VENVMAN_ENVS_DIR/"
@@ -328,7 +323,6 @@ function _venvman_list() {
         done
     fi
 }
-
 
 function _venvman_delete() {
     local NAME VERSION VENV_PATH
@@ -392,7 +386,6 @@ function _venvman_delete() {
     fi
 }
 
-
 function _venvman_site_packages() {
     local PKG
     local SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
@@ -436,7 +429,6 @@ function _venvman_site_packages() {
         return 1
     fi
 }
-
 
 function venvman() {
     [[ -n $VENVMAN_ROOT_DIR ]] && [[ -n $VENVMAN_ENVS_DIR ]] || \
