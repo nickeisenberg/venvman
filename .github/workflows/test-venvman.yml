@@ -41,10 +41,12 @@ jobs:
         run: |
           curl -sSL https://raw.githubusercontent.com/nickeisenberg/venvman/master/install.sh -o install.sh
           bash install.sh
+
+      - name: Download and Install venvman
+        run: |
           source ~/.bashrc
 
       - name: Run venvman Tests
         run: |
-          chmod +x tests/test_venvman.sh
-          tests/test_venvman.sh
+          bash tests/test_venvman.sh
 
