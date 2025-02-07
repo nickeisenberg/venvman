@@ -9,16 +9,23 @@ _venvman_shell_completion() {
     cur=${words[$CURRENT]:-}
     prev=${words[$CURRENT-1]:-}
 
-    local commands=("make" "clone" "activate" "list" "delete" "site-packages")
+    local -a commands=("make" "clone" "activate" "list" "delete" "site-packages")
+
+    get_options_from_dir() {
+        local DIR=$1
+        [[ -d "$DIR" ]] || return
+        echo $(ls -1 "$DIR" 2>/dev/null)
+    }
 
     local -a version_options
-    version_options=($(ls -1 "$VENVMAN_ENVS_DIR" 2>/dev/null))
+    version_options=($(get_options_from_dir $VENVMAN_ENVS_DIR))
      
     local -a name_options
-    get_name_options() {
-        local VENV_VERSION_DIR=$1
-        [[ -d "$VENV_VERSION_DIR" ]] || return
-        print -l -- "$VENV_VERSION_DIR"/*(N:t)
+
+    get_site_packages_dir() {
+        local py="import sys;"
+        local py="${py} print(next(p for p in sys.path if 'site-packages' in p))"
+        echo $(python -c $py 2>/dev/null)
     }
 
     local has_version=false
@@ -100,7 +107,8 @@ _venvman_shell_completion() {
                 compadd -- "--parent"
                 return 0
             elif [[ "$prev" == "--parent" && -n $version_provided ]]; then
-                name_options=($(get_name_options "$VENVMAN_ENVS_DIR/$version_provided"))
+                local dir="$VENVMAN_ENVS_DIR/$version_provided"
+                name_options=($(get_options_from_dir $dir))
                 compadd -a name_options
                 return 0
             elif [[ "$has_version" == true && "$has_parent" == true && $has_clone_to == false && "$prev" != "--clone-to" ]]; then
@@ -112,15 +120,70 @@ _venvman_shell_completion() {
             ;;
 
         activate)
-            compadd -a version_options
-            return 0
+            if [[ "$prev" == "activate" && "$has_version" == false ]]; then
+                compadd -- "--version" "--path"
+                return 0
+            elif [[ "$prev" == "--version" ]]; then
+                compadd -a version_options 
+                return 0
+            elif [[ "$has_version" == true && "$has_name" == false && "$prev" != "--name" ]]; then
+                compadd -- "--name"
+                return 0
+            elif [[ "$prev" == "--name" && -n $version_provided ]]; then
+                local dir="$VENVMAN_ENVS_DIR/$version_provided"
+                name_options=($(get_options_from_dir $dir))
+                compadd -a name_options
+                return 0
+            fi
+
+            if [[ "$prev" == "--path" ]]; then
+                compadd -- "--path"
+                _files -/
+                return 0
+            fi
             ;;
+
         list)
+            if [[ "$prev" == "list" ]]; then
+                compadd -- "--version"
+                return 0
+            elif [[ "$prev" == "--version" ]]; then
+                compadd -a version_options 
+            fi
+            ;;
+
+        delete)
+            if [[ "$prev" == "delete" && "$has_version" == false ]]; then
+                compadd -- "--version"
+                return 0
+            elif [[ "$prev" == "--version" ]]; then
+                compadd -a version_options 
+                return 0
+            elif [[ "$has_version" == true && "$has_name" == false && "$prev" != "--name" ]]; then
+                compadd -- "--name"
+                return 0
+            elif [[ "$prev" == "--name" && -n $version_provided ]]; then
+                local dir="$VENVMAN_ENVS_DIR/$version_provided"
+                name_options=($(get_options_from_dir $dir))
+                compadd -a name_options
+                return 0
+            fi
             return 0
             ;;
-        delete)
-            compadd -a version_options
-            return 0
+
+        site-packages)
+            if [[ "$prev" == "site-packages" ]]; then
+                compadd -- "--package"
+                return 0
+            elif [[ "$prev" == "--package" ]]; then
+                local site_packages_dir=$(get_site_packages_dir)
+                if [[ -d "$site_packages_dir" ]]; then
+                    local -a packages
+                    packages=($(get_options_from_dir $site_packages_dir))
+                    compadd -a packages 
+                fi
+                return 0
+            fi
             ;;
     esac
 }
