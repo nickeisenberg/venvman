@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 [[ -n $VENVMAN_ROOT_DIR ]] || VENVMAN_ROOT_DIR="$HOME/.venvman" 
 [[ -n $VENVMAN_ENVS_DIR ]] || VENVMAN_ENVS_DIR="$VENVMAN_ROOT_DIR/envs" 
 
