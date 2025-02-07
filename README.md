@@ -51,12 +51,34 @@ completion functions for other shells may occasionally have minor bugs.
 ## Installation
 
 #### Installing from `install.sh`
-To install, run the following:
+`venvman` uses two enviornment variables with the following default values: 
+  1) `VENVMAN_ROOT_DIR=$HOME/.venvman`: where the repo will be cloned to, ie,
+  ```
+git clone https://github.com/nickeisenberg/venvman.git $VENVMAN_DIR_ROOT/venvman
+  ```
+
+  2) `VENVMAN_ENVS_DIR=$HOME/.venvman/envs`: This is where the virtual
+  enviornments will be saved to. 
+
+If you are ok with default values of the above variables, then to install run
+the following:
+
 ```bash
 curl -sSL https://raw.githubusercontent.com/nickeisenberg/venvman/master/install.sh -o install.sh 
 bash install.sh
 ```
+
+If you would like to change to values of the above variables, then run
+
+```bash
+curl -sSL https://raw.githubusercontent.com/nickeisenberg/venvman/master/install.sh -o install.sh 
+VENVMAN_ROOT_DIR=<new_value_1>
+VENVMAN_ENVS_DIR=<new_value_2>
+bash install.sh $VENVMAN_ROOT_DIR $VENVMAN_ENVS_DIR
+```
+
 Then restart your shell and `venvman` will be available.
+
 
 #### Manual Installation
 If you want to manually go through the install steps, then do the following:
