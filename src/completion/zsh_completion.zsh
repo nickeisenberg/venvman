@@ -1,7 +1,4 @@
 _venvman_shell_completion() {
-    [[ -n $VENVMAN_ROOT_DIR ]] || local VENVMAN_ROOT_DIR="$HOME/.venvman" 
-    [[ -n $VENVMAN_ENVS_DIR ]] || local VENVMAN_ENVS_DIR="$VENVMAN_ROOT_DIR/envs" 
-
     local -a words
     local cur prev
 

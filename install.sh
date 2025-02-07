@@ -60,16 +60,18 @@ install() {
     local VENVMAN_ROOT_DIR=$1
     local VENVMAN_ENVS_DIR=$2
 
-    echo "FROM INSTALL ROOT $VENVMAN_ENVS_DIR"
-
     if [[ ! -n $VENVMAN_ROOT_DIR ]]; then
         VENVMAN_ROOT_DIR=$HOME/.venvman
     fi
-    if [[ ! -n $2 ]]; then
-        local VENVMAN_ENVS_DIR=${VENVMAN_ROOT_DIR}/envs
+
+    if [[ ! -n $VENVMAN_ENVS_DIR ]]; then
+        VENVMAN_ENVS_DIR=${VENVMAN_ROOT_DIR}/envs
     fi
 
+    echo "FROM INSTALL ROOT $VENVMAN_ENVS_DIR"
+
     make_dir_if_not_exitst $VENVMAN_ROOT_DIR || return 1
+    make_dir_if_not_exitst $VENVMAN_ENVS_DIR || return 1
 
     git clone https://github.com/nickeisenberg/venvman.git "${VENVMAN_ROOT_DIR}/venvman" || \
         echo "ERROR: git clone https://github.com/nickeisenberg/venvman.git did not work." return 1
@@ -86,9 +88,11 @@ Trying installing using the manual steps."
 
     local SHELL_PROFILE=$(detect_profile)
 
+    echo $SHELL_PROFILE
+
     append_text_to_file \
-        "VENVMAN_ROOT_DIR=${VENVMAN_ROOT_DIR} # there the repo will be cloned to
-VENVMAN_ENVS_DIR=${VENVMAN_ENVS_DIR} # where the virtual enviornments will be saved to
+        "export VENVMAN_ROOT_DIR=${VENVMAN_ROOT_DIR} # there the repo will be cloned to
+export VENVMAN_ENVS_DIR=${VENVMAN_ENVS_DIR} # where the virtual enviornments will be saved to
 source $VENVMAN_ROOT_DIR/venvman/src/venvman.sh
 source $VENVMAN_ROOT_DIR/venvman/src/completion/completion.sh  # adds completion for available shells" \
     $SHELL_PROFILE

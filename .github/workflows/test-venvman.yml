@@ -30,23 +30,26 @@ jobs:
 
       - name: Install Python 3.11 and venv
         run: |
-          sudo apt install -y python3.11 python3.11-venv python3.10-venv
+          sudo apt install -y python3.10 python3.10-venv python3.11 python3.11-venv 
+
+      - name: Install zsh
+        run: |
+          sudo apt install -y zsh
 
       - name: Verify Python Installation
         run: |
-          python3.11 --version
           python3.10 --version
+          python3.11 --version
 
       - name: Download and Install venvman
         run: |
           curl -sSL https://raw.githubusercontent.com/nickeisenberg/venvman/master/install.sh -o install.sh
           bash install.sh
 
-      - name: Source ~/.bashrc
+      - name: Run venvman Tests for bash
         run: |
-          source ~/.bashrc
-
-      - name: Run venvman Tests
-        run: |
+          export VENVMAN_ROOT_DIR=$HOME/.venvman
+          export VENVMAN_ENVS_DIR=$HOME/.venvman/envs
+          source $VENVMAN_ROOT_DIR/venvman/src/venvman.sh
+          source $VENVMAN_ROOT_DIR/venvman/src/completion/completion.sh
           bash tests/test_venvman.sh
-

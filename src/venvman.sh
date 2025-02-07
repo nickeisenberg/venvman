@@ -1,5 +1,27 @@
-[[ -n $VENVMAN_ROOT_DIR ]] || VENVMAN_ROOT_DIR="$HOME/.venvman" 
-[[ -n $VENVMAN_ENVS_DIR ]] || VENVMAN_ENVS_DIR="$VENVMAN_ROOT_DIR/envs" 
+function _venvman_err_msg_missing_option_value() {
+    local COMMAND=$1
+    local INPUT_OPTION_TYPE=$2
+    local GIVE_USAGE=$3
+
+    if [[ -z $GIVE_USAGE ]]; then
+        local GIVE_USAGE=true
+    fi
+
+    echo "ERROR: Enter a value for ${INPUT_OPTION_TYPE}."
+
+    if [[ $GIVE_USAGE == true ]];then 
+        echo "See 'venvman ${COMMAND} --help' for usage."
+    fi
+}
+
+
+function _venvman_err_msg_invalid_option() {
+    local COMMAND=$1
+    local INPUTED_OPTION=$2
+    echo "ERROR: Invalid option '${2}'"
+    echo "See 'venvman ${COMMAND} --help' for usage."
+}
+
 
 function _venvman_make() {
     while [ "$#" -gt 0 ]; do
@@ -9,7 +31,7 @@ function _venvman_make() {
                     local NAME=$2
                     shift 2
                 else
-                    echo "ERROR: Enter a name for --name. \`venvman make --help \`"
+                    _venvman_err_msg_missing_option_value "make" "--name"
                     return 1
                 fi
                 ;;
@@ -19,7 +41,7 @@ function _venvman_make() {
                     local PYTHON_EXEC="python$VERSION"
                     shift 2
                 else
-                    echo "ERROR: Enter a version for --version. \`venvman make --help \`"
+                    _venvman_err_msg_missing_option_value "make" "--version"
                     return 1
                 fi
                 ;;
@@ -27,10 +49,8 @@ function _venvman_make() {
                 if [[ -n $2 ]]; then
                     local VENV_PATH=$2
                     shift 2
-                elif [[ ! -n $2 ]]; then
-                    local VENV_PATH="./.venvman"
                 else
-                    echo "ERROR: Enter a path for --path. \`venvman make --help \`"
+                    _venvman_err_msg_missing_option_value "make" "--path"
                     return 1
                 fi
                 ;;
@@ -50,34 +70,28 @@ function _venvman_make() {
                 return 0
                 ;;
             *)
-                echo "something is wrong"
+                _venvman_err_msg_invalid_option "make" "${1}"
                 return 1
                 ;;
         esac
     done
 
-    if ! command -v $PYTHON_EXEC &> /dev/null; then
-        echo "ERROR: Python version $VERSION is not available on this system."
+    if ! command $PYTHON_EXEC --version > /dev/null; then
         return 1
     fi
 
     if [[ -n $NAME  && -n $VERSION && ! -n $VENV_PATH ]]; then
         local VENV_PATH="$VENVMAN_ENVS_DIR/$VERSION/$NAME"
         if [[ ! -d $VENVMAN_ENVS_DIR/$VERSION ]]; then
-            echo -n "WARNING: The directory $VENVMAN_ENVS_DIR/$VERSION does not exit. Do you want to create it now? [y/N]: "
+            echo "WARNING: The directory ${VENVMAN_ENVS_DIR}/${VERSION} does not exist."
+            echo "It must be created to continue."
+            echo -n "Do you want to create it now? [y/N]: "
             read -r response
 
             if [[ $response =~ ^[Yy]$ ]]; then
-                mkdir -p $VENV_PATH
-            else
-                echo "ERROR: $VENVMAN_ENVS_DIR/$VERSION must be created to run \`venvman make\`" return 1
-            fi
-
-            if [[ -d $VENV_PATH ]]; then
-                echo "SUCCESS: $VENVMAN_ENVS_DIR/$VERSION has been created."
-            else
-                echo "FAIL: There was an issue with creating $VENVMAN_ENVS_DIR/$VERSION."
-                return 1
+                if ! mkdir -p $VENV_PATH; then
+                    return 1
+                fi
             fi
         fi
 
@@ -85,7 +99,11 @@ function _venvman_make() {
 
     elif [[ -n $NAME  && -n $VERSION && -n $VENV_PATH ]]; then
         local VENV_PATH="$VENV_PATH/$NAME"
-        $PYTHON_EXEC -m venv $VENV_PATH
+
+        if ! $PYTHON_EXEC -m venv $VENV_PATH; then
+            return 1
+        fi
+
         local PATH_TO_ACTIVATE=$(find $VENV_PATH -type f -name "activate")
         if [[ -d $VENV_PATH && -f $PATH_TO_ACTIVATE ]]; then
             echo "SUCCESS: The enviornment has been created at $VENV_PATH."
@@ -93,10 +111,11 @@ function _venvman_make() {
         fi
 
     else 
-        echo "ERROR: Invalid usage. see \`venvman make --help\`."
+        echo "ERROR: Invalid usage. see 'venvman make --help'."
         return 1
     fi
 }
+
 
 function _venvman_activate() {
     while [ "$#" -gt 0 ]; do
@@ -106,7 +125,7 @@ function _venvman_activate() {
                     local NAME=$2
                     shift 2
                 else
-                    echo "ERROR: Enter a name for --name. See \`venvman activate --help \`"
+                    _venvman_err_msg_missing_option_value "activate" "--name"
                     return 1
                 fi
                 ;;
@@ -115,7 +134,7 @@ function _venvman_activate() {
                     local VERSION=$2
                     shift 2
                 else
-                    echo "ERROR: Enter a version for --version.  See \`venvman activate --help \`"
+                    _venvman_err_msg_missing_option_value "activate" "--version"
                     return 1
                 fi
                 ;;
@@ -123,10 +142,8 @@ function _venvman_activate() {
                 if [[ -n $2 ]]; then
                     local VENV_PATH=$2
                     shift 2
-                elif [[ ! -n $2 ]]; then
-                    local VENV_PATH="./.venvman"
                 else
-                    echo "ERROR: Enter a path for --path. See \`venvman activate --help \`"
+                    _venvman_err_msg_missing_option_value "activate" "--path"
                     return 1
                 fi
                 ;;
@@ -146,7 +163,7 @@ function _venvman_activate() {
                 return 0
                 ;;
             *)
-                echo "something is wrong"
+                _venvman_err_msg_invalid_option "activate" "${1}"
                 return 1
                 ;;
         esac
@@ -157,36 +174,34 @@ function _venvman_activate() {
         return 1
 
     elif [[ -n $NAME  && ! -n $VERSION ]] || [[ -n $VERSION  && ! -n $NAME ]]; then
-        echo "ERROR: --path should not be used with --version and --name and vice versa."
+        _venvman_err_msg_missing_option_value "activate" "--name and --version"
         return 1
     fi
 
     if [[ -n $NAME  && -n $VERSION  ]]; then
         local VENV_PATH="$VENVMAN_ENVS_DIR/$VERSION/$NAME"
-        local PATH_TO_ACTIVATE=$(find $VENV_PATH -type f -name "activate")
-        if [[ -n $PATH_TO_ACTIVATE ]]; then
-            source $PATH_TO_ACTIVATE
-            return 0
-        else
-            echo "ERROR: activate script cannot be found at $PATH_TO_ACTIVATE."
-        fi
-
-    elif [[ -n $VENV_PATH && ! -n $NAME  && ! -n $VERSION  ]]; then
-        local PATH_TO_ACTIVATE=$(find $VENV_PATH -type f -name "activate")
-        if [[ -n $PATH_TO_ACTIVATE ]]; then
-            source $PATH_TO_ACTIVATE
-            return 0
-        else
-            echo "ERROR: activate script cannot be found at $PATH_TO_ACTIVATE."
-        fi
+    fi
+    
+    if [[ -d $VENV_PATH ]]; then
+        local PATH_TO_ACTIVATE=$(find "${VENV_PATH}" -type f -name "activate")
     else
-        echo "ERROR: Invalid usage. See \`venvman activate --help \`"
+        echo "ERROR: ${VENV_PATH} does not exist."
+        return 1
+    fi
+
+    if [[ -z $PATH_TO_ACTIVATE ]]; then
+        echo "ERROR: The following command could not find the activate script:"
+        echo "    'find "${VENV_PATH}" -type f -name "activate"'"
+        return 1
+    fi
+    
+    if ! source $PATH_TO_ACTIVATE; then
         return 1
     fi
 }
 
+
 function _venvman_clone() {
-    local PARENT VERSION VENV_PATH PYTHON_EXEC
     while [ "$#" -gt 0 ]; do
         case $1 in
             -p | --parent)
@@ -194,7 +209,7 @@ function _venvman_clone() {
                     local PARENT=$2
                     shift 2
                 else
-                    echo "Enter a name for the parent venv with --parent"
+                    _venvman_err_msg_missing_option_value "clone" "--parent"
                     return 1
                 fi
                 ;;
@@ -204,7 +219,7 @@ function _venvman_clone() {
                     local PYTHON_EXEC="python$VERSION"
                     shift 2
                 else
-                    echo "Enter a version for --version"
+                    _venvman_err_msg_missing_option_value "clone" "--version"
                     return 1
                 fi
                 ;;
@@ -213,7 +228,7 @@ function _venvman_clone() {
                     local CLONE_TO=$2
                     shift 2
                 else
-                    echo "Enter a version for --clone-to"
+                    _venvman_err_msg_missing_option_value "clone" "--clone-to"
                     return 1
                 fi
                 ;;
@@ -232,39 +247,51 @@ function _venvman_clone() {
                 return 0
                 ;;
             *)
-                echo "something is wrong"
+                _venvman_err_msg_invalid_option "clone" "${1}"
                 return 1
                 ;;
         esac
     done
-
-    if ! command -v $PYTHON_EXEC &> /dev/null; then
-        echo "Python version $VERSION not available on this system."
+    
+    local OPTIONS=( "--parent" "--version" "--clone-to" )
+    local INPUTS=(  $PARENT  $VERSION  $CLONE_TO )
+    local MISSING_VALUE=false
+    for ((i = 0; i < 3; i++)); do
+        local OPTION=${OPTIONS[i]}
+        local INPUT=${INPUTS[i]}
+        if [[ -z $INPUT ]]; then
+            local MISSING_VALUE=true
+            _venvman_err_msg_missing_option_value "clone" "${OPTION}" false
+        fi
+    done
+    if [[ "${MISSING_VALUE}" == true ]]; then
+        echo "See 'venvman clone --help' for usage."
         return 1
     fi
 
     if [[ $PARENT == $CLONE_TO ]]; then
-        echo "The name of the child repo must have a different name than its parent"
+        echo "ERROR: The value for --parent must differ from --clone-to."
         return 1
     fi
 
-    if [[ -n $PARENT && -n $VERSION && -n $CLONE_TO ]]; then
+    if ! command $PYTHON_EXEC --version > /dev/null; then
+        return 1
+    fi
 
-        _venvman_activate --version $VERSION --name $PARENT
-        local PARENT_SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
-        deactivate
+    _venvman_activate --version $VERSION --name $PARENT
+    local PARENT_SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
+    deactivate
 
-        _venvman_make --version $VERSION --name $CLONE_TO
-        _venvman_activate --version $VERSION --name $CLONE_TO
-        local CLONE_SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
-        deactivate
+    _venvman_make --version $VERSION --name $CLONE_TO
+    _venvman_activate --version $VERSION --name $CLONE_TO
+    local CLONE_SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
+    deactivate
 
-        cp -r $PARENT_SITE_PACKAGES_DIR/* $CLONE_SITE_PACKAGES_DIR/
-
-    else 
-        echo "invalid usage"
+    if ! cp -r $PARENT_SITE_PACKAGES_DIR/* $CLONE_SITE_PACKAGES_DIR/; then
+        return 1
     fi
 }
+
 
 function _venvman_list() {
     local VERSION VERSIONS NUM_VERSIONS VENV_PATH
@@ -277,7 +304,7 @@ function _venvman_list() {
                     local VENV_PATH="$VENV_PATH/$VERSION"
                     shift 2
                 else
-                    echo "Enter a version for --version"
+                    _venvman_err_msg_missing_option_value "list" "--version"
                     return 1
                 fi
                 ;;
@@ -295,7 +322,7 @@ function _venvman_list() {
                 return 0
                 ;;
             *)
-                echo "something is wrong"
+                _venvman_err_msg_invalid_option "list" "${1}"
                 return 1
                 ;;
         esac
@@ -303,24 +330,24 @@ function _venvman_list() {
 
     if [[ -n $VERSION ]]; then
         echo "Available virtual environments for Python $VERSION:"
-        ls "$VENV_PATH"
+        if ! ls "$VENV_PATH"; then
+            return 1
+        fi
 
     else
-        local VERSIONS=($(ls "$VENVMAN_ENVS_DIR"))  # Store all versions in an array
-        local NUM_VERSIONS=${#VERSIONS[@]}    # Get the total number of versions
-    
-        for ((i = 0; i < $NUM_VERSIONS; i++)); do
-            local VERSION=${VERSIONS[i]}
+        local VERSIONS=($(ls "$VENVMAN_ENVS_DIR"))
+        local NUM_VERSIONS=${#VERSIONS[@]}
+        for ((i = 0; i < NUM_VERSIONS; i++)); do
+            VERSION=${VERSIONS[i]}
             echo "Available virtual environments for Python $VERSION:"
             ls "$VENVMAN_ENVS_DIR/$VERSION"
-            
-            # Print echo unless it's the last item
             if [[ $i -lt $((NUM_VERSIONS - 1)) ]]; then
                 echo
             fi
         done
     fi
 }
+
 
 function _venvman_delete() {
     local NAME VERSION VENV_PATH
@@ -331,7 +358,7 @@ function _venvman_delete() {
                     local NAME=$2
                     shift 2
                 else
-                    echo "Enter a name for --name"
+                    _venvman_err_msg_missing_option_value "delete" "--name"
                     return 1
                 fi
                 ;;
@@ -340,7 +367,7 @@ function _venvman_delete() {
                     local VERSION=$2
                     shift 2
                 else
-                    echo "Enter a version for --version"
+                    _venvman_err_msg_missing_option_value "delete" "--version"
                     return 1
                 fi
                 ;;
@@ -358,7 +385,7 @@ function _venvman_delete() {
                 return 0
                 ;;
             *)
-                echo "something is wrong"
+                _venvman_err_msg_invalid_option "delete" "${1}"
                 return 1
                 ;;
         esac
@@ -375,7 +402,7 @@ function _venvman_delete() {
             echo "SUCCESS: Virtual environment $VENV_PATH has been deleted."
             return 0
         else
-            echo "FAIL: Virtual environment $VENV_PATH has not been deleted."
+            echo "ERROR: $VENV_PATH has not been deleted."
             return 1
         fi
     else
@@ -384,9 +411,8 @@ function _venvman_delete() {
     fi
 }
 
+
 function _venvman_site_packages() {
-    local PKG
-    local SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
     while [ "$#" -gt 0 ]; do
         case $1 in
             -pkg | --package)
@@ -395,6 +421,7 @@ function _venvman_site_packages() {
                     shift 2
                 else
                     echo "Enter a package for --package"
+                    _venvman_err_msg_missing_option_value "site-packages" "--package"
                     return 1
                 fi
                 ;;
@@ -412,32 +439,66 @@ function _venvman_site_packages() {
                 return 0
                 ;;
             *)
-                echo "something is wrong"
+                _venvman_err_msg_invalid_option "site-packages" "${1}"
                 return 1
                 ;;
         esac
     done
+
+    local SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
     
     if [[ ! -n $PKG ]]; then
-        cd "$SITE_PACKAGES_DIR" || return
-    elif [[ -d "$SITE_PACKAGES_DIR/$PKG" ]]; then
-        cd "$SITE_PACKAGES_DIR/$PKG" || return
+        cd "$SITE_PACKAGES_DIR"
+        return 0
     else
-        echo "Error: Package '$PKG' does not exist in $SITE_PACKAGES_DIR"
-        return 1
+        if ! cd "$SITE_PACKAGES_DIR/$PKG"; then
+            return 1
+        fi
     fi
 }
 
+
 function venvman() {
-    [[ -n $VENVMAN_ROOT_DIR ]] && [[ -n $VENVMAN_ENVS_DIR ]] || \
-        echo "ERROR: VENVMAN_ROOT_DIR and VENVMAN_ENVS_DIR must be set." \
+    if [[ -z $VENVMAN_ROOT_DIR ]] || [[ -z $VENVMAN_ENVS_DIR ]]; then 
+        echo "ERROR: VENVMAN_ROOT_DIR and VENVMAN_ENVS_DIR must be set."
+        echo "The following is suggested to solve this problem."
+        echo
+
+        echo "1) Run the following in you shell:"
+        echo
+        local MSG_LINES=(
+            "VENVMAN_ROOT_DIR=\$HOME/.venvman"
+            "mkdir -p \$VENVMAN_ROOT_DIR"
+            "git clone https://github.com/nickeisenberg/venvman.git "\${VENVMAN_ROOT_DIR}/venvman""
+        )
+        printf "%s\n" "${MSG_LINES[@]}"
+
+        echo
+        echo "2) Add the following in your shell's config:"
+        echo
+        local MSG_LINES=(
+            "VENVMAN_ROOT_DIR=\$HOME/.venvman"
+            "VENVMAN_ENVS_DIR=\$HOME/.venvman/envs"
+            "source \$VENVMAN_ROOT_DIR/venvman/src/venvman.sh"
+            "source \$VENVMAN_ROOT_DIR/venvman/src/completion/completion.sh"
+        )
+        printf "%s\n" "${MSG_LINES[@]}"
+
+        echo
+        echo "3) source your shell's config."
+
         return 1
-    
+    fi
 
     if [[ $# -lt 1 ]]; then
         echo "Usage: venvman <command> <python_version> [argument]"
         echo "Use 'venvman --help' for a list of available commands."
         return 1
+    fi
+        
+    # 0 based indexing to match with bash
+    if [[ -n $ZSH_VERSION ]]; then
+        setopt local_options KSH_ARRAYS
     fi
     
     local COMMAND=$1
