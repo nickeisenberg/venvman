@@ -42,7 +42,7 @@ jobs:
           curl -sSL https://raw.githubusercontent.com/nickeisenberg/venvman/master/install.sh -o install.sh
           bash install.sh
 
-      - name: Download and Install venvman
+      - name: Source ~/.bashrc
         run: |
           source ~/.bashrc
 
