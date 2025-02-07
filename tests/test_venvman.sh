@@ -17,7 +17,7 @@ test_install_venvman() {
         echo "Installing install.sh"
         bash install.sh $VENVMAN_ROOT_DIR $VENVMAN_ENVS_DIR
         source $VENVMAN_ROOT_DIR/venvman/src/venvman.sh
-        source $VENVMAN_ROOT_DIR/venvman/src/completion/venvman.sh
+        source $VENVMAN_ROOT_DIR/venvman/src/completion/completion.sh
     fi
 
     if ! venvman --help &> /dev/null; then
