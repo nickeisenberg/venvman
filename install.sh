@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 try_profile() {
-    if [ -z $1 ] || [ ! -f $1 ]; then
+    if [[ -z $1 ]] || [[ ! -f $1 ]]; then
         return 1
     fi
     echo $1
@@ -11,18 +11,19 @@ detect_profile() {
     local DETECTED_PROFILE
     DETECTED_PROFILE=''
 
-    if [ -n $BASH_VERSION ]; then
+    if [[ "$SHELL" == *"bash"* ]]; then
         if [ -f "$HOME/.bashrc" ]; then
               DETECTED_PROFILE="$HOME/.bashrc"
         elif [ -f "$HOME/.bash_profile" ]; then
               DETECTED_PROFILE="$HOME/.bash_profile"
         fi
 
-    elif [ -n $ZSH_VERSION ]; then
+    elif [[ "$SHELL" == *"zsh"* ]]; then
         DETECTED_PROFILE="$HOME/.zshrc"
     fi
 
-    if [ -z "$DETECTED_PROFILE" ]; then
+    if [[ -z "$DETECTED_PROFILE" ]]; then
+        echo "zzzz"
         for EACH_PROFILE in ".profile" ".bashrc" ".bash_profile" ".zshrc"; do
             if DETECTED_PROFILE="$(try_profile "${HOME}/${EACH_PROFILE}")"; then
                 break
@@ -30,7 +31,7 @@ detect_profile() {
         done
     fi
 
-    if [ -n "$DETECTED_PROFILE" ]; then
+    if [[ -n "$DETECTED_PROFILE" ]]; then
         echo "$DETECTED_PROFILE"
     else
         echo "ERROR: A profile (eg, bashrc, zshrc) was not found. Stopping install."
@@ -39,7 +40,7 @@ detect_profile() {
 }
 
 make_dir_if_not_exitst() {
-    if [ -z $1 ] || [ -d $1 ]; then
+    if [[ -z $1 ]] || [[ -d $1 ]]; then
         echo "$1 already exists. This may be a mistake. Stopping install to not overwrite anything."
         return 1
     fi
@@ -59,6 +60,8 @@ install() {
     local VENVMAN_ROOT_DIR=$1
     local VENVMAN_ENVS_DIR=$2
 
+    echo "FROM INSTALL ROOT $VENVMAN_ENVS_DIR"
+
     if [[ ! -n $VENVMAN_ROOT_DIR ]]; then
         VENVMAN_ROOT_DIR=$HOME/.venvman
     fi
@@ -66,11 +69,11 @@ install() {
         local VENVMAN_ENVS_DIR=${VENVMAN_ROOT_DIR}/envs
     fi
 
-    make_dir_if_not_exitst $VENVMAN_ROOT_DIR ]] || return 1
+    make_dir_if_not_exitst $VENVMAN_ROOT_DIR || return 1
 
     git clone https://github.com/nickeisenberg/venvman.git "${VENVMAN_ROOT_DIR}/venvman" || \
         echo "ERROR: git clone https://github.com/nickeisenberg/venvman.git did not work." return 1
-    
+
     local VENVMAN_SRC=${VENVMAN_ROOT_DIR}/venvman/src/venvman.sh
     local VENVMAN_COMPLETION=${VENVMAN_ROOT_DIR}/venvman/src/completion/completion.sh
     if [[ ! -f $VENVMAN_SRC || ! -f $VENVMAN_COMPLETION ]]; then
@@ -94,4 +97,4 @@ source $VENVMAN_ROOT_DIR/venvman/src/completion/completion.sh  # adds completion
 or run \`source $SHELL_PROFILE\` to run in this current shell session"
 }
 
-install
+install $@

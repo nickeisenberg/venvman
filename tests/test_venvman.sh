@@ -1,32 +1,44 @@
 #!/usr/bin/env bash
 
+test_install_venvman() {
+    local VENVMAN_ROOT_DIR=$1
+    local VENVMAN_ENVS_DIR=$2
 
-setup_testing_directory() {
-    local TESTING_DIR=$1
-    local WE_ARE_HERE=$(pwd)
-    mkdir -p $TESTING_DIR
-    cd $TESTING_DIR
-    if [[ ! $(pwd) == *"${1}"*  ]]; then
-        echo "$1 was not created"
-        cd $WE_ARE_HERE
-        rm -rf $TESTING_DIR
+    local LOCAL_PS1="$(whoami)@$(hostname)"
+    
+    if [[ $LOCAL_PS1 == "nicholas@lenovo" ]]; then
+        echo "Running install.sh from nicholas@lenovo"
+        bash $HOME/.venvman/venvman/install.sh $VENVMAN_ROOT_DIR $VENVMAN_ENVS_DIR
+        source $VENVMAN_ROOT_DIR/venvman/src/venvman.sh
+        source $VENVMAN_ROOT_DIR/venvman/src/completion/completion.sh
+    else
+        echo "Curling install.sh"
+        curl -sSL https://raw.githubusercontent.com/nickeisenberg/venvman/master/install.sh -o install.sh 
+        echo "Installing install.sh"
+        bash install.sh $VENVMAN_ROOT_DIR $VENVMAN_ENVS_DIR
+        source $VENVMAN_ROOT_DIR/venvman/src/venvman.sh
+        source $VENVMAN_ROOT_DIR/venvman/src/completion/venvman.sh
+    fi
+
+    if ! venvman --help &> /dev/null; then
+        echo "venvman was not sourced"
+        return 1
+    fi
+
+    cd $VENVMAN_ROOT_DIR
+    if [[ ! $(pwd) == *"${VENVMAN_ROOT_DIR}"*  ]]; then
+        echo "pwd: $(pwd)"
+        echo "should be in $VENVMAN_ROOT_DIR"
         return 1
     fi
 }
 
+
 set_env_variables_source_venvman() {
-    VENVMAN_ROOT_DIR=$1
-    VENVMAN_ENVS_DIR=$2
+    local VENVMAN_ROOT_DIR=$1
+    local VENVMAN_ENVS_DIR=$2
     if [[ ! -n $VENVMAN_ROOT_DIR && ! -n $VENVMAN_ENVS_DIR ]]; then
         echo "VENVMAN_ROOT_DIR VENVMAN_ENVS_DIR were not set"
-        return 1
-    fi
-    curl -sSL https://raw.githubusercontent.com/nickeisenberg/venvman/master/install.sh -o install.sh 
-    bash install.sh $VENVMAN_ROOT_DIR $VENVMAN_ENVS_DIR
-    source ${VENVMAN_ROOT_DIR}/venvman/src/venvman.sh
-    source ${VENVMAN_ROOT_DIR}/venvman/src/completion/completion.sh
-    if ! venvman --help &> /dev/null; then
-        echo "venvman was not sourced"
         return 1
     fi
 }
@@ -105,9 +117,13 @@ list_envs_with_venvman() {
     local VENV=$2
     local VENV_CLONE=$3
     local OUTPUT=$(venvman list --version $VERSION)
-    local EXPECTED="Available virtual environments for Python 3.11:
-$VENV
-$VENV_CLONE"
+    local EXPECTED_LINES=(
+        "Available virtual environments for Python 3.11:"
+        "$VENV"
+        "$VENV_CLONE"
+    )
+    local EXPECTED=$(printf "%s\n" "${EXPECTED_LINES[@]}")
+
     echo "Testing venvman list"
     if [[ $OUTPUT != $EXPECTED ]]; then
         echo "ERROR: venvman list is not working"
@@ -164,7 +180,7 @@ test() {
     # Ensure cleanup happens if any command fails
     trap 'rm -rf "$TESTING_DIR"; echo "Test failed. Cleaned up $TESTING_DIR"; return 1' ERR
 
-    setup_testing_directory "$TESTING_DIR"
+    test_install_venvman "$VENVMAN_ROOT_DIR" "$VENVMAN_ENVS_DIR"
     set_env_variables_source_venvman "$VENVMAN_ROOT_DIR" "$VENVMAN_ENVS_DIR"
     create_env_with_venvman "$VERSION" "$VENV"
     activate_env_with_venvman_create_req_txt "$VERSION" "$VENV" $PACKAGES
