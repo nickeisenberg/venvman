@@ -1,26 +1,33 @@
 ## Table of Contents
 1. [Introduction](#introduction)
 2. [Installation](#installation)
-3. [Setup](#setup)
+   <ol>
+      <li><a href="#make-a-virtual-environment">
+        From install.sh
+     </a></li>
+      <li><a href="#activate-a-virtual-environment">
+        Manual installation
+      </a></li>
+    </ol>
 4. [Usage](#usage)
    <ol>
       <li><a href="#make-a-virtual-environment">
-        Make a Virtual Environment
-     </a></li>
-      <li><a href="#activate-a-virtual-environment">
-        Activate a Virtual Environment
-      </a></li>
-      <li><a href="#list-available-virtual-environments">
-        List Available Virtual Enviornments
-      </a></li>
-      <li><a href="#delete-a-virtual-environment">
-        Delete a Virtual Environment
-      </a></li>
-      <li><a href="#navigate-to-site-packages">
-        Navigate to site-packages
+        Make a virtual environment
       </a></li>
       <li><a href="#clone-a-venv">
         Clone an existing enviornment
+      </a></li>
+      <li><a href="#activate-a-virtual-environment">
+        Activate a virtual environment
+      </a></li>
+      <li><a href="#list-available-virtual-environments">
+        List available virtual enviornments
+      </a></li>
+      <li><a href="#delete-a-virtual-environment">
+        Delete a virtual environment
+      </a></li>
+      <li><a href="#navigate-to-site-packages">
+        Navigate to site-packages
       </a></li>
    </ol>
 

@@ -354,6 +354,7 @@ test_venvman_list() {
 
     local OUTPUT_ALL=$(venvman list)
     local EXPECTED_ALL_LINES=(
+        ""
         "Available virtual environments for Python ${TEST_VERSION_1}:"
         "$(ls $VENVS_PATH_1)"
         ""
@@ -377,6 +378,7 @@ test_venvman_list() {
 
     local OUTPUT_V2=$(venvman list --version $TEST_VERSION_2)
     local EXPECTED_V2_LINES=(
+        ""
         "Available virtual environments for Python ${TEST_VERSION_2}:"
         "$(ls $VENVS_PATH_2)"
     )
