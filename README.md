@@ -1,14 +1,28 @@
 ## Table of Contents
-- [Introduction](#introduction)
-- [Installation](#installation)
-- [Setup](#setup)
-- [Usage](#usage)
-  - [Make a Virtual Environment](#make-a-virtual-environment)
-  - [Activate a Virtual Environment](#activate-a-virtual-environment)
-  - [List Available Virtual Enviornments](#list-available-virtual-environments)
-  - [Delete a Virtual Environment](#delete-a-virtual-environment)
-  - [Navigate to site-packages](#navigate-to-site-packages)
-
+1. [Introduction](#introduction)
+2. [Installation](#installation)
+3. [Setup](#setup)
+4. [Usage](#usage)
+   <ol>
+      <li><a href="#make-a-virtual-environment">
+        Make a Virtual Environment
+     </a></li>
+      <li><a href="#activate-a-virtual-environment">
+        Activate a Virtual Environment
+      </a></li>
+      <li><a href="#list-available-virtual-environments">
+        List Available Virtual Enviornments
+      </a></li>
+      <li><a href="#delete-a-virtual-environment">
+        Delete a Virtual Environment
+      </a></li>
+      <li><a href="#navigate-to-site-packages">
+        Navigate to site-packages
+      </a></li>
+      <li><a href="#clone-a-venv">
+        Clone an existing enviornment
+      </a></li>
+   </ol>
 
 ## Introduction
 `venvman` is a minimal virtual environment manager that supports the creation,
@@ -86,7 +100,7 @@ If you want to manually go through the install steps, then do the following:
 ```bash
 VENVMAN_ROOT_DIR=$HOME/.venvman
 mkdir -p $VENVMAN_ROOT_DIR
-git clone https://github.com/nickeisenberg/venvman.git "${VENVMAN_ROOT_DIR}/venvman"
+git clone https://github.com/nickeisenberg/venvman.git "${venvman_root_dir}/venvman"
 ```
 
 Then add the following to your `bashrc` or `zshrc` etc:
