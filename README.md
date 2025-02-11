@@ -2,10 +2,10 @@
 1. [Introduction](#introduction)
 2. [Installation](#installation)
    <ol>
-      <li><a href="#make-a-virtual-environment">
-        From install.sh
+      <li><a href="#installing-from-install.sh">
+        Installing from install.sh
      </a></li>
-      <li><a href="#activate-a-virtual-environment">
+      <li><a href="#manual-installation">
         Manual installation
       </a></li>
     </ol>
@@ -14,8 +14,8 @@
       <li><a href="#make-a-virtual-environment">
         Make a virtual environment
       </a></li>
-      <li><a href="#clone-a-venv">
-        Clone an existing enviornment
+      <li><a href="#clone-a-virtual-enviornment">
+        Clone a existing enviornment
       </a></li>
       <li><a href="#activate-a-virtual-environment">
         Activate a virtual environment
@@ -119,8 +119,8 @@ venvman() {
 The following are the available commands of `venvman`.
 ```bash
 venvman make 
-venvman activate
 venvman clone 
+venvman activate
 venvman delete 
 venvman list
 venvman site-packages
@@ -171,7 +171,7 @@ will create an enviornment named `myenv` with `python3.10 -m venv
 <custom_path>/myenv` and it will save it to `<custom_path>/myenv`.
 
 
-### Clone a Virtual Environment
+### Clone a Virtual Enviornment
 To clone a virtual enviornment, you do the following:
 
 ```bash
