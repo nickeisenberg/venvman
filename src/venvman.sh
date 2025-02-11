@@ -78,6 +78,88 @@ _venvman_unset_var_names() {
 }
 
 
+_venvman_command_help_tag() {
+    COMMAND=$1
+    shift
+
+    OPTIONS=""
+    OPTIONS_LENS=""
+    OPTIONS_MAX_LEN=0
+    OPTIONS_DESCRIPTIONS=""
+
+    EXAMPLES=""
+    EXAMPLES_LENS=""
+    EXAMPLES_MAX_LEN=0
+    EXAMPLES_DESCRIPTIONS=""
+
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --options)
+                shift
+                while [ "$#" -gt 0 ] && [ "${1}" != "--option-descriptions" ]; do
+                    OPTIONS="${OPTIONS}\n  $1"
+                    len=$(echo "$1" | wc -c)
+                    OPTIONS_LENS="${OPTIONS_LENS} $len"
+                    if [ $len -ge $OPTIONS_MAX_LEN ]; then
+                        OPTIONS_MAX_LEN="$len"
+                    fi
+                    shift
+                done
+                ;;
+            --option-descriptions)
+                shift
+                i=1
+                while [ "$#" -gt 0 ] && [ "${1}" != "--examples" ]; do
+                    len=$(echo "$OPTIONS_LENS" | awk -v i="$i" '{print $i}')
+                    delta=$(( $OPTIONS_MAX_LEN - $len ))
+                    spaces=$(printf '%*s' "$delta" '')
+                    OPTIONS_DESCRIPTIONS="${OPTIONS_DESCRIPTIONS}\n$spaces : $1"
+                    i=$((i + 1))
+                    shift
+                done
+                ;;
+            --examples)
+                shift
+                while [ "$#" -gt 0 ] && [ "${1}" != "--example-descriptions" ]; do
+                    EXAMPLES="${EXAMPLES}\n  $1"
+                    len=$(echo "$1" | wc -c)
+                    EXAMPLES_LENS="${EXAMPLES_LENS} $len"
+                    if [ "$len" -ge $EXAMPLES_MAX_LEN ]; then
+                        EXAMPLES_MAX_LEN="$len"
+                    fi
+                    shift
+                done
+                ;;
+            --example-descriptions)
+                shift
+                i=1
+                while [ "$#" -gt 0 ] && [ "${1#--}" = "$1" ]; do
+                    len=$(echo "$EXAMPLES_LENS" | awk -v i="$i" '{print $i}')
+                    delta=$(( $EXAMPLES_MAX_LEN - $len ))
+                    spaces=$(printf '%*s' "$delta" '')
+                    EXAMPLES_DESCRIPTIONS="${EXAMPLES_DESCRIPTIONS}\n$spaces : $1"
+                    i=$((i + 1))
+                    shift
+                done
+                ;;
+            *)
+                return 1
+                ;;
+        esac
+    done
+
+    # Print the help message
+    echo "Usage:"
+    echo "  venvman $COMMAND [options]"
+    echo
+    echo "Options:"
+    paste -d ' ' <(echo -e "$OPTIONS") <(echo -e "$OPTIONS_DESCRIPTIONS")
+    echo
+    echo "Examples:"
+    paste -d ' ' <(echo -e "$EXAMPLES") <(echo -e "$EXAMPLES_DESCRIPTIONS")
+}
+
+
 _venvman_make() {(
     while [ "$#" -gt 0 ]; do
         case $1 in
@@ -110,20 +192,27 @@ _venvman_make() {(
                 fi
                 ;;
             -h | --help)
-                echo "Usage:"
-                echo "  venvman make [options]"
-                echo
-                echo "Options:"
-                echo "  -n, --name <venv_name>              : Specify the name of the virtual environment to create."
-                echo "  -v, --version <python_version>      : Specify the Python version to use for the virtual environment."
-                echo "  -p, --path <venv_path>              : Manually specify the directory where the virtual environment should be created."
-                echo "  -h, --help                          : Display this help message."
-                echo
-                echo "Examples:"
-                echo "  venvman make -n project_env -v 3.10             : Create a virtual environment named 'project_env' using Python 3.10."
-                echo "  venvman make -n myenv -v 3.9 -p /custom/path    : Create 'myenv' using Python 3.9 at '/custom/path'."
+                _venvman_command_help_tag "make" \
+                    --options \
+                        "-n, --name <venv_name>" \
+                        "-v, --version <python_version>" \
+                        "-p, --path <venv_path>" \
+                        "-h, --help" \
+                    --option-descriptions \
+                        "Specify the name of the virtual environment." \
+                        "Specify the Python version to use." \
+                        "Manually specify the directory." \
+                        "Display this help message." \
+                    --examples \
+                        "venvman make -n project_env -v 3.10" \
+                        "venvman make -n myenv -v 3.9 -p /custom/path" \
+                    --example-descriptions \
+                        "Create 'project_env' with Python 3.10." \
+                        "Create 'myenv' with Python 3.9 at '/custom/path'."
+                shift
                 return 0
                 ;;
+
             *)
                 _venvman_err_msg_invalid_option "make" "$1"
                 return 1
@@ -203,18 +292,23 @@ _venvman_activate() {
                 fi
                 ;;
             -h | --help)
-                echo "Usage:"
-                echo "  venvman activate [options]"
-                echo
-                echo "Options:"
-                echo "  -n, --name <venv_name>                   : Specify the name of the virtual environment to activate."
-                echo "  -v, --version <python_version>           : Specify the Python version of the virtual environment."
-                echo "  -p, --path <venv_path>                   : Manually specify the path of the virtual environment."
-                echo "  -h, --help                               : Display this help message."
-                echo
-                echo "Examples:"
-                echo "  venvman activate -n myenv -v 3.10           : Activate 'myenv' created with Python 3.10"
-                echo "  venvman activate -p /custom/path/to/venv    : Activate virtual environment at a custom path."
+                _venvman_command_help_tag "activate"\
+                    --options \
+                        "-n, --name <venv_name>" \
+                        "-v, --version <python_version>" \
+                        "-p, --path <venv_path>" \
+                        "-h, --help" \
+                    --option-descriptions \
+                        "Specify the name of the virtual environment to activate." \
+                        "Specify the Python version of the virtual environment." \
+                        "Manually specify the path of the virtual environment." \
+                        "Display this help message." \
+                    --examples \
+                        "venvman activate -n myenv -v 3.10" \
+                        "venvman activate -p /custom/path/to/venv" \
+                    --example-descriptions \
+                        "Activate 'myenv' created with Python 3.10" \
+                        "Activate virtual environment at a custom path."
                 return 0
                 ;;
             *)
