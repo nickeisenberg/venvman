@@ -7,10 +7,10 @@ _venvman_err_msg_missing_option_value() {(
         GIVE_USAGE="true"
     fi
 
-    echo "ERROR: Enter a value for ${INPUT_OPTION_TYPE}."
+    echo "ERROR: Enter a value for ${INPUT_OPTION_TYPE}." >&2
 
     if [ "$GIVE_USAGE" = "true" ];then 
-        echo "See 'venvman ${COMMAND} --help' for usage."
+        echo "See 'venvman ${COMMAND} --help' for usage." >&2
     fi
 )}
 
@@ -57,7 +57,7 @@ _venvman_err_msg_missing_options() {(
 
 
     if [ "$MISSING" = true ]; then
-        echo "See 'venvman $COMMAND --help' for usage."
+        echo "See 'venvman $COMMAND --help' for usage." >&2
         return 1
     fi
 )}
@@ -66,8 +66,8 @@ _venvman_err_msg_missing_options() {(
 _venvman_err_msg_invalid_option() {(
     COMMAND=$1
     INPUTED_OPTION=$2
-    echo "ERROR: Invalid option '${2}'"
-    echo "See 'venvman ${COMMAND} --help' for usage."
+    echo "ERROR: Invalid option '${2}'" >&2
+    echo "See 'venvman ${COMMAND} --help' for usage." >&2
 )}
 
 
@@ -131,12 +131,11 @@ _venvman_make() {(
         esac
     done
 
-    if ! "$PYTHON_EXEC" --version > /dev/null; then
-        return 1
-    fi
+    "$PYTHON_EXEC" --version > /dev/null || return 1
 
     if [ -n "$NAME" ]  && [ -n "$VERSION" ] && [ -z "$VENV_PATH" ]; then
         VENV_PATH="${VENVMAN_ENVS_DIR}/${VERSION}/${NAME}"
+
         if [ ! -d "${VENVMAN_ENVS_DIR}/${VERSION}" ]; then
             echo "WARNING: The directory ${VENVMAN_ENVS_DIR}/${VERSION} does not exist."
             echo "It must be created to continue."
@@ -145,9 +144,7 @@ _venvman_make() {(
 
             case "$response" in
                 Y|y)
-                    if ! mkdir -p "$VENV_PATH"; then
-                        return 1
-                    fi
+                    mkdir -p "$VENV_PATH" || return 1
                     ;;
                 *)
                     echo "$VENV_PATH was not created."
@@ -157,26 +154,20 @@ _venvman_make() {(
 
         fi
 
-    if ! "$PYTHON_EXEC" -m venv "$VENV_PATH" > /dev/null; then
-        return 1
-    fi
-
     elif [ -n "$NAME" ]  && [ -n "$VERSION" ] && [ -n "$VENV_PATH" ]; then
         VENV_PATH="${VENV_PATH}/${NAME}"
 
-        if ! "$PYTHON_EXEC" -m venv "$VENV_PATH"; then
-            return 1
-        fi
-
-        PATH_TO_ACTIVATE=$(find "$VENV_PATH" -type f -name "activate")
-        if [ -d "$VENV_PATH" ] && [ -f "$PATH_TO_ACTIVATE" ]; then
-            echo "SUCCESS: The enviornment has been created at $VENV_PATH."
-            return 0
-        fi
-
     else 
-        echo "ERROR: Invalid usage. see 'venvman make --help'."
+        echo "ERROR: Invalid usage. see 'venvman make --help'." >&2
         return 1
+    fi
+
+    "$PYTHON_EXEC" -m venv $VENV_PATH || return 1
+
+    PATH_TO_ACTIVATE=$(find "$VENV_PATH" -type f -name "activate")
+    if [ -d "$VENV_PATH" ] && [ -f "$PATH_TO_ACTIVATE" ]; then
+        echo "SUCCESS: The enviornment has been created at $VENV_PATH."
+        return 0
     fi
 )}
 
@@ -333,38 +324,23 @@ _venvman_clone() {(
         return 1
     fi
 
-    if ! "$PYTHON_EXEC" --version > /dev/null; then
-        return 1
-    fi
+    "$PYTHON_EXEC" --version > /dev/null || return 1
 
-
-    if ! _venvman_activate --version "$VERSION" --name "$PARENT" > /dev/null; then
-        return 1
-    fi
+    _venvman_activate --version "$VERSION" --name "$PARENT" > /dev/null || return 1
 
     PARENT_SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
 
-    if ! deactivate > /dev/null; then
-        return 1
-    fi
+    deactivate > /dev/null || return 1
    
-    if ! _venvman_make --version "$VERSION" --name "$CLONE_TO"; then
-        return 1
-    fi
+    _venvman_make --version "$VERSION" --name "$CLONE_TO" || rm -rf "${CLONE_SITE_PACKAGES_DIR}" return 1
     
-    if ! _venvman_activate --version "$VERSION" --name "$CLONE_TO"; then
-        return 1
-    fi
+    _venvman_activate --version "$VERSION" --name "$CLONE_TO" || rm -rf "${CLONE_SITE_PACKAGES_DIR}" return 1
 
     CLONE_SITE_PACKAGES_DIR=$(pip show pip | grep Location | awk '{print $2}')
 
-    if ! deactivate; then
-        return 1
-    fi
+    deactivate > /dev/null || return 1
 
-    if ! cp -r "$PARENT_SITE_PACKAGES_DIR"/* "$CLONE_SITE_PACKAGES_DIR"/; then
-        return 1
-    fi
+    cp -r "${PARENT_SITE_PACKAGES_DIR}/"* "${CLONE_SITE_PACKAGES_DIR}/" || rm -rf "${CLONE_SITE_PACKAGES_DIR}" return 1
 )}
 
 
@@ -404,16 +380,14 @@ _venvman_list() {(
     if [ -n "$VERSION" ]; then
         echo
         echo "Available virtual environments for Python ${VERSION}:"
-        if ! ls "$VENV_PATH"; then
-            return 1
-        fi
+        ls "$VENV_PATH" || return 1
         echo
 
     else
         echo
         for VERSION in $(find "$VENVMAN_ENVS_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort -t. -k1,1n -k2,2n); do
             echo "Available virtual environments for Python $VERSION:"
-            ls "${VENVMAN_ENVS_DIR}/${VERSION}"
+            ls "${VENVMAN_ENVS_DIR}/${VERSION}" || return 1
             echo
         done
     fi
