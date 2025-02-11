@@ -1,6 +1,9 @@
 . "${VENVMAN_ROOT_DIR}/venvman/src/helpers.sh"
 
 
+_venvman_err_msg_envs_not_set
+
+
 _venvman_make() {(
     while [ "$#" -gt 0 ]; do
         case $1 in
