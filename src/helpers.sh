@@ -1,10 +1,3 @@
-_venvman_unset_var_names() {
-    for name in "$@"; do
-        unset "$name"
-    done
-}
-
-
 _venvman_err_msg_missing_option_value() {(
     COMMAND=$1
     INPUT_OPTION_TYPE=$2
@@ -73,41 +66,6 @@ _venvman_err_msg_invalid_option() {(
     echo "ERROR: Invalid option '${2}'" >&2
     echo "See 'venvman ${COMMAND} --help' for usage." >&2
 )}
-
-
-_venvman_err_msg_envs_not_set() {
-    if [ -z "$VENVMAN_ROOT_DIR" ] || [ -z "$VENVMAN_ENVS_DIR" ]; then 
-        echo "ERROR: VENVMAN_ROOT_DIR and VENVMAN_ENVS_DIR must be set."
-        echo "The following is suggested to solve this problem."
-        echo
-    
-        echo "1) Run the following in you shell:"
-        echo
-        MSG_LINES=(
-            "VENVMAN_ROOT_DIR=\$HOME/.venvman"
-            "mkdir -p \$VENVMAN_ROOT_DIR"
-            "git clone https://github.com/nickeisenberg/venvman.git "\${VENVMAN_ROOT_DIR}/venvman""
-        )
-        printf "%s\n" "${MSG_LINES[@]}"
-    
-        echo
-        echo "2) Add the following in your shell's config:"
-        echo
-        MSG_LINES=(
-            "VENVMAN_ROOT_DIR=\$HOME/.venvman"
-            "VENVMAN_ENVS_DIR=\$HOME/.venvman/envs"
-            "source \$VENVMAN_ROOT_DIR/venvman/src/venvman.sh"
-            "source \$VENVMAN_ROOT_DIR/venvman/src/completion/completion.sh"
-        )
-        printf "%s\n" "${MSG_LINES[@]}"
-    
-        echo
-        echo "3) source your shell's config."
-    
-        _venvman_unset_var_names MSG_LINES COMMAND
-        return 1
-    fi
-}
 
 
 _venvman_help_tag() {

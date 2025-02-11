@@ -89,10 +89,11 @@ Trying installing using the manual steps."
     local SHELL_PROFILE=$(detect_profile)
 
     append_text_to_file \
-        "venvman() {
+"VENVMAN_ROOT_DIR=${VENVMAN_ROOT_DIR} # there the repo will be cloned to
+VENVMAN_ENVS_DIR=${VENVMAN_ENVS_DIR} # where the virtual enviornments will be saved to
+source ${VENVMAN_ROOT_DIR}/venvman/src/completion/completion.sh
+venvman() {
     unset -f venvman
-    VENVMAN_ROOT_DIR=${VENVMAN_ROOT_DIR} # there the repo will be cloned to
-    VENVMAN_ENVS_DIR=${VENVMAN_ENVS_DIR} # where the virtual enviornments will be saved to
     source ${VENVMAN_ROOT_DIR}/venvman/src/main.sh
     venvman
 }"

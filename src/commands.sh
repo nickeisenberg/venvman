@@ -1,9 +1,6 @@
 . "${VENVMAN_ROOT_DIR}/venvman/src/helpers.sh"
 
 
-_venvman_err_msg_envs_not_set
-
-
 _venvman_make() {(
     while [ "$#" -gt 0 ]; do
         case $1 in
@@ -164,12 +161,12 @@ _venvman_activate() {
     
     if { [ -n "$_VENV_PATH" ]  && [ -n "$_VERSION" ] ;} || { [ -n "$_VENV_PATH" ]  && [ -n "$_NAME" ] ;}; then
         echo "ERROR: --path should not be used with --version and --name and vice versa."
-        _venvman_unset_var_names _NAME _VERSION _VENV_PATH _PATH_TO_ACTIVATE
+        unset _NAME _VERSION _VENV_PATH _PATH_TO_ACTIVATE
         return 1
 
     elif { [ -n "$_NAME" ]  && [ -z "$_VERSION" ] ;} || { [ -n "$_VERSION" ]  && [ -z "$_NAME" ] ;}; then
         _venvman_err_msg_missing_option_value "activate" "--name and --version"
-        _venvman_unset_var_names _NAME _VERSION _VENV_PATH _PATH_TO_ACTIVATE
+        unset _NAME _VERSION _VENV_PATH _PATH_TO_ACTIVATE
         return 1
     fi
 
@@ -181,22 +178,22 @@ _venvman_activate() {
         _PATH_TO_ACTIVATE=$(find "${_VENV_PATH}" -type f -name "activate")
     else
         echo "ERROR: ${_VENV_PATH} does not exist."
-        _venvman_unset_var_names _NAME _VERSION _VENV_PATH _PATH_TO_ACTIVATE
+        unset _NAME _VERSION _VENV_PATH _PATH_TO_ACTIVATE
         return 1
     fi
 
     if [ -z "$_PATH_TO_ACTIVATE" ]; then
         echo "ERROR: The following command could not find the activate script:"
         echo "    'find "${_VENV_PATH}" -type f -name "activate"'"
-        _venvman_unset_var_names _NAME _VERSION _VENV_PATH _PATH_TO_ACTIVATE
+        unset _NAME _VERSION _VENV_PATH _PATH_TO_ACTIVATE
         return 1
     fi
     
     if ! . "$_PATH_TO_ACTIVATE"; then
-        _venvman_unset_var_names _NAME _VERSION _VENV_PATH _PATH_TO_ACTIVATE
+        unset _NAME _VERSION _VENV_PATH _PATH_TO_ACTIVATE
         return 1
     fi
-    _venvman_unset_var_names _NAME _VERSION _VENV_PATH _PATH_TO_ACTIVATE
+    unset _NAME _VERSION _VENV_PATH _PATH_TO_ACTIVATE
 }
 
 
@@ -437,13 +434,13 @@ _venvman_site_packages() {
     
     if [ -z "$PKG" ]; then
         cd "$SITE_PACKAGES_DIR"
-        _venvman_unset_var_names PKG SITE_PACKAGES_DIR
+        unset PKG SITE_PACKAGES_DIR
         return 0
     else
         if ! cd "${SITE_PACKAGES_DIR}/${PKG}"; then
-            _venvman_unset_var_names PKG SITE_PACKAGES_DIR
+            unset PKG SITE_PACKAGES_DIR
             return 1
         fi
     fi
-    _venvman_unset_var_names PKG SITE_PACKAGES_DIR
+    unset PKG SITE_PACKAGES_DIR
 }

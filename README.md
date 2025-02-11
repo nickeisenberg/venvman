@@ -105,10 +105,11 @@ git clone https://github.com/nickeisenberg/venvman.git "${venvman_root_dir}/venv
 
 Then add the following to your `bashrc` or `zshrc` etc:
 ```bash
+VENVMAN_ROOT_DIR=$HOME/.venvman
+VENVMAN_ENVS_DIR=$HOME/.venvman/envs
+source "${VENVMAN_ROOT_DIR}/.venvman/venvman/src/completion/completion.sh"
 venvman() {
     unset -f venvman
-    VENVMAN_ROOT_DIR=$HOME/.venvman
-    VENVMAN_ENVS_DIR=$HOME/.venvman/envs
     source "${VENVMAN_ROOT_DIR}/.venvman/venvman/src/main.sh"
     venvman
 }
