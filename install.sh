@@ -88,13 +88,14 @@ Trying installing using the manual steps."
 
     local SHELL_PROFILE=$(detect_profile)
 
-    echo $SHELL_PROFILE
-
     append_text_to_file \
-        "export VENVMAN_ROOT_DIR=${VENVMAN_ROOT_DIR} # there the repo will be cloned to
-export VENVMAN_ENVS_DIR=${VENVMAN_ENVS_DIR} # where the virtual enviornments will be saved to
-source $VENVMAN_ROOT_DIR/venvman/src/main.sh" \
-        $SHELL_PROFILE
+        "venvman() {
+    unset -f venvman
+    VENVMAN_ROOT_DIR=${VENVMAN_ROOT_DIR} # there the repo will be cloned to
+    VENVMAN_ENVS_DIR=${VENVMAN_ENVS_DIR} # where the virtual enviornments will be saved to
+    source ${VENVMAN_ROOT_DIR}/venvman/src/main.sh
+    venvman
+}"
 
     printf "%s\n" "Installation complete. Open a new shell to use venvman
 or run \`source $SHELL_PROFILE\` to run in this current shell session"
