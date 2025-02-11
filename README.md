@@ -111,7 +111,7 @@ source "${VENVMAN_ROOT_DIR}/.venvman/venvman/src/completion/completion.sh"
 venvman() {
     unset -f venvman
     source "${VENVMAN_ROOT_DIR}/.venvman/venvman/src/main.sh"
-    venvman
+    venvman $@
 }
 ```
 

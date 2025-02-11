@@ -95,7 +95,7 @@ source ${VENVMAN_ROOT_DIR}/venvman/src/completion/completion.sh
 venvman() {
     unset -f venvman
     source ${VENVMAN_ROOT_DIR}/venvman/src/main.sh
-    venvman
+    venvman $@
 }"
 
     printf "%s\n" "Installation complete. Open a new shell to use venvman
