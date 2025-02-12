@@ -34,7 +34,8 @@ detect_profile() {
     if [[ -n "$DETECTED_PROFILE" ]]; then
         echo "$DETECTED_PROFILE"
     else
-        echo "ERROR: A profile (eg, bashrc, zshrc) was not found. Stopping install."
+        echo "ERROR: A profile (eg, bashrc, zshrc) was not found. Stopping install." >&2
+        echo "Continue with the manual installation steps found in the README" >&2
         return 1
     fi
 }

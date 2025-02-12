@@ -79,8 +79,12 @@ the following:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/nickeisenberg/venvman/master/install.sh -o install.sh 
-bash install.sh
+chmod +x install.sh && ./install.sh
 ```
+
+curl -sSL https://raw.githubusercontent.com/nickeisenberg/venvman/master/install.sh -o install.sh 
+chmod +x install.sh
+./install.sh
 
 If you would like to change to values of the above variables, then run
 
@@ -88,7 +92,7 @@ If you would like to change to values of the above variables, then run
 curl -sSL https://raw.githubusercontent.com/nickeisenberg/venvman/master/install.sh -o install.sh 
 VENVMAN_ROOT_DIR=<new_value_1>
 VENVMAN_ENVS_DIR=<new_value_2>
-bash install.sh $VENVMAN_ROOT_DIR $VENVMAN_ENVS_DIR
+chmod +x install.sh && ./install.sh $VENVMAN_ROOT_DIR $VENVMAN_ENVS_DIR
 ```
 
 Then restart your shell and `venvman` will be available.
