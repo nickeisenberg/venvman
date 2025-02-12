@@ -1,5 +1,5 @@
 . "${VENVMAN_ROOT_DIR}/venvman/src/helpers.sh"
-. "${VENVMAN_ROOT_DIR}/venvman/src/commands.sh"
+. "${VENVMAN_ROOT_DIR}/venvman/src/commands/commands.sh"
 
 venvman() {
     case $1 in
