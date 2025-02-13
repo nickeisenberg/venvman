@@ -1,3 +1,4 @@
+. "${VENVMAN_ROOT_DIR}/venvman/src/commands/helpers.sh"
 . "${VENVMAN_ROOT_DIR}/venvman/src/helpers.sh"
 
 
@@ -16,7 +17,6 @@ _venvman_make() {(
             -v | --version)
                 if [ -n "$2" ]; then
                     VERSION="$2"
-                    PYTHON_EXEC="python$VERSION"
                     shift 2
                 else
                     _venvman_err_msg_missing_option_value "make" "--version"
@@ -61,7 +61,29 @@ _venvman_make() {(
         esac
     done
 
-    "$PYTHON_EXEC" --version > /dev/null || return 1
+
+    if ! PYTHON_EXEC=$(_venvman_get_python_bin_path "$VERSION"); then  
+        echo "A binary could not be found for python${VERSION}" >&2
+        echo "1) The command 'which python${VERSION}' showed nothing." >&2
+        echo "2) A python${VERSION} binary could not be found in ${VENVMAN_PYTHON_VERSIONS_DIR}" >&2
+        printf "Would you like to search for this version at ${CPYTHON_URL}? [Y/n]: "
+        read -r response
+        case "$response" in
+            Y|y)
+                _venvman_build_python_version_from_source $VERSION
+                PYTHON_EXEC=$(_venvman_get_python_bin_path $VERSION)
+                ;;
+            *)
+                echo "Exiting. Cannot continue without a python${VERSION} binary."
+                return 0
+                ;;
+        esac
+    fi
+
+    if ! $($PYTHON_EXEC --version > /dev/null); then
+        echo "$PYTHON_EXEC is corrupted." >&2
+        return 1
+    fi
 
     if [ -n "$NAME" ]  && [ -n "$VERSION" ] && [ -z "$VENV_PATH" ]; then
         VENV_PATH="${VENVMAN_ENVS_DIR}/${VERSION}/${NAME}"
