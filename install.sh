@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+
 try_profile() {
     if [[ -z $1 ]] || [[ ! -f $1 ]]; then
         return 1
@@ -42,65 +43,87 @@ detect_profile() {
 
 make_dir_if_not_exitst() {
     if [[ -z $1 ]] || [[ -d $1 ]]; then
-        echo "$1 already exists. This may be a mistake. Stopping install to not overwrite anything."
+        echo "$1 already exists. This may be a mistake." >&2 
+        echo "Stopping install to not overwrite anything." >&2
         return 1
     fi
-    mkdir -p $1 && [[ -d $1 ]] && echo "$1 was successfully created" return 0 || \
-        echo "$1 was not created. Stopping install." return 1
-}
-
-append_text_to_file() {
-    local TEXT=$1
-    local FILE=$2
-    [[ -z $TEXT || -z $FILE ]] && echo "Invalid usages of. Supply text and file" return 1
-    printf "%s\n" "" | tee -a $FILE &> /dev/null
-    printf "%s\n" "$TEXT" | tee -a $FILE &> /dev/null
+    mkdir -p $1 || return 1
+    if [[ -d $1 ]]; then
+        echo "$1 was successfully created" 
+        return 0
+    else
+        echo "$1 was not created. Stopping install." >&2
+        return 1
+    fi
 }
 
 install() {
     local VENVMAN_ROOT_DIR=$1
+    local VENVMAN_PYTHON_DIR=${VENVMAN_ROOT_DIR}/python/cpython
+    local VENVMAN_PYTHON_VERSIONS_DIR=${VENVMAN_ROOT_DIR}/python/versions
+
     local VENVMAN_ENVS_DIR=$2
 
+    local VENVMAN_URL="https://github.com/nickeisenberg/venvman.git"
+    local CPYTHON_URL="https://github.com/python/cpython"
+
     if [[ ! -n $VENVMAN_ROOT_DIR ]]; then
-        VENVMAN_ROOT_DIR=$HOME/.venvman
+        local VENVMAN_ROOT_DIR=$HOME/.venvman
     fi
 
     if [[ ! -n $VENVMAN_ENVS_DIR ]]; then
-        VENVMAN_ENVS_DIR=${VENVMAN_ROOT_DIR}/envs
+        local VENVMAN_ENVS_DIR=${VENVMAN_ROOT_DIR}/envs
     fi
-
-    echo "FROM INSTALL ROOT $VENVMAN_ENVS_DIR"
 
     make_dir_if_not_exitst $VENVMAN_ROOT_DIR || return 1
     make_dir_if_not_exitst $VENVMAN_ENVS_DIR || return 1
 
-    git clone https://github.com/nickeisenberg/venvman.git "${VENVMAN_ROOT_DIR}/venvman" || \
-        echo "ERROR: git clone https://github.com/nickeisenberg/venvman.git did not work." return 1
-
-    local VENVMAN_SRC=${VENVMAN_ROOT_DIR}/venvman/src/venvman.sh
-    local VENVMAN_COMPLETION=${VENVMAN_ROOT_DIR}/venvman/src/completion/completion.sh
-    if [[ ! -f $VENVMAN_SRC || ! -f $VENVMAN_COMPLETION ]]; then
-        echo "ERROR: $VENVMAN_SRC and/or $VENVMAN_COMPLETION cannot be found.
-Removing $VENVMAN_ROOT_DIR.
-Trying installing using the manual steps." 
-        rm -rf $VENVMAN_ROOT_DIR 
+    echo
+    echo "--------------------"
+    echo "Cloning ${VENVMAN_URL} to ${VENVMAN_ROOT_DIR}/venvman"
+    echo "--------------------"
+    echo
+    if ! git clone "${VENVMAN_URL}" "${VENVMAN_ROOT_DIR}/venvman"; then
         return 1
     fi
 
-    local SHELL_PROFILE=$(detect_profile)
+    local VENVMAN_MAIN=${VENVMAN_ROOT_DIR}/venvman/src/main.sh
+    local VENVMAN_COMPLETION=${VENVMAN_ROOT_DIR}/venvman/src/completion/completion.sh
+    if [[ ! -f $VENVMAN_MAIN || ! -f $VENVMAN_COMPLETION ]]; then
+        echo "ERROR: $VENVMAN_MAIN and/or $VENVMAN_COMPLETION cannot be found." >&2
+        echo "Removing $VENVMAN_ROOT_DIR." >&2
+        echo "Trying installing using the manual steps." >&2
+        rm -rf $VENVMAN_ROOT_DIR 
+        return 1
+    fi
+   
+    echo
+    echo "--------------------"
+    echo "Cloning ${CPYTHON_URL} to ${VENVMAN_PYTHON_DIR}"
+    echo "--------------------"
+    echo
+    mkdir -p ${VENVMAN_PYTHON_DIR} || return 1
+    git clone ${CPYTHON_URL} ${VENVMAN_PYTHON_DIR} || return 1
+    mkdir -p ${VENVMAN_PYTHON_VERSIONS_DIR} || return 1
 
-    append_text_to_file \
-"VENVMAN_ROOT_DIR=${VENVMAN_ROOT_DIR} # there the repo will be cloned to
-VENVMAN_ENVS_DIR=${VENVMAN_ENVS_DIR} # where the virtual enviornments will be saved to
-source ${VENVMAN_ROOT_DIR}/venvman/src/completion/completion.sh
-venvman() {
-    unset -f venvman
-    source ${VENVMAN_ROOT_DIR}/venvman/src/main.sh
-    venvman $@
-}"
+    SHELL_PROFILE=$(detect_profile) || return 1
+    
+    LINES_TO_APPEND=(
+        "VENVMAN_ROOT_DIR=${VENVMAN_ROOT_DIR} # where the repo will be cloned to"
+        "VENVMAN_ENVS_DIR=${VENVMAN_ENVS_DIR} # virtual enviornments save location"
+        "source ${VENVMAN_ROOT_DIR}/venvman/src/completion/completion.sh"
+        "venvman() {"
+        "   unset -f venvman"
+        "   source ${VENVMAN_ROOT_DIR}/venvman/src/main.sh"
+        "   venvman $@"
+        "}"
+    )
 
-    printf "%s\n" "Installation complete. Open a new shell to use venvman
-or run \`source $SHELL_PROFILE\` to run in this current shell session"
+    printf "%s\n" "${LINES_TO_APPEND[@]}" | tee -a $SHELL_PROFILE > /dev/null
+
+    echo "Installation complete." 
+    echo "Open a new shell to use venvman"
 }
+
 
 install $@

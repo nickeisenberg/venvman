@@ -88,30 +88,27 @@ _venvman_build_python_version_from_source() {
         BRANCH=$VERSION
     fi
 
-    TAGS=$(git tag | grep $VERSION)
-    if [ -z $TAGS ] && [ -z $BRANCH ]; then
-        echo
-        echo "$VERSION not found on ${CPYTHON_URL}" >&2
-        echo "Please see ${CPYTHON_URL} for available versions." >&2
-        cd $MY_PWD
-        return 1
-    elif [ -z $BRANCH ]; then
-        for TAG in $TAGS; do
-            BRANCH=$TAG
+    if [ -z $BRANCH ]; then
+        for TAG in $(git tag | grep $VERSION); do
+            BRANCH="$TAG"
             break
         done
+        if [ -z $BRANCH ]; then
+            return 1
+        fi
     fi
-
+    
     echo 
     echo "Version $VERSION is available at ${CPYTHON_URL} with 'git checkout ${BRANCH}'."
-    echo "We can continue and configure the install now."
-    echo "The resulting installation will be located at ${VENVMAN_PYTHON_VERSIONS_DIR}/${VERSION}"
+    printf "We can install this version and the resulting installation "
+    printf "would be located at ${VENVMAN_PYTHON_VERSIONS_DIR}/${VERSION}\n"
     echo
-    echo "The following is what will be ran:"
+    echo "To do this, we would run following:"
     echo
     echo "cd ${VENVMAN_PYTHON_DIR}"
     echo "git checkout "$BRANCH""
     echo "git reset --hard "$BRANCH""
+    echo
     echo "make distclean"
     echo "./configure --prefix="${VENVMAN_PYTHON_VERSIONS_DIR}/${VERSION}""
     echo "make"
@@ -124,12 +121,13 @@ _venvman_build_python_version_from_source() {
             ;;
         *)
             echo "Exiting the install."
-            cd $MY_PWD && return 1
+            cd $MY_PWD
+            return 1
             ;;
     esac
     
-    git checkout "$TAG" || return 1
-    git reset --hard "$TAG"
+    git checkout "$BRANCH" || return 1
+    git reset --hard "$BRANCH" || return 1
 
     make distclean || return 1
     ./configure --prefix="${VENVMAN_PYTHON_VERSIONS_DIR}/${VERSION}" || return 1
@@ -141,12 +139,12 @@ _venvman_build_python_version_from_source() {
     make install
 
     if [ "$?" -gt 0 ]; then
-        echo "make install fail" >&2
+        echo "'make install' failed" >&2
         return 1
     fi
 
     if ! _venvman_get_python_bin_path $VERSION > /dev/null; then
-        echo "Install fail. Binary not found."
+        echo "'make install' was successfull but the resulting binary for python ${VERSION} could not be found." >&2
         return 1
     fi
 }

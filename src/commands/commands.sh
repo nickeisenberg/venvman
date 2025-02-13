@@ -64,21 +64,19 @@ _venvman_make() {(
 
     if ! PYTHON_EXEC=$(_venvman_get_python_bin_path "$VERSION"); then  
         echo
-        echo "A binary could not be found for python${VERSION}" >&2
-        echo "  1) The command 'which python${VERSION}' showed nothing." >&2
-        echo "  2) A python${VERSION} binary could not be found in ${VENVMAN_PYTHON_VERSIONS_DIR}" >&2
-        printf "Would you like to search for this version at ${CPYTHON_URL}? [Y/n]: "
-        read -r response
-        case "$response" in
-            Y|y)
-                _venvman_build_python_version_from_source $VERSION || return 1
-                PYTHON_EXEC=$(_venvman_get_python_bin_path $VERSION) || return 1
-                ;;
-            *)
-                echo "Exiting. Cannot continue without a python${VERSION} binary."
-                return 1
-                ;;
-        esac
+        echo "A binary could not be found for python${VERSION} from the following methods:"
+        echo
+        echo "  1) The command 'which python${VERSION}' showed nothing."
+        echo "  2) A python${VERSION} binary could not be found in ${VENVMAN_PYTHON_VERSIONS_DIR}"
+        echo
+        echo "Searching ${CPYTHON_URL} at ${VENVMAN_PYTHON_DIR} ..."
+
+        if ! _venvman_build_python_version_from_source $VERSION; then
+            echo "Python ${VERSION} will not be installed." >&2
+            echo "Cannot continue without a python${VERSION} binary." >&2
+            echo "Exiting" >&2
+            return 1
+        fi 
     fi
 
     if ! $($PYTHON_EXEC --version > /dev/null); then
@@ -88,25 +86,6 @@ _venvman_make() {(
 
     if [ -n "$NAME" ]  && [ -n "$VERSION" ] && [ -z "$VENV_PATH" ]; then
         VENV_PATH="${VENVMAN_ENVS_DIR}/${VERSION}/${NAME}"
-
-        if [ ! -d "${VENVMAN_ENVS_DIR}/${VERSION}" ]; then
-            echo
-            echo "WARNING: The directory ${VENVMAN_ENVS_DIR}/${VERSION} does not exist."
-            echo "It must be created to continue."
-            printf "Do you want to create it now? [y/N]: "
-            read -r response
-
-            case "$response" in
-                Y|y)
-                    mkdir -p "$VENV_PATH" || return 1
-                    ;;
-                *)
-                    echo "$VENV_PATH was not created."
-                    return 1
-                    ;;
-            esac
-
-        fi
 
     elif [ -n "$NAME" ]  && [ -n "$VERSION" ] && [ -n "$VENV_PATH" ]; then
         VENV_PATH="${VENV_PATH}/${NAME}"
