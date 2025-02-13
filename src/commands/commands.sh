@@ -63,19 +63,20 @@ _venvman_make() {(
 
 
     if ! PYTHON_EXEC=$(_venvman_get_python_bin_path "$VERSION"); then  
+        echo
         echo "A binary could not be found for python${VERSION}" >&2
-        echo "1) The command 'which python${VERSION}' showed nothing." >&2
-        echo "2) A python${VERSION} binary could not be found in ${VENVMAN_PYTHON_VERSIONS_DIR}" >&2
+        echo "  1) The command 'which python${VERSION}' showed nothing." >&2
+        echo "  2) A python${VERSION} binary could not be found in ${VENVMAN_PYTHON_VERSIONS_DIR}" >&2
         printf "Would you like to search for this version at ${CPYTHON_URL}? [Y/n]: "
         read -r response
         case "$response" in
             Y|y)
-                _venvman_build_python_version_from_source $VERSION
-                PYTHON_EXEC=$(_venvman_get_python_bin_path $VERSION)
+                _venvman_build_python_version_from_source $VERSION || return 1
+                PYTHON_EXEC=$(_venvman_get_python_bin_path $VERSION) || return 1
                 ;;
             *)
                 echo "Exiting. Cannot continue without a python${VERSION} binary."
-                return 0
+                return 1
                 ;;
         esac
     fi
@@ -89,6 +90,7 @@ _venvman_make() {(
         VENV_PATH="${VENVMAN_ENVS_DIR}/${VERSION}/${NAME}"
 
         if [ ! -d "${VENVMAN_ENVS_DIR}/${VERSION}" ]; then
+            echo
             echo "WARNING: The directory ${VENVMAN_ENVS_DIR}/${VERSION} does not exist."
             echo "It must be created to continue."
             printf "Do you want to create it now? [y/N]: "
@@ -110,6 +112,7 @@ _venvman_make() {(
         VENV_PATH="${VENV_PATH}/${NAME}"
 
     else 
+        echo
         echo "ERROR: Invalid usage. see 'venvman make --help'." >&2
         return 1
     fi

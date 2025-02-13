@@ -58,9 +58,10 @@ _venvman_build_python_version_from_source() {
     fi
     
     if [ ! -d "$VENVMAN_PYTHON_DIR" ]; then
+        echo
         echo "The repo "$CPYTHON_URL" was not found at ${VENVMAN_PYTHON_DIR}."
         echo "To continue, it must be cloned to that location."
-        printf "Would you like to clone the repo and continue now? [Y/n]: "
+        printf "Would you like to clone the repo and continue now? [y/N]: "
         read -r response
         case "$response" in
             Y|y)
@@ -82,27 +83,35 @@ _venvman_build_python_version_from_source() {
     git pull > /dev/null 2&>1
     git fetch --all > /dev/null 2&>1
 
+    BRANCHES=$(git branch -r | grep $VERSION)
+    if [ $(echo "${BRANCHES}" | wc -w) = 1 ];then
+        BRANCH=$VERSION
+    fi
+
     TAGS=$(git tag | grep $VERSION)
-    if [ -z $TAGS ]; then
+    if [ -z $TAGS ] && [ -z $BRANCH ]; then
+        echo
         echo "$VERSION not found on ${CPYTHON_URL}" >&2
         echo "Please see ${CPYTHON_URL} for available versions." >&2
         cd $MY_PWD
         return 1
-    else
+    elif [ -z $BRANCH ]; then
         for TAG in $TAGS; do
-            TAG=$TAG
+            BRANCH=$TAG
             break
         done
     fi
-    
-    echo "$VERSION is available with tag=${TAG} at ${CPYTHON_URL}."
+
+    echo 
+    echo "Version $VERSION is available at ${CPYTHON_URL} with 'git checkout ${BRANCH}'."
     echo "We can continue and configure the install now."
     echo "The resulting installation will be located at ${VENVMAN_PYTHON_VERSIONS_DIR}/${VERSION}"
+    echo
     echo "The following is what will be ran:"
     echo
     echo "cd ${VENVMAN_PYTHON_DIR}"
-    echo "git checkout "$TAG""
-    echo "git reset --hard "$TAG""
+    echo "git checkout "$BRANCH""
+    echo "git reset --hard "$BRANCH""
     echo "make distclean"
     echo "./configure --prefix="${VENVMAN_PYTHON_VERSIONS_DIR}/${VERSION}""
     echo "make"
