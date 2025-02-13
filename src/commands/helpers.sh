@@ -2,11 +2,11 @@ VENVMAN_PYTHON_DIR=${VENVMAN_ROOT_DIR}/python/cpython
 VENVMAN_PYTHON_VERSIONS_DIR=${VENVMAN_ROOT_DIR}/python/versions
 CPYTHON_URL="https://github.com/python/cpython"
 
-
+ 
 is_integer() {
     case "$1" in
-        (''|*[!0-9]*) return 1 ;;  # Reject empty strings and non-digits
-        (*) return 0 ;;
+        ''|*[!0-9]*) return 1 ;;  # Reject empty strings and non-digits
+        *) return 0 ;;
     esac
 }
 
@@ -129,7 +129,14 @@ _venvman_build_python_version_from_source() {
     fi
 
     MY_PWD="$(pwd)"
+
     cd $VENVMAN_PYTHON_DIR || return 1
+
+    if [ "$(git remote get-url origin)" -ne "${CPYTHON_URL}" ]; then
+        echo "The remote at the Cpython repo at ${VENVMAN_PYTHON_DIR} does not match ${CPYTHON_URL}" >&2
+        return 1
+    fi
+
     git checkout main > /dev/null 2&>1
     git reset --hard origin/main > /dev/null 2&>1
     git pull > /dev/null 2&>1
@@ -162,14 +169,19 @@ _venvman_build_python_version_from_source() {
     echo
     echo "To do this, we would run following:"
     echo
-    echo "cd ${VENVMAN_PYTHON_DIR}"
-    echo "git checkout "$BRANCH""
-    echo "git reset --hard "$BRANCH""
-    echo
-    echo "make distclean"
-    echo "./configure --prefix="${VENVMAN_PYTHON_VERSIONS_DIR}/${VERSION}""
-    echo "make"
-    echo "make install"
+    echo "\$ cd ${VENVMAN_PYTHON_DIR}"
+    echo "\$"
+    echo "\$ if [ \$(git remote get-url origin) -ne ${CPYTHON_URL} ]; then"
+    echo "\$     return 1"
+    echo "\$ fi"
+    echo "\$"
+    echo "\$ git checkout "$BRANCH""
+    echo "\$ git reset --hard "$BRANCH""
+    echo "\$"
+    echo "\$ make distclean"
+    echo "\$ ./configure --prefix="${VENVMAN_PYTHON_VERSIONS_DIR}/${VERSION}""
+    echo "\$ make"
+    echo "\$ make install"
     echo
     printf "Would you like to continue with the install now? [Y/n]: "
     read -r response
@@ -205,3 +217,10 @@ _venvman_build_python_version_from_source() {
         return 1
     fi
 }
+
+
+unset -f \
+    is_integer \
+    version_is_branch \
+    get_tag_from_major_minor_patch \
+    get_latest_tag_from_major_minor
