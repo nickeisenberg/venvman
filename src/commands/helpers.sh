@@ -3,14 +3,71 @@ VENVMAN_PYTHON_VERSIONS_DIR=${VENVMAN_ROOT_DIR}/python/versions
 CPYTHON_URL="https://github.com/python/cpython"
 
 
+is_integer() {
+    case "$1" in
+        (''|*[!0-9]*) return 1 ;;  # Reject empty strings and non-digits
+        (*) return 0 ;;
+    esac
+}
+
+
+version_is_branch() {
+    VERSION=$1
+    for x in $(git ls-remote --heads "${CPYTHON_URL}"); do
+        line=$(echo $x | grep "refs/heads/${VERSION}")
+        if [ -n "$line" ]; then
+            if [ "$line" = "refs/heads/${VERSION}" ]; then
+                return 0
+            else
+                return 1
+            fi
+        fi
+    done
+    return 1
+}
+
+
+get_latest_tag_from_major_minor() {
+    VERSION=$1
+    if [ $(echo $(echo $VERSION | tr '.' ' ') | wc -w) -ne 2 ]; then
+        return 1
+    fi
+    VERSION_MAJOR=""
+    VERSION_MINOR=""
+    VERSION_PATCH=0
+    for tag in $(git tag | grep $VERSION); do
+        _VERSION_MAJOR=$(echo "$tag" | tr '.' ' ' | awk "{print \$1}")
+        _VERSION_MINOR=$(echo "$tag" | tr '.' ' ' | awk "{print \$2}")
+        _VERSION_PATCH=$(echo "$tag" | tr '.' ' ' | awk "{print \$3}")
+        if is_integer $_VERSION_PATCH && [ "$_VERSION_PATCH" -ge "$VERSION_PATCH" ]; then
+            VERSION_MAJOR=$_VERSION_MAJOR
+            VERSION_MINOR=$_VERSION_MINOR
+            VERSION_PATCH=$_VERSION_PATCH
+        fi
+    done
+    echo "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+}
+
+
+get_tag_from_major_minor_patch() {
+    VERSION=$1
+    if [ $(echo $(echo $VERSION | tr '.' ' ') | wc -w) -ne 3 ]; then
+        return 1
+    fi
+    for tag in $(git tag | grep $VERSION); do
+        VERSION_MAJOR=$(echo "$tag" | tr '.' ' ' | awk "{print \$1}")
+        VERSION_MINOR=$(echo "$tag" | tr '.' ' ' | awk "{print \$2}")
+        VERSION_PATCH=$(echo "$tag" | tr '.' ' ' | awk "{print \$3}")
+        if is_integer $VERSION_PATCH; then
+            echo "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+            break
+        fi
+    done
+}
+
+
 _venvman_get_python_bin_path() {
     VERSION=$1
-
-    VERSION_PARTS=$(echo "${VERSION}" | tr '.' ' ')
-    VERSION_MAJOR=$(echo "$VERSION_PARTS" | awk "{print \$1}")
-    VERSION_MINOR=$(echo "$VERSION_PARTS" | awk "{print \$2}")
-    VERSION_PATCH=$(echo "$VERSION_PARTS" | awk "{print \$3}")
-
 
     BINARY_PATH=$(which python${VERSION}) || BINARY_PATH=""
     if [ -n "$BINARY_PATH" ]; then
@@ -46,11 +103,6 @@ _venvman_get_python_bin_path() {
 
 _venvman_build_python_version_from_source() {
     VERSION="$1"
-
-    VERSION_PARTS=$(echo "${VERSION}" | tr '.' ' ')
-    VERSION_MAJOR=$(echo "$VERSION_PARTS" | awk "{print \$1}")
-    VERSION_MINOR=$(echo "$VERSION_PARTS" | awk "{print \$2}")
-    VERSION_PATCH=$(echo "$VERSION_PARTS" | awk "{print \$3}")
     
     if BIN_PATH=$(_venvman_get_python_bin_path $VERSION); then
         echo "python${VERSION} already exists at ${BIN_PATH}"
@@ -83,23 +135,28 @@ _venvman_build_python_version_from_source() {
     git pull > /dev/null 2&>1
     git fetch --all > /dev/null 2&>1
 
-    BRANCHES=$(git branch -r | grep $VERSION)
-    if [ $(echo "${BRANCHES}" | wc -w) = 1 ];then
-        BRANCH=$VERSION
+    VERSION_PARTS=$(echo "${VERSION}" | tr '.' ' ')
+    NUM_PARTS=$(echo "${VERSION_PARTS}" | wc -w)
+
+    if [ "$NUM_PARTS" = 2 ]; then
+        if version_is_branch "$VERSION"; then
+            BRANCH=$VERSION
+        fi
+        TAG=$(get_latest_tag_from_major_minor "$VERSION")
+    elif [ "$NUM_PARTS" = 3 ]; then
+        BRANCH=""
+        TAG=$(get_tag_from_major_minor_patch "$VERSION")
+    else
+        return 1
     fi
 
-    if [ -z $BRANCH ]; then
-        for TAG in $(git tag | grep $VERSION); do
-            BRANCH="$TAG"
-            break
-        done
-        if [ -z $BRANCH ]; then
-            return 1
-        fi
-    fi
-    
+    CHECKOUT="git checkout $([ -n "$BRANCH" ] && echo "$BRANCH" || echo $TAG)"
+
     echo 
-    echo "Version $VERSION is available at ${CPYTHON_URL} with 'git checkout ${BRANCH}'."
+    echo "Python $VERSION is available at ${CPYTHON_URL} with '${CHECKOUT}'."
+    if [ -n "${BRANCH}" ]; then
+        echo "The version available at the ${VERSION} branch is ${TAG}"
+    fi
     printf "We can install this version and the resulting installation "
     printf "would be located at ${VENVMAN_PYTHON_VERSIONS_DIR}/${VERSION}\n"
     echo
