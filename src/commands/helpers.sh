@@ -175,7 +175,7 @@ _venvman_build_python_version_from_source() {
         return 1
     fi
 
-    TAG=$(_venvman_get_tag_from_version "$VERSION")
+    TAG=$(_venvman_get_tag_from_version "$VERSION") || return 1
 
     CHECKOUT=$([ -n "$BRANCH" ] && echo "$BRANCH" || echo $TAG)
 
