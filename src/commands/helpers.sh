@@ -15,6 +15,24 @@ _venvman_is_integer() {
 }
 
 
+_venvman_get_subversion_from_version() {
+    case $1 in
+        --major)
+            echo $(echo "$(echo "$2" | tr '.' ' ')" | awk "{print \$1}") 
+            ;;
+        --minor)
+            echo $(echo "$(echo "$2" | tr '.' ' ')" | awk "{print \$2}") 
+            ;;
+        --patch)
+            echo $(echo "$(echo "$2" | tr '.' ' ')" | awk "{print \$3}") 
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+
 _venvman_version_is_branch() {
     VERSION=$1
     for x in $(git ls-remote --heads "${CPYTHON_URL}"); do
@@ -33,53 +51,83 @@ _venvman_version_is_branch() {
 
 _venvman_get_tag_from_version() {
     VERSION=$1
-    VERSION_PATCH=$(echo "$VERSION" | tr '.' ' ' | awk "{print \$3}")
+
+    VERSION_MAJOR=$(_venvman_get_subversion_from_version --major "$VERSION")
+    VERSION_MINOR=$(_venvman_get_subversion_from_version --minor "$VERSION")
+    VERSION_PATCH=$(_venvman_get_subversion_from_version --patch "$VERSION")
+
     if [ -z "$VERSION_PATCH" ]; then
         FIND_BIGGEST=1
         VERSION_PATCH=0
     fi
+
     if [ -n "$(echo $VERSION | grep "v")" ]; then
-        g=$VERSION
+        github_tag_format=$VERSION
     else
-        g="v$VERSION"
+        github_tag_format="v$VERSION"
     fi
+
     for tag in $(git ls-remote --tags ${CPYTHON_URL}); do
         case "$tag" in
-          *"refs/tags/${g}"*) ;;
-          *) tag= ;;  # Clear the variable if it doesn't match
+          *"refs/tags/${github_tag_format}"*) ;;
+          *) tag= ;;
         esac
+
         if [ -n "$tag" ]; then
             tag=${tag##*/}
 
-            _VERSION_PATCH=$(echo "$tag" | tr '.' ' ' | awk "{print \$3}")
+            _VERSION_MAJOR=$(_venvman_get_subversion_from_version --major "$tag")
+            if [ "$VERSION_MAJOR" != "$_VERSION_MAJOR" ]; then
+                if [ "v${VERSION_MAJOR}" != "$_VERSION_MAJOR" ];then
+                    continue
+                fi
+            fi
+
+            _VERSION_MINOR=$(_venvman_get_subversion_from_version --minor "$tag")
+            if [ "${VERSION_MINOR}" != "$_VERSION_MINOR" ]; then
+                continue
+            fi
+
+            _VERSION_PATCH=$(_venvman_get_subversion_from_version --patch $tag)
+            if ! _venvman_is_integer "$_VERSION_PATCH"; then
+                continue
+            fi
+
+            TAG="${_VERSION_MAJOR}.${VERSION_MINOR}.${_VERSION_PATCH}"
+
+            if ! [ "$tag" = "$TAG" ]; then
+                continue
+            fi
 
             if [ "$FIND_BIGGEST" = 1 ]; then
-                if _venvman_is_integer "$_VERSION_PATCH"  && [ "$_VERSION_PATCH" -ge "$VERSION_PATCH" ]; then
-
-                    VERSION_MAJOR=$(echo "$tag" | tr '.' ' ' | awk "{print \$1}")
-                    VERSION_MINOR=$(echo "$tag" | tr '.' ' ' | awk "{print \$2}")
+                if [ "$_VERSION_PATCH" -ge "$VERSION_PATCH" ]; then
                     VERSION_PATCH=$_VERSION_PATCH
                     TAG="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
                 fi
+
             else
-                if _venvman_is_integer "$_VERSION_PATCH" && [ "$VERSION_PATCH" = "$_VERSION_PATCH" ]; then
-                    VERSION_MAJOR=$(echo "$tag" | tr '.' ' ' | awk "{print \$1}")
-                    VERSION_MINOR=$(echo "$tag" | tr '.' ' ' | awk "{print \$2}")
-                    VERSION_PATCH=$_VERSION_PATCH
-                    TAG="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+                if [ "$VERSION_PATCH" = "$_VERSION_PATCH" ]; then
                     echo $TAG
+                    unset _VERSION_MAJOR _VERSION_MINOR _VERSION_MINOR
+                    unset VERSION VERSION_MAJOR VERSION_MINOR VERSION_MINOR
+                    unset TAG
                     return 0
                 fi
             fi
         fi
     done
+
     if [ "$FIND_BIGGEST" = 1 ] && [ -n "$TAG" ]; then
-        TAG="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
         echo $TAG
+        unset _VERSION_MAJOR _VERSION_MINOR _VERSION_MINOR
+        unset VERSION VERSION_MAJOR VERSION_MINOR VERSION_MINOR
+        unset TAG
         unset FIND_BIGGEST
         return 0
     else
-        unset FIND_BIGGEST
+        unset _VERSION_MAJOR _VERSION_MINOR _VERSION_MINOR
+        unset VERSION VERSION_MAJOR VERSION_MINOR VERSION_MINOR
+        unset TAG FIND_BIGGEST
         return 1
     fi
 }
@@ -87,6 +135,9 @@ _venvman_get_tag_from_version() {
 
 _venvman_get_python_bin_path() {
     VERSION=$1
+
+    VERSION_MAJOR=$(_venvman_get_subversion_from_version --major $VERSION)
+    VERSION_MINOR=$(_venvman_get_subversion_from_version --minor $VERSION)
 
     BINARY_PATH=$(which python${VERSION}) || BINARY_PATH=""
     if [ -n "$BINARY_PATH" ]; then
@@ -152,8 +203,8 @@ _venvman_build_python_version_from_source() {
     cd $VENVMAN_PYTHON_DIR || return 1
 
     if [ "$(git remote get-url origin)" != "${CPYTHON_URL}" ]; then
-
-        echo "The remote at the Cpython repo at ${VENVMAN_PYTHON_DIR} does not match ${CPYTHON_URL}" >&2
+        echo "The remote repo at ${VENVMAN_PYTHON_DIR} does not match ${CPYTHON_URL}" >&2
+        echo "Remote at ${VENVMAN_PYTHON_DIR}: $(git remote get-url origin)" >&2
         return 1
     fi
 
@@ -169,9 +220,8 @@ _venvman_build_python_version_from_source() {
         if _venvman_version_is_branch "$VERSION"; then
             BRANCH=$VERSION
         fi
-    elif [ "$NUM_PARTS" = 3 ]; then
-        BRANCH=""
-    else
+
+    elif [ "$NUM_PARTS" != 3 ]; then
         return 1
     fi
 
