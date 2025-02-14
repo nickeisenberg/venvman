@@ -177,10 +177,10 @@ _venvman_build_python_version_from_source() {
 
     TAG=$(_venvman_get_tag_from_version "$VERSION")
 
-    CHECKOUT="git checkout $([ -n "$BRANCH" ] && echo "$BRANCH" || echo $TAG)"
+    CHECKOUT=$([ -n "$BRANCH" ] && echo "$BRANCH" || echo $TAG)
 
     echo 
-    echo "Python $VERSION is available at ${CPYTHON_URL} with '${CHECKOUT}'."
+    echo "Python $VERSION is available at ${CPYTHON_URL} with 'git checkout ${CHECKOUT}'."
     if [ -n "${BRANCH}" ]; then
         echo "The version available at the ${VERSION} branch is ${TAG}"
     fi
@@ -195,8 +195,8 @@ _venvman_build_python_version_from_source() {
     echo "\$     return 1"
     echo "\$ fi"
     echo "\$"
-    echo "\$ git checkout "$BRANCH""
-    echo "\$ git reset --hard "$BRANCH""
+    echo "\$ git checkout "$CHECKOUT""
+    echo "\$ git reset --hard "$CHECKOUT""
     echo "\$"
     echo "\$ make distclean"
     echo "\$ ./configure --prefix="${VENVMAN_PYTHON_VERSIONS_DIR}/${VERSION}""
