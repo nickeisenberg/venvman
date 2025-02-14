@@ -12,8 +12,7 @@ ensure_env_var_exists() {
 
 setup_venvman_test() {
     VENVMAN_ROOT_DIR=$(ensure_env_var_exists $VENVMAN_ROOT_DIR)
-    source $VENVMAN_ROOT_DIR/venvman/src/venvman.sh
-    source $VENVMAN_ROOT_DIR/venvman/src/completion/completion.sh
+    source $VENVMAN_ROOT_DIR/venvman/src/main.sh
     _VENVMAN_ENVS_DIR=$(ensure_env_var_exists $VENVMAN_ENVS_DIR)
     VENVMAN_ENVS_DIR=$(pwd)/_test_here/envs
     VENVMAN_TEST_LOCATION=$(pwd)/_test_here
@@ -168,7 +167,7 @@ test_venvman_make() {
     
     setup_venvman_test 
     
-    local TEST_VERSION=3.11
+    local TEST_VERSION=3.10
     local TEST_NAME="test_env"
     local CLEANUP=true
 
@@ -213,7 +212,7 @@ test_venvman_activate(){
 
     setup_venvman_test 
 
-    local TEST_VERSION=3.11
+    local TEST_VERSION=3.10
     local TEST_NAME="test_env"
     VENVMAN_ENVS_DIR=$(ensure_env_var_exists $VENVMAN_ENVS_DIR)
     local TEST_VENV_PATH="${VENVMAN_ENVS_DIR}/${TEST_VERSION}/${TEST_NAME}"
@@ -258,7 +257,7 @@ test_venvman_clone() {
 
     setup_venvman_test    
 
-    local TEST_VERSION=3.11
+    local TEST_VERSION=3.10
     local TEST_PARENT="test_env"
     local TEST_CLONE_TO="test_env_clone"
     local CLEANUP=true
@@ -410,7 +409,7 @@ test_venvman_delete() {
 
     setup_venvman_test 
 
-    local TEST_VERSION=3.11
+    local TEST_VERSION=3.10
     local TEST_NAME="test_env"
     local TEST_VENV_PATH="${VENVMAN_ENVS_DIR}/${TEST_VERSION}/${TEST_NAME}"
 
@@ -449,7 +448,7 @@ test_venvman_site_packages() {
 
     setup_venvman_test 
 
-    local TEST_VERSION="3.11"
+    local TEST_VERSION="3.10"
     local TEST_NAME="test_env"
     local TEST_PACKAGE="numpy"
 
