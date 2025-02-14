@@ -66,11 +66,11 @@ _venvman_make() {(
         echo
         echo "A binary could not be found for python${VERSION} from the following methods:"
         echo
-        echo "  1) The command 'which python${VERSION}' showed nothing."
-        echo "  2) A python${VERSION} binary could not be found in ${VENVMAN_PYTHON_VERSIONS_DIR}"
+        echo "  1) A python${VERSION} binary could not be found in ${VENVMAN_PYTHON_VERSIONS_DIR}"
+        echo "  2) The command 'which python${VERSION}' showed nothing."
         echo
         echo "Searching ${CPYTHON_URL} at ${VENVMAN_PYTHON_DIR} ..."
-
+    
         if ! _venvman_build_python_version_from_source $VERSION; then
             echo "Python ${VERSION} will not be installed." >&2
             echo "Cannot continue without a python${VERSION} binary." >&2
