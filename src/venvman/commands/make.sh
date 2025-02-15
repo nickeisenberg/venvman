@@ -1,0 +1,106 @@
+. "${VENVMAN_ROOT_DIR}/venvman/src/commands/helpers.sh"
+. "${VENVMAN_ROOT_DIR}/venvman/src/helpers.sh"
+
+
+_venvman_make() {(
+    while [ "$#" -gt 0 ]; do
+        case $1 in
+            -n | --name)
+                if [ -n "$2" ]; then
+                    NAME="$2"
+                    shift 2
+                else
+                    _venvman_err_msg_missing_option_value "make" "--name"
+                    return 1
+                fi
+                ;;
+            -v | --version)
+                if [ -n "$2" ]; then
+                    VERSION="$2"
+                    shift 2
+                else
+                    _venvman_err_msg_missing_option_value "make" "--version"
+                    return 1
+                fi
+                ;;
+            -p | --path)
+                if [ -n "$2" ]; then
+                    VENV_PATH="$2"
+                    shift 2
+                else
+                    _venvman_err_msg_missing_option_value "make" "--path"
+                    return 1
+                fi
+                ;;
+            -h | --help)
+                _venvman_command_help_tag "make" \
+                    --options \
+                        "-n, --name <venv_name>" \
+                        "-v, --version <python_version>" \
+                        "-p, --path <venv_path>" \
+                        "-h, --help" \
+                    --option-descriptions \
+                        "Specify the name of the virtual environment." \
+                        "Specify the Python version to use." \
+                        "Manually specify the directory." \
+                        "Display this help message." \
+                    --examples \
+                        "venvman make -n project_env -v 3.10" \
+                        "venvman make -n myenv -v 3.9 -p /custom/path" \
+                    --example-descriptions \
+                        "Create 'project_env' with Python 3.10." \
+                        "Create 'myenv' with Python 3.9 at '/custom/path'."
+                shift
+                return 0
+                ;;
+
+            *)
+                _venvman_err_msg_invalid_option "make" "$1"
+                return 1
+                ;;
+        esac
+    done
+
+
+    if ! PYTHON_EXEC=$(_venvman_get_python_bin_path "$VERSION"); then  
+        echo
+        echo "A binary could not be found for python${VERSION} from the following methods:"
+        echo
+        echo "  1) A python${VERSION} binary could not be found in ${VENVMAN_PYTHON_VERSIONS_DIR}"
+        echo "  2) The command 'which python${VERSION}' showed nothing."
+        echo
+        echo "Searching ${CPYTHON_URL} at ${VENVMAN_PYTHON_DIR} ..."
+    
+        if ! _venvman_build_python_version_from_source $VERSION; then
+            echo "Python ${VERSION} will not be installed." >&2
+            echo "Cannot continue without a python${VERSION} binary." >&2
+            echo "Exiting" >&2
+            return 1
+        fi 
+    fi
+
+    if ! $($PYTHON_EXEC --version > /dev/null); then
+        echo "$PYTHON_EXEC is corrupted." >&2
+        return 1
+    fi
+
+    if [ -n "$NAME" ]  && [ -n "$VERSION" ] && [ -z "$VENV_PATH" ]; then
+        VENV_PATH="${VENVMAN_ENVS_DIR}/${VERSION}/${NAME}"
+
+    elif [ -n "$NAME" ]  && [ -n "$VERSION" ] && [ -n "$VENV_PATH" ]; then
+        VENV_PATH="${VENV_PATH}/${NAME}"
+
+    else 
+        echo
+        echo "ERROR: Invalid usage. see 'venvman make --help'." >&2
+        return 1
+    fi
+
+    "$PYTHON_EXEC" -m venv $VENV_PATH || return 1
+
+    PATH_TO_ACTIVATE=$(find "$VENV_PATH" -type f -name "activate")
+    if [ -d "$VENV_PATH" ] && [ -f "$PATH_TO_ACTIVATE" ]; then
+        echo "SUCCESS: The enviornment has been created at $VENV_PATH."
+        return 0
+    fi
+)}

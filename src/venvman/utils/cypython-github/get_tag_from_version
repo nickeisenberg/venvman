@@ -1,0 +1,98 @@
+#!/usr/bin/env bash
+
+
+get_subversion_from_version() {
+    ${VENVMAN_UTILS_DIR}/get_subversion_from_version $1 $2
+}
+
+
+is_integer() {
+    ${VENVMAN_UTILS_DIR}/is_integer $1
+}
+
+
+get_tag_from_version() {
+    VERSION=$1
+
+    VERSION_MAJOR=$(get_subversion_from_version --major "$VERSION")
+    VERSION_MINOR=$(get_subversion_from_version --minor "$VERSION")
+    VERSION_PATCH=$(get_subversion_from_version --patch "$VERSION")
+
+    if [ -z "$VERSION_PATCH" ]; then
+        FIND_BIGGEST=1
+        VERSION_PATCH=0
+    fi
+
+    if [ -n "$(echo $VERSION | grep "v")" ]; then
+        github_tag_format=$VERSION
+    else
+        github_tag_format="v$VERSION"
+    fi
+
+    for tag in $(git ls-remote --tags ${VENVMAN_CPYTHON_REMOTE_URL}); do
+        case "$tag" in
+          *"refs/tags/${github_tag_format}"*) ;;
+          *) tag= ;;
+        esac
+
+        if [ -n "$tag" ]; then
+            tag=${tag##*/}
+
+            _VERSION_MAJOR=$(get_subversion_from_version --major "$tag")
+            if [ "$VERSION_MAJOR" != "$_VERSION_MAJOR" ]; then
+                if [ "v${VERSION_MAJOR}" != "$_VERSION_MAJOR" ];then
+                    continue
+                fi
+            fi
+
+            _VERSION_MINOR=$(get_subversion_from_version --minor "$tag")
+            if [ "${VERSION_MINOR}" != "$_VERSION_MINOR" ]; then
+                continue
+            fi
+
+            _VERSION_PATCH=$(get_subversion_from_version --patch "$tag")
+            if ! is_integer "$_VERSION_PATCH"; then
+                continue
+            fi
+
+            TAG="${_VERSION_MAJOR}.${VERSION_MINOR}.${_VERSION_PATCH}"
+
+            if ! [ "$tag" = "$TAG" ]; then
+                continue
+            fi
+
+            if [ "$FIND_BIGGEST" = 1 ]; then
+                if [ "$_VERSION_PATCH" -ge "$VERSION_PATCH" ]; then
+                    VERSION_PATCH=$_VERSION_PATCH
+                    TAG="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+                fi
+
+            else
+                if [ "$VERSION_PATCH" = "$_VERSION_PATCH" ]; then
+                    echo $TAG
+                    unset _VERSION_MAJOR _VERSION_MINOR _VERSION_MINOR
+                    unset VERSION VERSION_MAJOR VERSION_MINOR VERSION_MINOR
+                    unset TAG
+                    return 0
+                fi
+            fi
+        fi
+    done
+
+    if [ "$FIND_BIGGEST" = 1 ] && [ -n "$TAG" ]; then
+        echo $TAG
+        unset _VERSION_MAJOR _VERSION_MINOR _VERSION_MINOR
+        unset VERSION VERSION_MAJOR VERSION_MINOR VERSION_MINOR
+        unset TAG
+        unset FIND_BIGGEST
+        return 0
+    else
+        unset _VERSION_MAJOR _VERSION_MINOR _VERSION_MINOR
+        unset VERSION VERSION_MAJOR VERSION_MINOR VERSION_MINOR
+        unset TAG FIND_BIGGEST
+        return 1
+    fi
+}
+
+
+get_tag_from_version $@
