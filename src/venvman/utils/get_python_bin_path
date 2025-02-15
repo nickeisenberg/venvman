@@ -45,4 +45,4 @@ get_python_bin_path() {
 }
 
 
-get_python_bin_path $1
+get_python_bin_path "$1"

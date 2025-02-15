@@ -9,4 +9,4 @@ err_invalid_option() {
 }
 
 
-err_invalid_option $1 $2
+err_invalid_option "$@"

@@ -48,7 +48,7 @@ err_missing_options() {
 }
 
 
-err_missing_options $@
+err_missing_options "$@"
 
 
 unset \

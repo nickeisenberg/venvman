@@ -95,4 +95,4 @@ get_tag_from_version() {
 }
 
 
-get_tag_from_version $@
+get_tag_from_version "$@"

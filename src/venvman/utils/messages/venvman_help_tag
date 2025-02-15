@@ -46,9 +46,10 @@ venvman_help_tag() {
     echo "  See \`venvman <command> --help\` for usage of each command."
 }
 
-venvman_help_tag $@
+
+venvman_help_tag "$@"
 
 
-unset \
-    COMMANDS COMMANDS_DESCRIPTIONS COMMANDS_LENS COMMANDS_MAX_LEN \
-    i len delta spaces
+# unset \
+#     COMMANDS COMMANDS_DESCRIPTIONS COMMANDS_LENS COMMANDS_MAX_LEN \
+#     i len delta spaces

@@ -15,4 +15,4 @@ version_is_branch() {
     return 1
 }
 
-version_is_branch $1
+version_is_branch "$1"

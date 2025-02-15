@@ -81,7 +81,7 @@ venvman_command_help_tag() {
     paste -d ' ' <(echo -e "$EXAMPLES") <(echo -e "$EXAMPLES_DESCRIPTIONS")
 }
 
-venvman_command_help_tag $@
+venvman_command_help_tag "$@"
 
     
 unset \

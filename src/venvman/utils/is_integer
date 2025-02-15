@@ -11,4 +11,4 @@ is_integer() {
     esac
 }
 
-is_integer $1
+is_integer "$1"

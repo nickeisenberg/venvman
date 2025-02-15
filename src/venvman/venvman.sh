@@ -30,8 +30,11 @@ if [ -z "$VENVMAN_ROOT_DIR" ] || [ -z "$VENVMAN_ENVS_DIR" ]; then
     return 1
 fi
 
-. "${VENVMAN_ROOT_DIR}/venvman/src/helpers.sh"
-. "${VENVMAN_ROOT_DIR}/venvman/src/commands/commands.sh"
+
+venvman_help_tag() {
+    ${VENVMAN_UTILS_DIR}/messages/venvman_help_tag $@
+}
+
 
 venvman() {
     case $1 in
@@ -66,7 +69,7 @@ venvman() {
             ;;
 
         -h| --help)
-            _venvman_help_tag \
+            venvman_help_tag \
                 --commands \
                     "m, make" \
                     "c, clone" \
