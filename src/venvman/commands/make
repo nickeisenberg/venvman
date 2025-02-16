@@ -130,7 +130,4 @@ venvman_make() {(
 )}
 
 
-venvman_make --version 3.11 --name base
-
-
 venvman_make "$@"

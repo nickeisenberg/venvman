@@ -81,7 +81,7 @@ venvman_clone() {(
                     --examples \
                         "venvman clone --parent myenv --version 3.10 --clone-to myenv_test" \
                     --example-descriptions \
-                        "Will clone myenv to myenv_test" \
+                        "Will clone myenv to myenv_test"
                 shift
                 return 0
                 ;;
@@ -138,4 +138,4 @@ venvman_clone() {(
 )}
 
 
-venvman_clone "@"
+venvman_clone "$@"

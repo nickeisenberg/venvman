@@ -40,12 +40,12 @@ venvman_list() {
                     --examples \
                         "venvman list -v 3.10" \
                     --example-descriptions \
-                        "List virtual environments created with Python 3.10." \
+                        "List virtual environments created with Python 3.10."
                 shift
                 return 0
                 ;;
             *)
-                err_invalid_option "delete" "$1"
+                err_invalid_option "list" "$1"
                 return 1
                 ;;
         esac

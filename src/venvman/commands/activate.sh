@@ -1,15 +1,15 @@
 err_missing_option_value() {
-    _venvman_err_msg_missing_option_value "$@"
+    ${VENVMAN_UTILS_DIR}/messages/err_missing_option_value "$@"
 }
 
 
 venvman_command_help_tag() {
-    _venvman_command_help_tag "$@"
+    ${VENVMAN_UTILS_DIR}/messages/venvman_command_help_tag "$@"
 }
 
 
 err_invalid_option() {
-    _venvman_err_msg_invalid_option "$@"
+    ${VENVMAN_UTILS_DIR}/messages/err_invalid_option "$@"
 }
 
 

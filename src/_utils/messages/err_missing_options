@@ -1,0 +1,56 @@
+#! /usr/bin/env bash
+
+err_missing_options() {
+    MISSING_VALUE="$1"
+    COMMAND="$2"
+    shift 2
+    while [ "$#" -gt 0 ]; do
+        case "$1" in
+            --options)
+                OPTIONS="$2"
+                shift 2
+                ;;
+            --inputs)
+                INPUTS="$2"
+                shift 2
+                ;;
+            *)
+                return 1
+                ;;
+        esac
+    done
+    
+    NUM_OPTIONS=$(echo "$OPTIONS" | wc -w)
+    NUM_INPUTS=$(echo "$INPUTS" | wc -w)
+    
+    if [ "$NUM_INPUTS" -gt "$NUM_OPTIONS" ]; then
+        return 1
+    fi
+    
+    MISSING=false
+    i=1
+    while [ "$i" -le "$NUM_OPTIONS" ]; do
+        INPUT=$(echo "$INPUTS" | awk "{print \$$i}")
+        OPTION=$(echo "$OPTIONS" | awk "{print \$$i}")
+        
+        if [ "$INPUT" = "$MISSING_VALUE" ]; then
+            MISSING=true
+            echo "ERROR: Enter a value for ${OPTION}."
+        fi
+        i=$((i + 1))
+    done
+    
+    
+    if [ "$MISSING" = true ]; then
+        echo "See 'venvman $COMMAND --help' for usage." >&2
+        return 1
+    fi
+}
+
+
+err_missing_options "$@"
+
+
+unset \
+    MISSING_VALUE COMMAND OPTIONS INPUTS NUM_INPUTS NUM_OPTIONS \
+    MISSING i

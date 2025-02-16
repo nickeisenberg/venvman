@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+
+err_invalid_option() {
+    COMMAND=$1
+    INPUTED_OPTION=$2
+    echo "ERROR: Invalid option '${2}'" >&2
+    echo "See 'venvman ${COMMAND} --help' for usage." >&2
+}
+
+
+err_invalid_option "$@"

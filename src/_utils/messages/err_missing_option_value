@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+err_missing_option_value() {
+    COMMAND=$1
+    INPUT_OPTION_TYPE=$2
+    GIVE_USAGE=$3
+    
+    if [ -z "$GIVE_USAGE" ]; then
+        GIVE_USAGE="true"
+    fi
+    
+    echo "ERROR: Enter a value for ${INPUT_OPTION_TYPE}." >&2
+    echo "See 'venvman ${COMMAND} --help' for usage." >&2
+}
+
+err_missing_option_value "$@"
+
+unset COMMAND INPUT_OPTION_TYPE GIVE_USAGE

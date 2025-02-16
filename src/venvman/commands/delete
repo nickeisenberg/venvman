@@ -50,9 +50,7 @@ venvman_delete() {(
                     --examples \
                         "venvman delete -n myenv -v 3.10" \
                     --example-descriptions \
-                        "Create 'project_env' with Python 3.10." \
                         "Delete the virtual environment 'myenv' created with Python 3.10."
-                shift
                 return 0
                 ;;
             *)
