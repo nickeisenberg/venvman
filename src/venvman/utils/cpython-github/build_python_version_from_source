@@ -7,12 +7,12 @@ get_python_bin_path() {
 
 
 version_is_branch() {
-    ${VENVMAN_UTILS_DIR}/cypython-github/version_is_branch $1
+    ${VENVMAN_UTILS_DIR}/cpython-github/version_is_branch $1
 }
 
 
 get_tag_from_version() {
-    ${VENVMAN_UTILS_DIR}/cypython-github/get_tag_from_version $1
+    ${VENVMAN_UTILS_DIR}/cpython-github/get_tag_from_version $1
 }
 
 
@@ -85,7 +85,7 @@ build_python_version_from_source() {
     echo
     echo "To do this, we would run following:"
     echo
-    echo "\$ cd ${VENVMAN_CYPTHON_REPO_DIR}" 
+    echo "\$ cd ${VENVMAN_CPYTHON_REPO_DIR}" 
     echo "\$"
     echo "\$ if [ \$(git remote get-url origin) != ${VENVMAN_CPYTHON_REMOTE_URL} ]; then"
     echo "\$     return 1"
