@@ -133,7 +133,7 @@ test_install_venvman() {
             mkdir -p $TEST_VENVMAN_ENVS_DIR
             cp -r "${HOME}/.venvman/venvman/src" "${TEST_VENVMAN_ROOT_DIR}/venvman"
 
-            if ! source $TEST_VENVMAN_ROOT_DIR/venvman/src/venvman.sh; then
+            if ! source $TEST_VENVMAN_ROOT_DIR/venvman/src/main.sh; then
                 rm -rf $TEST_VENVMAN_ROOT_DIR
                 return 1
             fi

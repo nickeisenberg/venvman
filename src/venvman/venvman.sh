@@ -29,7 +29,9 @@ venvman() {
 
         sp | site-packages)
             shift
-            ${VENVMAN_COMMANDS_DIR}/site-packages "$@"
+            . ${VENVMAN_COMMANDS_DIR}/site-packages.sh "$@"
+            venvman_site_packages "$@"
+            unset -f venvman_site_packages
             ;;
 
         -h| --help)
