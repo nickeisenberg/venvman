@@ -6,6 +6,11 @@ err_missing_option_value() {
 }
 
 
+err_invalid_option() {
+    ${VENVMAN_UTILS_DIR}/messages/err_invalid_option "$@"
+}
+
+
 venvman_command_help_tag() {
     ${VENVMAN_UTILS_DIR}/messages/venvman_command_help_tag "$@"
 }
@@ -74,7 +79,7 @@ venvman_make() {(
                 ;;
 
             *)
-                _venvman_err_msg_invalid_option "make" "$1"
+                err_invalid_option "make" "$1"
                 return 1
                 ;;
         esac
@@ -123,6 +128,9 @@ venvman_make() {(
         return 0
     fi
 )}
+
+
+venvman_make --version 3.11 --name base
 
 
 venvman_make "$@"

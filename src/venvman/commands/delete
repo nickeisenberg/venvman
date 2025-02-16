@@ -1,8 +1,22 @@
-. "${VENVMAN_ROOT_DIR}/venvman/src/commands/helpers.sh"
-. "${VENVMAN_ROOT_DIR}/venvman/src/helpers.sh"
+#!/usr/bin/env bash
 
 
-_venvman_delete() {(
+err_missing_option_value() {
+    ${VENVMAN_UTILS_DIR}/messages/err_missing_option_value "$@"
+}
+
+
+err_invalid_option() {
+    ${VENVMAN_UTILS_DIR}/messages/err_invalid_option "$@"
+}
+
+
+venvman_command_help_tag() {
+    ${VENVMAN_UTILS_DIR}/messages/venvman_command_help_tag "$@"
+}
+
+
+venvman_delete() {(
     while [ "$#" -gt 0 ]; do
         case $1 in
             -n | --name)
@@ -10,7 +24,7 @@ _venvman_delete() {(
                     NAME="$2"
                     shift 2
                 else
-                    _venvman_err_msg_missing_option_value "delete" "--name"
+                    err_missing_option_value "delete" "--name"
                     return 1
                 fi
                 ;;
@@ -19,25 +33,30 @@ _venvman_delete() {(
                     VERSION="$2"
                     shift 2
                 else
-                    _venvman_err_msg_missing_option_value "delete" "--version"
+                    err_missing_option_value "delete" "--version"
                     return 1
                 fi
                 ;;
             -h | --help)
-                echo "Usage:"
-                echo "  venvman delete [options]"
-                echo
-                echo "Options:"
-                echo "  -n, --name <venv_name>            : Specify the name of the virtual environment to delete."
-                echo "  -v, --version <python_version>    : Specify the Python version associated with the virtual environment."
-                echo "  -h, --help                        : Display this help message."
-                echo
-                echo "Examples:"
-                echo "  venvman delete -n myenv -v 3.10   : Delete the virtual environment 'myenv' created with Python 3.10."
+                venvman_command_help_tag "delete" \
+                    --options \
+                        "-n, --name <venv_name>" \
+                        "-v, --version <python_version>" \
+                        "-h, --help" \
+                    --option-descriptions \
+                        "Specify the name of the virtual environment to delete." \
+                        "Specify the Python version associated with the virtual environment." \
+                        "Display this help message." \
+                    --examples \
+                        "venvman delete -n myenv -v 3.10" \
+                    --example-descriptions \
+                        "Create 'project_env' with Python 3.10." \
+                        "Delete the virtual environment 'myenv' created with Python 3.10."
+                shift
                 return 0
                 ;;
             *)
-                _venvman_err_msg_invalid_option "delete" "$1"
+                err_invalid_option "delete" "$1"
                 return 1
                 ;;
         esac
@@ -67,3 +86,6 @@ _venvman_delete() {(
             ;;
     esac
 )}
+
+
+venvman_delete "$@"

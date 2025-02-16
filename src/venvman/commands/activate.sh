@@ -1,19 +1,15 @@
-. "${VENVMAN_ROOT_DIR}/venvman/src/commands/helpers.sh"
-. "${VENVMAN_ROOT_DIR}/venvman/src/helpers.sh"
-
-
-venvman_err_msg_missing_option_value() {
-    _venvman_err_msg_missing_option_value $@
+err_missing_option_value() {
+    _venvman_err_msg_missing_option_value "$@"
 }
 
 
 venvman_command_help_tag() {
-    _venvman_command_help_tag $@
+    _venvman_command_help_tag "$@"
 }
 
 
-venvman_err_msg_invalid_option() {
-    _venvman_err_msg_invalid_option $@
+err_invalid_option() {
+    _venvman_err_msg_invalid_option "$@"
 }
 
 
@@ -25,7 +21,7 @@ venvman_activate() {
                     _NAME="$2"
                     shift 2
                 else
-                    _venvman_err_msg_missing_option_value "activate" "--name"
+                    err_missing_option_value "activate" "--name"
                     return 1
                 fi
                 ;;
@@ -34,7 +30,7 @@ venvman_activate() {
                     _VERSION="$2"
                     shift 2
                 else
-                    _venvman_err_msg_missing_option_value "activate" "--version"
+                    err_missing_option_value "activate" "--version"
                     return 1
                 fi
                 ;;
@@ -43,12 +39,12 @@ venvman_activate() {
                     _VENV_PATH="$2"
                     shift 2
                 else
-                    _venvman_err_msg_missing_option_value "activate" "--path"
+                    err_missing_option_value "activate" "--path"
                     return 1
                 fi
                 ;;
             -h | --help)
-                _venvman_command_help_tag "activate"\
+                venvman_command_help_tag "activate"\
                     --options \
                         "-n, --name <venv_name>" \
                         "-v, --version <python_version>" \
@@ -68,7 +64,7 @@ venvman_activate() {
                 return 0
                 ;;
             *)
-                _venvman_err_msg_invalid_option "activate" "$1"
+                err_invalid_option "activate" "$1"
                 return 1
                 ;;
         esac
@@ -80,7 +76,7 @@ venvman_activate() {
         return 1
 
     elif { [ -n "$_NAME" ]  && [ -z "$_VERSION" ] ;} || { [ -n "$_VERSION" ]  && [ -z "$_NAME" ] ;}; then
-        _venvman_err_msg_missing_option_value "activate" "--name and --version"
+        err_missing_option_value "activate" "--name and --version"
         unset _NAME _VERSION _VENV_PATH _PATH_TO_ACTIVATE
         return 1
     fi
@@ -110,11 +106,3 @@ venvman_activate() {
     fi
     unset _NAME _VERSION _VENV_PATH _PATH_TO_ACTIVATE
 }
-
-_venvman_activate $@
-
-unset -f \
-    _venvman_activate \
-    _venvman_command_help_tag \
-    _venvman_err_msg_invalid_option \
-    _venvman_err_msg_missing_option_value

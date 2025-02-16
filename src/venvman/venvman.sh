@@ -1,71 +1,39 @@
-venvman_help_tag() {
-    ${VENVMAN_UTILS_DIR}/messages/venvman_help_tag $@
-}
-
-
-_venvman_make() {
-}
-
-
-_venvman_activate() {
-    command ...
-}
-
-
-_venvman_clone() {
-    command ...
-}
-
-
-_venvman_list() {
-    command ...
-}
-
-
-_venvman_delete() {
-    command ...
-}
-
-
-_venvman_site_packages() {
-    command ...
-}
-
-
 venvman() {
     case $1 in
         m | make)
             shift
-            _venvman_make "$@"
+            ${VENVMAN_COMMANDS_DIR}/make "$@"
             ;;
 
         a | activate)
             shift
-            _venvman_activate "$@"
+            . ${VENVMAN_COMMANDS_DIR}/activate.sh
+            venvman_activate "$@"
+            unset -f venvman_activate
             ;;
 
         c | clone)
             shift
-            _venvman_clone "$@"
+            ${VENVMAN_COMMANDS_DIR}/clone "$@"
             ;;
 
         list)
             shift
-            _venvman_list "$@"
+            ${VENVMAN_COMMANDS_DIR}/list "$@"
             ;;
 
         d | delete)
             shift
-            _venvman_delete "$@"
+            ${VENVMAN_COMMANDS_DIR}/delete "$@"
             ;;
 
         sp | site-packages)
             shift
-            _venvman_site_packages "$@"
+            ${VENVMAN_COMMANDS_DIR}/site-packages "$@"
             ;;
 
         -h| --help)
-            venvman_help_tag \
+            ${VENVMAN_UTILS_DIR}/messages/venvman_help_tag \
                 --commands \
                     "m, make" \
                     "c, clone" \

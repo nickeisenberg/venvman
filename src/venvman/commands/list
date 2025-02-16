@@ -1,8 +1,22 @@
-. "${VENVMAN_ROOT_DIR}/venvman/src/commands/helpers.sh"
-. "${VENVMAN_ROOT_DIR}/venvman/src/helpers.sh"
+#!/usr/bin/env bash
 
 
-_venvman_list() {(
+err_missing_option_value() {
+    ${VENVMAN_UTILS_DIR}/messages/err_missing_option_value "$@"
+}
+
+
+err_invalid_option() {
+    ${VENVMAN_UTILS_DIR}/messages/err_invalid_option "$@"
+}
+
+
+venvman_command_help_tag() {
+    ${VENVMAN_UTILS_DIR}/messages/venvman_command_help_tag "$@"
+}
+
+
+venvman_list() {
     while [ "$#" -gt 0 ]; do
         case $1 in
             -v | --version)
@@ -11,25 +25,27 @@ _venvman_list() {(
                     VENV_PATH="${VENVMAN_ENVS_DIR}/${VERSION}"
                     shift 2
                 else
-                    _venvman_err_msg_missing_option_value "list" "--version"
+                    err_missing_option_value "list" "--version"
                     return 1
                 fi
                 ;;
             -h | --help)
-                echo "Usage:"
-                echo "  venvman list [options]"
-                echo
-                echo "Options:"
-                echo "  -v, --version <python_version>     : List virtual environments for a specific Python version."
-                echo "  -h, --help                         : Display this help message."
-                echo
-                echo "Examples:"
-                echo "  venvman list                       : List all available virtual environments grouped by Python version."
-                echo "  venvman list -v 3.10               : List virtual environments created with Python 3.10."
+                venvman_command_help_tag "list" \
+                    --options \
+                        "-v, --version <python_version>" \
+                        "-h, --help" \
+                    --option-descriptions \
+                        "List virtual environments for a specific Python version." \
+                        "Display this help message." \
+                    --examples \
+                        "venvman list -v 3.10" \
+                    --example-descriptions \
+                        "List virtual environments created with Python 3.10." \
+                shift
                 return 0
                 ;;
             *)
-                _venvman_err_msg_invalid_option "list" "$1"
+                err_invalid_option "delete" "$1"
                 return 1
                 ;;
         esac
@@ -49,4 +65,7 @@ _venvman_list() {(
             echo
         done
     fi
-)}
+}
+
+
+venvman_list "$@"
