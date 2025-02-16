@@ -59,8 +59,8 @@ make_dir_if_not_exitst() {
 
 install() {
     local VENVMAN_ROOT_DIR=$1
-    local VENVMAN_PYTHON_DIR=${VENVMAN_ROOT_DIR}/python/cpython
-    local VENVMAN_PYTHON_VERSIONS_DIR=${VENVMAN_ROOT_DIR}/python/versions
+    local VENVMAN_CPYTHON_REPO_DIR=${VENVMAN_ROOT_DIR}/cpython
+    local VENVMAN_PYTHON_BUILDS_DIR=${VENVMAN_ROOT_DIR}/builds/
 
     local VENVMAN_ENVS_DIR=$2
 
@@ -102,9 +102,9 @@ install() {
     echo "Cloning ${CPYTHON_URL} to ${VENVMAN_PYTHON_DIR}"
     echo "--------------------"
     echo
-    mkdir -p ${VENVMAN_PYTHON_DIR} || return 1
-    git clone ${CPYTHON_URL} ${VENVMAN_PYTHON_DIR} || return 1
-    mkdir -p ${VENVMAN_PYTHON_VERSIONS_DIR} || return 1
+    mkdir -p ${VENVMAN_CPYTHON_REPO_DIR} || return 1
+    git clone ${CPYTHON_URL} ${VENVMAN_CPYTHON_REPO_DIR} || return 1
+    mkdir -p ${VENVMAN_PYTHON_BUILDS_DIR} || return 1
 
     SHELL_PROFILE=$(detect_profile) || return 1
     
