@@ -1,8 +1,27 @@
-. "${VENVMAN_ROOT_DIR}/venvman/src/commands/helpers.sh"
-. "${VENVMAN_ROOT_DIR}/venvman/src/helpers.sh"
+#!/usr/bin/env bash
 
 
-_venvman_make() {(
+err_missing_option_value() {
+    ${VENVMAN_UTILS_DIR}/messages/err_missing_option_value "$@"
+}
+
+
+venvman_command_help_tag() {
+    ${VENVMAN_UTILS_DIR}/messages/venvman_command_help_tag "$@"
+}
+
+
+get_python_bin_path() {
+    ${VENVMAN_UTILS_DIR}/get_python_bin_path "$@"
+}
+
+
+build_python_version_from_source() {
+    ${VENVMAN_UTILS_DIR}/cpython-github/build_python_version_from_source "$@"
+}
+
+
+venvman_make() {(
     while [ "$#" -gt 0 ]; do
         case $1 in
             -n | --name)
@@ -10,7 +29,7 @@ _venvman_make() {(
                     NAME="$2"
                     shift 2
                 else
-                    _venvman_err_msg_missing_option_value "make" "--name"
+                    err_missing_option_value "make" "--name"
                     return 1
                 fi
                 ;;
@@ -19,7 +38,7 @@ _venvman_make() {(
                     VERSION="$2"
                     shift 2
                 else
-                    _venvman_err_msg_missing_option_value "make" "--version"
+                    err_missing_option_value "make" "--version"
                     return 1
                 fi
                 ;;
@@ -28,12 +47,12 @@ _venvman_make() {(
                     VENV_PATH="$2"
                     shift 2
                 else
-                    _venvman_err_msg_missing_option_value "make" "--path"
+                    err_missing_option_value "make" "--path"
                     return 1
                 fi
                 ;;
             -h | --help)
-                _venvman_command_help_tag "make" \
+                venvman_command_help_tag "make" \
                     --options \
                         "-n, --name <venv_name>" \
                         "-v, --version <python_version>" \
@@ -62,7 +81,7 @@ _venvman_make() {(
     done
 
 
-    if ! PYTHON_EXEC=$(_venvman_get_python_bin_path "$VERSION"); then  
+    if ! PYTHON_EXEC=$(get_python_bin_path "$VERSION"); then  
         echo
         echo "A binary could not be found for python${VERSION} from the following methods:"
         echo
@@ -71,7 +90,7 @@ _venvman_make() {(
         echo
         echo "Searching ${CPYTHON_URL} at ${VENVMAN_PYTHON_DIR} ..."
     
-        if ! _venvman_build_python_version_from_source $VERSION; then
+        if ! build_python_version_from_source $VERSION; then
             echo "Python ${VERSION} will not be installed." >&2
             echo "Cannot continue without a python${VERSION} binary." >&2
             echo "Exiting" >&2
@@ -104,3 +123,6 @@ _venvman_make() {(
         return 0
     fi
 )}
+
+
+venvman_make "$@"

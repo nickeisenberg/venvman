@@ -1,5 +1,3 @@
-. "${VENVMAN_ROOT_DIR}/venvman/src/commands/helpers.sh"
-. "${VENVMAN_ROOT_DIR}/venvman/src/helpers.sh"
 
 
 _venvman_clone() {(
