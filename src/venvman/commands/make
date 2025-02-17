@@ -101,6 +101,11 @@ venvman_make() {(
             echo "Exiting" >&2
             return 1
         fi 
+
+        if ! PYTHON_EXEC=$(get_python_bin_path "$VERSION"); then
+            echo "ERROR: Build was successful but cant find the binary."
+            return 1
+        fi
     fi
 
     if ! $($PYTHON_EXEC --version > /dev/null); then
@@ -126,6 +131,9 @@ venvman_make() {(
     if [ -d "$VENV_PATH" ] && [ -f "$PATH_TO_ACTIVATE" ]; then
         echo "SUCCESS: The enviornment has been created at $VENV_PATH."
         return 0
+    else
+        echo "ERROR: activate script could not be found."
+        return 1
     fi
 )}
 

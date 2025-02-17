@@ -60,7 +60,12 @@ build_python_version_from_source() {
     git fetch --all > /dev/null 2&>1
 
     VERSION_PARTS=$(echo "${VERSION}" | tr '.' ' ')
-    NUM_PARTS=$(echo "${VERSION_PARTS}" | wc -w)
+    NUM_PARTS=$(echo "$(echo "${VERSION_PARTS}" | wc -w)" | xargs)
+
+    if [ "${#NUM_PARTS}" -ne "1" ]; then
+        echo "NUM_PARTS has len longer than 1"
+        return 1
+    fi
 
     if [ "$NUM_PARTS" = 2 ]; then
         if version_is_branch "$VERSION"; then
@@ -114,13 +119,33 @@ build_python_version_from_source() {
     git checkout "$BRANCH" || return 1
     git reset --hard "$BRANCH" || return 1
 
-    make distclean || return 1
+    if [ ! -f "./configure" ]; then
+        echo "./configure is missing"
+        return 1
+    fi
+
+    if [ ! -f "./Makefile.pre.in" ]; then
+        echo "Makefile.pre.in is missing"
+        return 1
+    fi
+
+    if [ -f "./Makefile.pre" ]; then
+        echo "Removing old Makefile.pre"
+        rm ./Makefile.pre
+    fi
+
+    if [ -f "./Makefile" ]; then
+        echo "Removing old Makefile"
+        rm ./Makefile
+    fi
+ 
     ./configure --prefix="${VENVMAN_PYTHON_BUILDS_DIR}/${VERSION}" || return 1
     if [ $(command -v nproc &> /dev/null) ]; then
         make -j$(nproc) || cd $MY_PWD && return 1
     else
         make || cd $MY_PWD return 1
     fi
+    make test
     make install
 
     if [ "$?" -gt 0 ]; then

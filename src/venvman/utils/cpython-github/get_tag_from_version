@@ -56,7 +56,6 @@ get_tag_from_version() {
             fi
 
             TAG="${_VERSION_MAJOR}.${VERSION_MINOR}.${_VERSION_PATCH}"
-
             if ! [ "$tag" = "$TAG" ]; then
                 continue
             fi
@@ -64,7 +63,6 @@ get_tag_from_version() {
             if [ "$FIND_BIGGEST" = 1 ]; then
                 if [ "$_VERSION_PATCH" -ge "$VERSION_PATCH" ]; then
                     VERSION_PATCH=$_VERSION_PATCH
-                    TAG="${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
                 fi
 
             else
@@ -80,7 +78,7 @@ get_tag_from_version() {
     done
 
     if [ "$FIND_BIGGEST" = 1 ] && [ -n "$TAG" ]; then
-        echo $TAG
+        echo "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
         unset _VERSION_MAJOR _VERSION_MINOR _VERSION_MINOR
         unset VERSION VERSION_MAJOR VERSION_MINOR VERSION_MINOR
         unset TAG
