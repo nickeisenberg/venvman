@@ -59,13 +59,7 @@ make_dir_if_not_exitst() {
 
 install() {
     local VENVMAN_ROOT_DIR=$1
-    local VENVMAN_CPYTHON_REPO_DIR=${VENVMAN_ROOT_DIR}/cpython
-    local VENVMAN_PYTHON_BUILDS_DIR=${VENVMAN_ROOT_DIR}/builds/
-
     local VENVMAN_ENVS_DIR=$2
-
-    local VENVMAN_URL="https://github.com/nickeisenberg/venvman.git"
-    local CPYTHON_URL="https://github.com/python/cpython"
 
     if [[ ! -n $VENVMAN_ROOT_DIR ]]; then
         local VENVMAN_ROOT_DIR=$HOME/.venvman
@@ -75,6 +69,18 @@ install() {
         local VENVMAN_ENVS_DIR=${VENVMAN_ROOT_DIR}/envs
     fi
 
+    local VENVMAN_CPYTHON_REPO_DIR=${VENVMAN_ROOT_DIR}/cpython
+    local VENVMAN_PYTHON_BUILDS_DIR=${VENVMAN_ROOT_DIR}/builds/
+
+    local VENVMAN_SRC_DIR=${VENVMAN_ROOT_DIR}/venvman/src
+    local VENVMAN_UTILS_DIR=${VENVMAN_SRC_DIR}/venvman/utils
+    local VENVMAN_COMMANDS_DIR=${VENVMAN_SRC_DIR}/venvman/commands
+
+    local VENVMAN_URL="https://github.com/nickeisenberg/venvman.git"
+    local VENVMAN_CPYTHON_REMOTE_URL="https://github.com/python/cpython.git"
+    local VENVMAN_CPYTHON_REPO_DIR=${VENVMAN_ROOT_DIR}/cpython
+    local VENVMAN_PYTHON_BUILDS_DIR=${VENVMAN_ROOT_DIR}/builds
+
     make_dir_if_not_exitst $VENVMAN_ROOT_DIR || return 1
     make_dir_if_not_exitst $VENVMAN_ENVS_DIR || return 1
 
@@ -83,10 +89,12 @@ install() {
     echo "Cloning ${VENVMAN_URL} to ${VENVMAN_ROOT_DIR}/venvman"
     echo "--------------------"
     echo
+
     if ! git clone "${VENVMAN_URL}" "${VENVMAN_ROOT_DIR}/venvman"; then
         return 1
     fi
 
+    ### remove
     local VENVMAN_MAIN=${VENVMAN_ROOT_DIR}/venvman/src/main.sh
     local VENVMAN_COMPLETION=${VENVMAN_ROOT_DIR}/venvman/src/completion/completion.sh
     if [[ ! -f $VENVMAN_MAIN || ! -f $VENVMAN_COMPLETION ]]; then
@@ -96,14 +104,15 @@ install() {
         rm -rf $VENVMAN_ROOT_DIR 
         return 1
     fi
+    ###
    
     echo
     echo "--------------------"
-    echo "Cloning ${CPYTHON_URL} to ${VENVMAN_PYTHON_DIR}"
+    echo "Cloning ${CPYTHON_URL} to ${VENVMAN_CPYTHON_REPO_DIR}"
     echo "--------------------"
     echo
     mkdir -p ${VENVMAN_CPYTHON_REPO_DIR} || return 1
-    git clone ${CPYTHON_URL} ${VENVMAN_CPYTHON_REPO_DIR} || return 1
+    git clone ${VENVMAN_CPYTHON_REMOTE_URL} ${VENVMAN_CPYTHON_REPO_DIR} || return 1
     mkdir -p ${VENVMAN_PYTHON_BUILDS_DIR} || return 1
 
     SHELL_PROFILE=$(detect_profile) || return 1
@@ -118,6 +127,10 @@ install() {
         "   venvman $@"
         "}"
     )
+
+    echo "The following will be appended to ${SHELL_PROFILE}"
+    echo
+    printf "%s\n" "${LINES_TO_APPEND[@]}"
 
     printf "%s\n" "${LINES_TO_APPEND[@]}" | tee -a $SHELL_PROFILE > /dev/null
 
