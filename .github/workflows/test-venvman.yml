@@ -50,6 +50,5 @@ jobs:
         run: |
           export VENVMAN_ROOT_DIR=$HOME/.venvman
           export VENVMAN_ENVS_DIR=$HOME/.venvman/envs
-          source $VENVMAN_ROOT_DIR/venvman/src/venvman.sh
-          source $VENVMAN_ROOT_DIR/venvman/src/completion/completion.sh
+          source $VENVMAN_ROOT_DIR/venvman/src/main.sh
           bash tests/test_venvman.sh
