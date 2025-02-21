@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+version_is_branch_local() {
+    VERSION=$1
+    for x in $(git ls-remote --heads "${VENVMAN_CPYTHON_REMOTE_URL}"); do
+        line=$(echo $x | grep "refs/heads/${VERSION}")
+        if [ -n "$line" ]; then
+            if [ "$line" = "refs/heads/${VERSION}" ]; then
+                return 0
+            else
+                return 1
+            fi
+        fi
+    done
+    return 1
+}
+
+version_is_branch_local "$1"
+
+version_is_branch_local 3.10
+
+for branch in $(git branch -a | sed 's/remotes\/origin\///' | sed 's/^\* //'); do
+    echo "Branch: $branch"
+done
+
+git for-each-ref --format='%(refname:short)' refs/heads/ | while read branch; do
+    echo "Local Branch: $branch"
+done

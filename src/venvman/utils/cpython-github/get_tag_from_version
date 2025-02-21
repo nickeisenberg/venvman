@@ -78,7 +78,7 @@ get_tag_from_version() {
     done
 
     if [ "$FIND_BIGGEST" = 1 ] && [ -n "$TAG" ]; then
-        echo "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
+        echo "v${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}"
         unset _VERSION_MAJOR _VERSION_MINOR _VERSION_MINOR
         unset VERSION VERSION_MAJOR VERSION_MINOR VERSION_MINOR
         unset TAG
