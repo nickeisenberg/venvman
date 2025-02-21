@@ -1,0 +1,163 @@
+#!/usr/bin/env bash
+
+
+get_python_bin_path() {
+    ${VENVMAN_UTILS_DIR}/get_python_bin_path $1
+}
+
+
+version_is_branch() {
+    ${VENVMAN_UTILS_DIR}/cpython-github/version_is_branch_local $1
+}
+
+
+get_tag_from_version() {
+    ${VENVMAN_UTILS_DIR}/cpython-github/get_tag_from_version_local $1
+}
+
+
+
+build_python_version_from_source() {
+    VERSION="$1"
+    
+    if BIN_PATH=$(get_python_bin_path $VERSION); then
+        echo "python${VERSION} already exists at ${BIN_PATH}"
+        return 0
+    fi
+    
+    if [ ! -d "$VENVMAN_CPYTHON_REPO_DIR" ]; then
+        echo
+        echo "The repo "$VENVMAN_CPYTHON_REMOTE_URL" was not found at ${VENVMAN_CPYTHON_REPO_DIR}."
+        echo "To continue, it must be cloned to that location."
+        printf "Would you like to clone the repo and continue now? [y/N]: "
+        read -r response
+        case "$response" in
+            Y|y)
+                mkdir -p ${VENVMAN_CYPTHON_REPO_DIR}
+                git clone ${VENVMAN_CPYTHON_REMOTE_URL} ${VENVMAN_CYPTHON_REPO_DIR}
+                mkdir -p ${VENVMAN_PYTHON_BUILDS_DIR}
+                ;;
+            *)
+                echo "Exiting. The ${VENVMAN_CPYTHON_REMOTE_URL} needs to be cloned to continue."
+                return 0
+                ;;
+        esac
+    fi
+
+    MY_PWD="$(pwd)"
+
+    cd $VENVMAN_CPYTHON_REPO_DIR || return 1
+
+    if [ "$(git remote get-url origin)" != "${VENVMAN_CPYTHON_REMOTE_URL}" ]; then
+        echo "The remote repo at ${VENVMAN_CYPTHON_REPO_DIR} does not match ${VENVMAN_CPYTHON_REMOTE_URL}" >&2
+        echo "Remote at ${VENVMAN_CYPTHON_REPO_DIR}: $(git remote get-url origin)" >&2
+        return 1
+    fi
+
+    git checkout main > /dev/null 2&>1
+    git reset --hard origin/main > /dev/null 2&>1
+    git pull > /dev/null 2&>1
+    git fetch --all > /dev/null 2&>1
+
+    VERSION_PARTS=$(echo "${VERSION}" | tr '.' ' ')
+    NUM_PARTS=$(echo "$(echo "${VERSION_PARTS}" | wc -w)" | xargs)
+
+    if [ "${#NUM_PARTS}" -ne "1" ]; then
+        echo "NUM_PARTS has len longer than 1"
+        return 1
+    fi
+
+    if [ "$NUM_PARTS" = 2 ]; then
+        if version_is_branch "$VERSION"; then
+            BRANCH=$VERSION
+        fi
+
+    elif [ "$NUM_PARTS" != 3 ]; then
+        return 1
+    fi
+
+    TAG=$(get_tag_from_version "$VERSION") || return 1
+
+    CHECKOUT=$([ -n "$BRANCH" ] && echo "$BRANCH" || echo $TAG)
+
+    echo 
+    echo "Python $VERSION is available at ${VENVMAN_CPYTHON_REMOTE_URL} with 'git checkout ${CHECKOUT}'."
+    if [ -n "${BRANCH}" ]; then
+        echo "The version available at the ${VERSION} branch is ${TAG}"
+    fi
+    printf "We can install this version and the resulting installation "
+    printf "would be located at ${VENVMAN_PYTHON_BUILDS_DIR}/${VERSION}\n"
+    echo
+    echo "To do this, we would run following:"
+    echo
+    echo "\$ cd ${VENVMAN_CPYTHON_REPO_DIR}" 
+    echo "\$"
+    echo "\$ if [ \$(git remote get-url origin) != ${VENVMAN_CPYTHON_REMOTE_URL} ]; then"
+    echo "\$     return 1"
+    echo "\$ fi"
+    echo "\$"
+    echo "\$ git checkout "$CHECKOUT""
+    echo "\$ git reset --hard "$CHECKOUT""
+    echo "\$"
+    echo "\$ make distclean"
+    echo "\$ ./configure --prefix="${VENVMAN_PYTHON_BUILDS_DIR}/${VERSION}""
+    echo "\$ make"
+    echo "\$ make install"
+    echo
+    printf "Would you like to continue with the install now? [Y/n]: "
+    read -r response
+    case "$response" in
+        Y|y)
+            ;;
+        *)
+            echo "Exiting the install."
+            cd $MY_PWD
+            return 1
+            ;;
+    esac
+    
+    git checkout "$BRANCH" || return 1
+    git reset --hard "$BRANCH" || return 1
+
+    if [ ! -f "./configure" ]; then
+        echo "./configure is missing"
+        return 1
+    fi
+
+    if [ ! -f "./Makefile.pre.in" ]; then
+        echo "Makefile.pre.in is missing"
+        return 1
+    fi
+
+    if [ -f "./Makefile.pre" ]; then
+        echo "Removing old Makefile.pre"
+        rm ./Makefile.pre
+    fi
+
+    if [ -f "./Makefile" ]; then
+        echo "Removing old Makefile"
+        rm ./Makefile
+    fi
+ 
+    ./configure --prefix="${VENVMAN_PYTHON_BUILDS_DIR}/${VERSION}" || return 1
+    if [ $(command -v nproc &> /dev/null) ]; then
+        make -j$(nproc) || cd $MY_PWD && return 1
+    else
+        make || cd $MY_PWD return 1
+    fi
+    make test
+    make install
+
+    if [ "$?" -gt 0 ]; then
+        echo "'make install' failed" >&2
+        return 1
+    fi
+
+    if ! get_python_bin_path $VERSION > /dev/null; then
+        echo "'make install' was successfull but the resulting binary for python ${VERSION} could not be found." >&2
+        return 1
+    fi
+}
+
+
+build_python_version_from_source "$1"

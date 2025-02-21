@@ -11,8 +11,10 @@ is_integer() {
 }
 
 
-get_tag_from_version_local() {
+get_tag_from_version() {
     VERSION=$1
+
+    LOCAL=${2:-true}
 
     VERSION_MAJOR=$(get_subversion_from_version --major "$VERSION")
     VERSION_MINOR=$(get_subversion_from_version --minor "$VERSION")
@@ -28,8 +30,26 @@ get_tag_from_version_local() {
     else
         github_tag_format="v$VERSION"
     fi
+    
+    if $LOCAL; then
+        ITERABLE=$(git tag | grep $github_tag_format)
+    else
+        ITERABLE=$(git ls-remote --tags ${VENVMAN_CPYTHON_REMOTE_URL})
+    fi
 
-    for tag in $(git tag | grep $github_tag_format); do
+    for tag in $ITERABLE; do
+        if ! $LOCAL; then
+            case "$tag" in
+              *"refs/tags/${github_tag_format}"*) ;;
+              *) tag= ;;
+            esac
+
+            if [ -z $tag ];then
+                continue
+            fi
+            tag=${tag##*/}
+        fi
+
         _VERSION_MAJOR=$(get_subversion_from_version --major "$tag")
         if [ "$VERSION_MAJOR" != "$_VERSION_MAJOR" ]; then
             if [ "v${VERSION_MAJOR}" != "$_VERSION_MAJOR" ];then
@@ -84,4 +104,4 @@ get_tag_from_version_local() {
 }
 
 
-get_tag_from_version_local "$@"
+get_tag_from_version "$@"
