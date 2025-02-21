@@ -1,22 +1,19 @@
 #!/usr/bin/env bash
 
+
 version_is_branch_local() {
     VERSION=$1
     LOCAL=${2:-true}
     
     if $LOCAL; then
-        ITERABLE=$(git branch -a)
+        ITERABLE="git branch -a"
         CHECK="remotes/origin/${VERSION}"
     else
-        ITERABLE=$(git ls-remote --heads "${VENVMAN_CPYTHON_REMOTE_URL}")
+        ITERABLE="git ls-remote --heads "${VENVMAN_CPYTHON_REMOTE_URL}""
         CHECK="refs/heads/${VERSION}"
     fi
 
-    for branch in $ITERABLE; do
-        echo "-------"
-        echo $branch
-        echo "-------"
-
+    for branch in $(eval $ITERABLE); do
         if ! $LOCAL; then
             branch=$(echo $branch | grep "refs/heads/${VERSION}")
         fi
@@ -29,10 +26,5 @@ version_is_branch_local() {
     return 1
 }
 
-echo $ITERABLE
-
-version_is_branch_local 3.11
-
-echo $?
 
 version_is_branch_local "$1"
