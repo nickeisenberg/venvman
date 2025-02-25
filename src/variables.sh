@@ -7,13 +7,10 @@ set_if_not_exists() {
     fi
 }
 
-set_if_not_exists "VENVMAN_ROOT_DIR" "${HOME}/.venvman"
-export VENVMAN_ROOT_DIR
-
-set_if_not_exists "VENVMAN_ENVS_DIR" "${HOME}/.venvman/envs"
+set_if_not_exists "VENVMAN_ENVS_DIR" "${VENVMAN_ROOT_DIR}/envs"
 export VENVMAN_ENVS_DIR
 
-set_if_not_exists "VENVMAN_SRC_DIR" "${HOME}/.venvman/venvman/src"
+set_if_not_exists "VENVMAN_SRC_DIR" "${VENVMAN_ROOT_DIR}/venvman/src"
 export VENVMAN_SRC_DIR
 export VENVMAN_UTILS_DIR=${VENVMAN_SRC_DIR}/venvman/utils
 export VENVMAN_COMMANDS_DIR=${VENVMAN_SRC_DIR}/venvman/commands

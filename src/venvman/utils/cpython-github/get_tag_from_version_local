@@ -13,7 +13,22 @@ is_integer() {
 
 get_tag_from_version() {
     VERSION=$1
-    LOCAL=${2:-true}
+    
+    LOCAL=true
+    case "$2" in
+        --local)
+            LOCAL=true
+            ;;
+        --remote)
+            LOCAL=false
+            ;;
+        *)
+            if [ -n "$2" ]; then
+                echo "ERROR get_tag_from_version: invalid input $2"
+                return 1
+            fi
+            ;;
+    esac
 
     VERSION_MAJOR=$(get_subversion_from_version --major "$VERSION")
     VERSION_MINOR=$(get_subversion_from_version --minor "$VERSION")

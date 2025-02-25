@@ -63,7 +63,7 @@ build_python_version_from_source() {
     NUM_PARTS=$(echo "$(echo "${VERSION_PARTS}" | wc -w)" | xargs)
 
     if [ "${#NUM_PARTS}" -ne "1" ]; then
-        echo "NUM_PARTS has len longer than 1"
+        echo "ERROR: NUM_PARTS has len longer than 1"
         return 1
     fi
 

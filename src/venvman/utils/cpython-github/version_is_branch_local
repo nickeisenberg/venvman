@@ -1,9 +1,24 @@
 #!/usr/bin/env bash
 
 
-version_is_branch_local() {
+version_is_branch() {
     VERSION=$1
-    LOCAL=${2:-true}
+
+    LOCAL=true
+    case "$2" in
+        --local)
+            LOCAL=true
+            ;;
+        --remote)
+            LOCAL=false
+            ;;
+        *)
+            if [ -n "$2" ]; then
+                echo "ERROR get_tag_from_version: invalid input $2"
+                return 1
+            fi
+            ;;
+    esac
     
     if $LOCAL; then
         ITERABLE="git branch -a"
@@ -27,4 +42,4 @@ version_is_branch_local() {
 }
 
 
-version_is_branch_local "$1"
+version_is_branch "$1"
