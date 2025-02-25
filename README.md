@@ -164,19 +164,21 @@ will create an enviornment named `myenv` with `python3.10 -m venv
 <custom_path>/myenv` and it will save it to `<custom_path>/myenv`.
 
 #### A note about `--version`
-`venvman` will first look to your system inorder to find the specified version
-by using `version=$(which python<version>)` as the corresponding binary. If a
-binary cannot be found using this method, it will then search for it in
+`venvman` will first look to your system in order to find the binary for the
+specified version by using `$(which python<version>)`. If a binary cannot be
+found using this method, it will then search for it in
 `VENVMAN_PYTHON_BUILDS_DIR`. Lastly, if it cannot be found there, then it will
-build the specifed version using the [**CPython**](https://github.com/python/cpython)
-repo and will save the corresponding build in `VENVMAN_PYTHON_BUILDS_DIR`.
+build the specifed version using the
+[**CPython**](https://github.com/python/cpython) repo and will save the
+corresponding build in `VENVMAN_PYTHON_BUILDS_DIR`.
 
 There are two conventions here to keep in mind:
   1) If the version is of form `MAJOR.MINOR` (ie. `3.11`) and the corresponding
   binary is nowhere to be found, and thus must be built using the
-  [**CPython**](https://github.com/python/cpython) repo, then it will use the latest patch
-  for this `MAJOR.MINOR` that can found on the [**CPython**](https://github.com/python/cpython)
-  repo which corresponds to the `MAJOR.MINOR` branch.
+  [**CPython**](https://github.com/python/cpython) repo, then it will use the
+  latest patch for this `MAJOR.MINOR` that can found on the
+  [**CPython**](https://github.com/python/cpython) repo which corresponds to
+  the `MAJOR.MINOR` branch.
 
   2) If the version is of form `MAJOR.MINOR.PATCH` (ie. `3.11.3`) and the
   corresponding binary is nowhere to be found, and thus must be built using the
