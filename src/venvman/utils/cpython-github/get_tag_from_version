@@ -28,10 +28,8 @@ get_tag_from_version() {
     else
         github_tag_format="v$VERSION"
     fi
-    
-    ITERABLE=$(git ls-remote --tags ${VENVMAN_CPYTHON_REMOTE_URL})
 
-    for tag in $ITERABLE; do
+    for tag in $(git ls-remote --tags ${VENVMAN_CPYTHON_REMOTE_URL}); do
 
         case "$tag" in
           *"refs/tags/${github_tag_format}"*) ;;
@@ -39,7 +37,7 @@ get_tag_from_version() {
         esac
 
         if [ -z $tag ];then
-            return 1
+            continue
         fi
 
         tag=${tag##*/}
