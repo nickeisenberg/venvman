@@ -11,22 +11,28 @@ ensure_env_var_exists() {
 
 
 setup_venvman_test() {
-    VENVMAN_ROOT_DIR=$(ensure_env_var_exists $VENVMAN_ROOT_DIR)
-    source $VENVMAN_ROOT_DIR/venvman/src/main.sh
-    _VENVMAN_ENVS_DIR=$(ensure_env_var_exists $VENVMAN_ENVS_DIR)
-    VENVMAN_ENVS_DIR=$(pwd)/_test_here/envs
-    VENVMAN_TEST_LOCATION=$(pwd)/_test_here
+    export _VENVMAN_ROOT_DIR=$VENVMAN_ROOT_DIR
+    export VENVMAN_ROOT_DIR=$(pwd)/_test_here/
+    cp -r "${_VENVMAN_ROOT_DIR}/venvman" "${VENVMAN_ROOT_DIR}/"
+    if ! source $VENVMAN_ROOT_DIR/venvman/src/main.sh; then
+        if [ "$VENVMAN_ROOT_DIR" != "${HOME}/.venvman" ]; then
+            rm -rf $VENVMAN_ROOT_DIR
+        else
+            echo "ERROR: $VENVMAN_ROOT_DIR --- $_VENVMAN_ROOT_DIR"
+        fi
+        export VENVMAN_ROOT_DIR=$_VENVMAN_ROOT_DIR
+        return 1
+    fi
 }
 
 
 cleanup_venvman_test() {
-    VENVMAN_TEST_LOCATION=$(ensure_env_var_exists $VENVMAN_TEST_LOCATION)
-    VENVMAN_ENVS_DIR=$(ensure_env_var_exists $VENVMAN_ENVS_DIR)
-    _VENVMAN_ENVS_DIR=$(ensure_env_var_exists $_VENVMAN_ENVS_DIR)
-    rm -rf $VENVMAN_TEST_LOCATION
-    VENVMAN_ENVS_DIR=$_VENVMAN_ENVS_DIR
-    unset _VENVMAN_ENVS_DIR
-    unset VENVMAN_TEST_LOCATION
+    if [ "$VENVMAN_ROOT_DIR" != "${HOME}/.venvman" ]; then
+        rm -rf $VENVMAN_ROOT_DIR
+    else
+        echo "ERROR: $VENVMAN_ROOT_DIR --- $_VENVMAN_ROOT_DIR"
+    fi
+    VENVMAN_ROOT_DIR=_VENVMAN_ENVS_DIR
 }
 
 
@@ -107,17 +113,10 @@ test_install_venvman() {
     local LOCAL_PS1="$(whoami)@$(hostname)"
     local USE_INSTALL_SH=false
 
-    local TEST_VENVMAN_ROOT_DIR="$(pwd)/_test_here"
-    local TEST_VENVMAN_ENVS_DIR=$(pwd)/_test_here/envs
-
 
     if [[ $LOCAL_PS1 == "nicholas@lenovo" ]]; then
-        if [[ -z $VENVMAN_ROOT_DIR ]]; then
-            VENVMAN_ROOT_DIR=$HOME/.venvman
-        fi
-        if [[ -z $VENVMAN_ENVS_DIR ]]; then
-            VENVMAN_ENVS_DIR=$HOME/.venvman/envs
-        fi
+        _VENVMAN_ROOT_DIR=$VENVMAN_ROOT_DIR
+        VENVMAN_ROOT_DIR="./_test_here"
 
         if $USE_INSTALL_SH; then
             echo "Running install.sh from nicholas@lenovo"
@@ -126,20 +125,18 @@ test_install_venvman() {
             source $TEST_VENVMAN_ROOT_DIR/venvman/src/completion/completion.sh
 
         elif ! $USE_INSTALL_SH; then
-            if [[ -d $TEST_VENVMAN_ROOT_DIR ]]; then
-                echo "$TEST_VENVMAN_ROOT_DIR exists"
-                return 1
-            fi
-            mkdir -p "${TEST_VENVMAN_ROOT_DIR}/venvman"
-            mkdir -p $TEST_VENVMAN_ENVS_DIR
-            cp -r "${HOME}/.venvman/venvman/src" "${TEST_VENVMAN_ROOT_DIR}/venvman"
 
-            if ! source $TEST_VENVMAN_ROOT_DIR/venvman/src/main.sh; then
-                rm -rf $TEST_VENVMAN_ROOT_DIR
-                return 1
-            fi
-            if ! source $TEST_VENVMAN_ROOT_DIR/venvman/src/completion/completion.sh; then
-                rm -rf $TEST_VENVMAN_ROOT_DIR
+            mkdir -p "${VENVMAN_ROOT_DIR}"
+
+            cp -r "${_VENVMAN_ROOT_DIR}/venvman" "${VENVMAN_ROOT_DIR}/"
+
+            if ! source $VENVMAN_ROOT_DIR/venvman/src/main.sh; then
+                if [ "$VENVMAN_ROOT_DIR" != "${HOME}/.venvman" ]; then
+                    rm -rf $VENVMAN_ROOT_DIR
+                else
+                    echo "ERROR: $VENVMAN_ROOT_DIR --- $_VENVMAN_ROOT_DIR"
+                fi
+                export VENVMAN_ROOT_DIR=$_VENVMAN_ROOT_DIR
                 return 1
             fi
         fi  
@@ -150,7 +147,13 @@ test_install_venvman() {
             return 1
         fi
 
-        rm -rf $TEST_VENVMAN_ROOT_DIR
+        if [ "$VENVMAN_ROOT_DIR" != "${HOME}/.venvman" ]; then
+            rm -rf $VENVMAN_ROOT_DIR
+            VENVMAN_ROOT_DIR=$_VENVMAN_ROOT_DIR
+        else
+            echo "ERROR: ${VENVMAN_ROOT_DIR} --- ${_VENVMAN_ROOT_DIR}"
+        fi
+
         echo
         echo "Install success."
 
@@ -331,8 +334,11 @@ test_venvman_list() {
     echo "----------------------------"
     echo "Testing venvman list"
     echo "----------------------------"
+    echo
 
     setup_venvman_test 
+
+    echo $VENVMAN_PYTHON_BUILDS_DIR
 
     local TEST_VERSION_1=3.10
     local VENVS_PATH_1="${VENVMAN_ENVS_DIR}/${TEST_VERSION_1}"
@@ -353,25 +359,38 @@ test_venvman_list() {
     fi
 
     local OUTPUT_ALL=$(venvman list)
+
     local EXPECTED_ALL_LINES=(
+        "--------------------------------------------------"
+        "Available Virtual Enviornments for ..."
+        "--------------------------------------------------"
         ""
-        "Available virtual environments for Python ${TEST_VERSION_1}:"
+        "Python ${TEST_VERSION_1}:"
         "$(ls $VENVS_PATH_1)"
         ""
-        "Available virtual environments for Python ${TEST_VERSION_2}:"
+        "Python ${TEST_VERSION_2}:"
         "$(ls $VENVS_PATH_2)"
+        ""
+        "--------------------------------------------------"
+        "Local Versions of Python Found"
+        "--------------------------------------------------"
     )
     local EXPECTED_ALL=$(printf "%s\n" "${EXPECTED_ALL_LINES[@]}")
+
     local DIFF_ALL=$(diff <(echo "$EXPECTED_ALL") <(echo "$OUTPUT_ALL"))
 
     if [[ -n $DIFF_ALL ]]; then
         echo "venvman list: FAIL."
+        echo
         echo "DIFF_ALL:"
         echo "$DIFF_ALL"
+        echo
         echo "output all:"
         echo "$OUTPUT_ALL"
+        echo
         echo "expected all:"
         echo "$EXPECTED_ALL"
+        echo
         cleanup_venvman_test 
         return 1
     fi
