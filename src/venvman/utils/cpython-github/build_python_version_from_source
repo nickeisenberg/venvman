@@ -129,6 +129,7 @@ build_python_version_from_source() {
     echo "\$ make distclean"
     echo "\$ ./configure --prefix="${VENVMAN_PYTHON_BUILDS_DIR}/${VERSION}""
     echo "\$ make"
+    echo "\$ make test"
     echo "\$ make install"
     echo
     printf "Would you like to continue with the install now? [Y/n]: "
@@ -143,8 +144,8 @@ build_python_version_from_source() {
             ;;
     esac
     
-    git checkout "$BRANCH" || return 1
-    git reset --hard "$BRANCH" || return 1
+    git checkout "$CHECKOUT" || return 1
+    git reset --hard "$CHECKOUT" || return 1
 
     if [ ! -f "./configure" ]; then
         echo "./configure is missing"
@@ -174,6 +175,9 @@ build_python_version_from_source() {
     fi
     make test
     make install
+
+    cd $MY_PWD
+    unset MY_PWD
 
     if [ "$?" -gt 0 ]; then
         echo "'make install' failed" >&2
