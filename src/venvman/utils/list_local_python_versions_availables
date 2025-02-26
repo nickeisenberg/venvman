@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+
+list_local_python_versions_available() {
+    avail=""
+    for ((i = 1; i < 4; i++)); do
+        for ((j = 0; j < 20; j++)); do
+            python_bin=$(eval "which python${i}.${j}")
+            if [ -n "$python_bin" ]; then
+                avail="${avail} ${i}.${j}"
+            fi
+        done
+    done
+    
+    for item in $(ls $VENVMAN_PYTHON_BUILDS_DIR); do
+        if _=$(echo "$avail" | grep "$item"); then
+            continue
+        fi
+        avail="${avail} ${item}"
+    done
+    
+    avail=$(echo $avail | tr ' ' '\n' | sort -V | tr '\n' ' ')
+    
+    echo "$avail"
+}
+
+list_local_python_versions_available
