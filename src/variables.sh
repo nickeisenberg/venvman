@@ -12,7 +12,7 @@ export VENVMAN_ENVS_DIR
 
 set_if_not_exists "VENVMAN_SRC_DIR" "${VENVMAN_ROOT_DIR}/venvman/src"
 export VENVMAN_SRC_DIR
-export VENVMAN_UTILS_DIR=${VENVMAN_SRC_DIR}/venvman/utils
+export VENVMAN_UTILS_DIR=${VENVMAN_SRC_DIR}/utils
 export VENVMAN_COMMANDS_DIR=${VENVMAN_SRC_DIR}/venvman/commands
 
 export VENVMAN_CPYTHON_REMOTE_URL="https://github.com/python/cpython.git"

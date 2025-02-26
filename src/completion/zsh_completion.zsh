@@ -16,6 +16,9 @@ _venvman_shell_completion() {
 
     local -a version_options
     version_options=($(get_options_from_dir $VENVMAN_ENVS_DIR))
+
+    local -a version_options_make
+    version_options_make=($("${VENVMAN_UTILS_DIR}/list_local_python_versions"))
      
     local -a name_options
 
@@ -77,7 +80,7 @@ _venvman_shell_completion() {
                 compadd -- "--version"
                 return 0
             elif [[ "$prev" == "--version" ]]; then
-                compadd -a version_options 
+                compadd -a version_options_make
                 return 0
             elif [[ "$has_version" == true && "$has_name" == false && "$prev" != "--name" ]]; then
                 compadd -- "--name"
