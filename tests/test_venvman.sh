@@ -380,8 +380,14 @@ test_venvman_list() {
         "Local Versions of Python Found"
         "--------------------------------------------------"
         ""
-        "$(which python3.10)"
     )
+
+    for VER in $(eval "${VENVMAN_UTILS_DIR}/list_local_python_versions"); do
+        bin=$(which "python${VER}")
+        if [ -n "$bin" ]; then
+            EXPECTED_ALL_LINES+=("$bin")
+        fi
+    done
 
     local EXPECTED_ALL=$(printf "%s\n" "${EXPECTED_ALL_LINES[@]}")
 
