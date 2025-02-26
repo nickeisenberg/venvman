@@ -15,6 +15,16 @@ venvman_command_help_tag() {
     ${VENVMAN_UTILS_DIR}/messages/venvman_command_help_tag "$@"
 }
 
+list_local_python_versions() {
+    version_options_make=($("${VENVMAN_UTILS_DIR}/list_local_python_versions"))
+    version_options_make="${version_options_make[@]}"
+    echo $version_options_make
+}
+
+get_subversion_from_version() {
+    ${VENVMAN_UTILS_DIR}/get_subversion_from_version "$@"
+}
+
 
 venvman_list() {
     while [ "$#" -gt 0 ]; do
@@ -50,21 +60,40 @@ venvman_list() {
                 ;;
         esac
     done
-
+    
+    echo "--------------------------------------------------"
+    echo "Available Virtual Enviornments for ..."
+    echo "--------------------------------------------------"
+    echo
     if [ -n "$VERSION" ]; then
-        echo
-        echo "Available virtual environments for Python ${VERSION}:"
+        echo "Python ${VERSION}:"
         ls "$VENV_PATH" || return 1
         echo
 
     else
-        echo
         for VERSION in $(find "$VENVMAN_ENVS_DIR" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | sort -t. -k1,1n -k2,2n); do
-            echo "Available virtual environments for Python $VERSION:"
+            echo "Python $VERSION:"
             ls "${VENVMAN_ENVS_DIR}/${VERSION}" || return 1
             echo
         done
     fi
+
+    echo "--------------------------------------------------"
+    echo "Local Versions of Python Found"
+    echo "--------------------------------------------------"
+    echo
+    for VAR in $(list_local_python_versions); do
+        bin=$(which "python${VAR}")
+        if [ -n "$bin" ]; then
+            echo $bin
+        else
+            MAJOR=$(get_subversion_from_version --major $VAR)
+            MINOR=$(get_subversion_from_version --minor $VAR)
+            bin=$(find "${VENVMAN_PYTHON_BUILDS_DIR}/${VAR}" -type f -executable -name "python${MAJOR}.${MINOR}")
+            echo $bin
+        fi
+    done
+    echo
 }
 
 
