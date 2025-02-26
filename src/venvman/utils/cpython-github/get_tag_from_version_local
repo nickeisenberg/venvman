@@ -14,21 +14,33 @@ is_integer() {
 get_tag_from_version() {
     VERSION=$1
     
-    LOCAL=true
     case "$2" in
         --local)
-            LOCAL=true
-            ;;
-        --remote)
-            LOCAL=false
+            case "$3" in
+                "true")
+                    LOCAL=$3
+                    ;;
+                "false")
+                    LOCAL=$3
+                    ;;
+                *)
+                    echo "ERROR: get_tag_from_version --local must be true for false" >&2
+                    return 1
+                    ;;
+            esac
             ;;
         *)
             if [ -n "$2" ]; then
-                echo "ERROR get_tag_from_version: invalid input $2"
+                echo "ERROR get_tag_from_version: invalid input $2" >&2
                 return 1
             fi
             ;;
     esac
+
+    if [ -z "$LOCAL" ]; then
+        echo "ERROR: get_tag_from_version --local is missing" >&2
+        return 1
+    fi
 
     VERSION_MAJOR=$(get_subversion_from_version --major "$VERSION")
     VERSION_MINOR=$(get_subversion_from_version --minor "$VERSION")
@@ -44,14 +56,18 @@ get_tag_from_version() {
     else
         github_tag_format="v$VERSION"
     fi
-    
-    if $LOCAL; then
-        ITERABLE="git tag | grep $github_tag_format"
-    else
-        ITERABLE="git ls-remote --tags ${VENVMAN_CPYTHON_REMOTE_URL}"
-    fi
 
-    for tag in $(eval $ITERABLE); do
+    if $LOCAL; then
+        current="$(pwd)"
+        cd "$VENVMAN_CPYTHON_REPO_DIR"
+        ITERABLE=$(eval "git tag | grep $github_tag_format")
+        cd "$current"
+        unset current
+    else
+        ITERABLE=$(eval "git ls-remote --tags ${VENVMAN_CPYTHON_REMOTE_URL}")
+    fi
+    
+    for tag in $ITERABLE; do
         if ! $LOCAL; then
             case "$tag" in
               *"refs/tags/${github_tag_format}"*) ;;

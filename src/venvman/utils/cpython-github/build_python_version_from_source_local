@@ -7,18 +7,46 @@ get_python_bin_path() {
 
 
 version_is_branch() {
-    ${VENVMAN_UTILS_DIR}/cpython-github/version_is_branch_local $1
+    ${VENVMAN_UTILS_DIR}/cpython-github/version_is_branch_local $@
 }
 
 
 get_tag_from_version() {
-    ${VENVMAN_UTILS_DIR}/cpython-github/get_tag_from_version_local $1
+    ${VENVMAN_UTILS_DIR}/cpython-github/get_tag_from_version_local $@
 }
 
 
 
 build_python_version_from_source() {
     VERSION="$1"
+
+    case "$2" in
+        --local)
+            case "$3" in
+                "true")
+                    LOCAL=$3
+                    ;;
+                "false")
+                    LOCAL=$3
+                    ;;
+                *)
+                    echo "ERROR: build_python_version_from_source --local must be true for false"
+                    return 1
+                    ;;
+            esac
+            ;;
+        *)
+            if [ -n "$2" ]; then
+                echo "ERROR build_python_version_from_source: invalid input $2"
+                return 1
+            fi
+            ;;
+    esac
+
+    if [ -z $LOCAL ]; then
+        echo "ERROR: build_python_version_from_source --local is missing"
+        return 1
+    fi
     
     if BIN_PATH=$(get_python_bin_path $VERSION); then
         echo "python${VERSION} already exists at ${BIN_PATH}"
@@ -68,7 +96,7 @@ build_python_version_from_source() {
     fi
 
     if [ "$NUM_PARTS" = 2 ]; then
-        if version_is_branch "$VERSION"; then
+        if version_is_branch "$VERSION" --local $LOCAL; then
             BRANCH=$VERSION
         fi
 
@@ -76,7 +104,7 @@ build_python_version_from_source() {
         return 1
     fi
 
-    TAG=$(get_tag_from_version "$VERSION") || return 1
+    TAG=$(get_tag_from_version "$VERSION" --local $LOCAL) || return 1
 
     CHECKOUT=$([ -n "$BRANCH" ] && echo "$BRANCH" || echo $TAG)
 
