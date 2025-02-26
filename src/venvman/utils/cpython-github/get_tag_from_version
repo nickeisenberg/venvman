@@ -13,6 +13,34 @@ is_integer() {
 
 get_tag_from_version() {
     VERSION=$1
+    
+    case "$2" in
+        --local)
+            case "$3" in
+                "true")
+                    LOCAL=$3
+                    ;;
+                "false")
+                    LOCAL=$3
+                    ;;
+                *)
+                    echo "ERROR: get_tag_from_version --local must be true for false" >&2
+                    return 1
+                    ;;
+            esac
+            ;;
+        *)
+            if [ -n "$2" ]; then
+                echo "ERROR get_tag_from_version: invalid input $2" >&2
+                return 1
+            fi
+            ;;
+    esac
+
+    if [ -z "$LOCAL" ]; then
+        echo "ERROR: get_tag_from_version --local is missing" >&2
+        return 1
+    fi
 
     VERSION_MAJOR=$(get_subversion_from_version --major "$VERSION")
     VERSION_MINOR=$(get_subversion_from_version --minor "$VERSION")
@@ -29,18 +57,28 @@ get_tag_from_version() {
         github_tag_format="v$VERSION"
     fi
 
-    for tag in $(git ls-remote --tags ${VENVMAN_CPYTHON_REMOTE_URL}); do
+    if $LOCAL; then
+        current="$(pwd)"
+        cd "$VENVMAN_CPYTHON_REPO_DIR"
+        ITERABLE=$(eval "git tag | grep $github_tag_format")
+        cd "$current"
+        unset current
+    else
+        ITERABLE=$(eval "git ls-remote --tags ${VENVMAN_CPYTHON_REMOTE_URL}")
+    fi
+    
+    for tag in $ITERABLE; do
+        if ! $LOCAL; then
+            case "$tag" in
+              *"refs/tags/${github_tag_format}"*) ;;
+              *) tag= ;;
+            esac
 
-        case "$tag" in
-          *"refs/tags/${github_tag_format}"*) ;;
-          *) tag= ;;
-        esac
-
-        if [ -z $tag ];then
-            continue
+            if [ -z $tag ];then
+                continue
+            fi
+            tag=${tag##*/}
         fi
-
-        tag=${tag##*/}
 
         _VERSION_MAJOR=$(get_subversion_from_version --major "$tag")
         if [ "$VERSION_MAJOR" != "$_VERSION_MAJOR" ]; then
@@ -78,7 +116,6 @@ get_tag_from_version() {
                 return 0
             fi
         fi
-        
     done
 
     if [ "$FIND_BIGGEST" = 1 ] && [ -n "$TAG" ]; then

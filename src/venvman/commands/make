@@ -95,7 +95,7 @@ venvman_make() {(
         echo
         echo "Searching ${VENVMAN_CPYTHON_REMOTE_URL} at ${VENVMAN_CPYTHON_REPO_DIR} ..."
     
-        if ! build_python_version_from_source $VERSION; then
+        if ! build_python_version_from_source $VERSION --local "true"; then
             echo "Python ${VERSION} will not be installed." >&2
             echo "Cannot continue without a python${VERSION} binary." >&2
             echo "Exiting" >&2
