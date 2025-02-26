@@ -13,7 +13,7 @@ ensure_env_var_exists() {
 setup_venvman_test() {
     export _VENVMAN_ROOT_DIR=$VENVMAN_ROOT_DIR
 
-    export VENVMAN_ROOT_DIR=$(pwd)/_test_here/
+    export VENVMAN_ROOT_DIR=$(pwd)/_test_here
 
     mkdir -p $VENVMAN_ROOT_DIR
     mkdir -p "${VENVMAN_ROOT_DIR}/builds"
@@ -122,7 +122,7 @@ test_install_venvman() {
 
 
     if [[ $LOCAL_PS1 == "nicholas@lenovo" ]]; then
-        _VENVMAN_ROOT_DIR=$VENVMAN_ROOT_DIR
+        _VENVMAN_ROOT_DIR=${HOME}/.venvman
         VENVMAN_ROOT_DIR="./_test_here"
 
         if $USE_INSTALL_SH; then
