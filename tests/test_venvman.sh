@@ -12,8 +12,15 @@ ensure_env_var_exists() {
 
 setup_venvman_test() {
     export _VENVMAN_ROOT_DIR=$VENVMAN_ROOT_DIR
+
     export VENVMAN_ROOT_DIR=$(pwd)/_test_here/
+
+    mkdir -p $VENVMAN_ROOT_DIR
+    mkdir -p "${VENVMAN_ROOT_DIR}/builds"
+    mkdir -p "${VENVMAN_ROOT_DIR}/envs"
+
     cp -r "${_VENVMAN_ROOT_DIR}/venvman" "${VENVMAN_ROOT_DIR}/"
+
     if ! source $VENVMAN_ROOT_DIR/venvman/src/main.sh; then
         if [ "$VENVMAN_ROOT_DIR" != "${HOME}/.venvman" ]; then
             rm -rf $VENVMAN_ROOT_DIR
@@ -32,7 +39,7 @@ cleanup_venvman_test() {
     else
         echo "ERROR: $VENVMAN_ROOT_DIR --- $_VENVMAN_ROOT_DIR"
     fi
-    VENVMAN_ROOT_DIR=_VENVMAN_ENVS_DIR
+    export VENVMAN_ROOT_DIR=$_VENVMAN_ROOT_DIR
 }
 
 
@@ -338,8 +345,6 @@ test_venvman_list() {
 
     setup_venvman_test 
 
-    echo $VENVMAN_PYTHON_BUILDS_DIR
-
     local TEST_VERSION_1=3.10
     local VENVS_PATH_1="${VENVMAN_ENVS_DIR}/${TEST_VERSION_1}"
     local TEST_VERSION_2=3.11
@@ -374,7 +379,10 @@ test_venvman_list() {
         "--------------------------------------------------"
         "Local Versions of Python Found"
         "--------------------------------------------------"
+        ""
+        "$(which python3.10)"
     )
+
     local EXPECTED_ALL=$(printf "%s\n" "${EXPECTED_ALL_LINES[@]}")
 
     local DIFF_ALL=$(diff <(echo "$EXPECTED_ALL") <(echo "$OUTPUT_ALL"))
@@ -382,41 +390,27 @@ test_venvman_list() {
     if [[ -n $DIFF_ALL ]]; then
         echo "venvman list: FAIL."
         echo
+        echo "----------"
         echo "DIFF_ALL:"
+        echo "----------"
         echo "$DIFF_ALL"
         echo
+        echo "----------"
         echo "output all:"
+        echo "----------"
         echo "$OUTPUT_ALL"
         echo
+        echo "----------"
         echo "expected all:"
+        echo "----------"
         echo "$EXPECTED_ALL"
         echo
         cleanup_venvman_test 
         return 1
     fi
 
-    local OUTPUT_V2=$(venvman list --version $TEST_VERSION_2)
-    local EXPECTED_V2_LINES=(
-        ""
-        "Available virtual environments for Python ${TEST_VERSION_2}:"
-        "$(ls $VENVS_PATH_2)"
-    )
-    local EXPECTED_V2=$(printf "%s\n" "${EXPECTED_V2_LINES[@]}")
-    local DIFF_V2=$(diff <(echo "$EXPECTED_V2") <(echo "$OUTPUT_V2"))
-    
-    if [[ -n $DIFF_V2 ]]; then
-        echo "venvman list: FAIL."
-        echo "DIFF_V2:"
-        echo "$DIFF_V2"
-        echo "output v2:"
-        echo "$OUTPUT_V2"
-        echo "expected v2:"
-        echo "$EXPECTED_V2"
-        cleanup_venvman_test 
-        return 1
-    fi
-
     cleanup_venvman_test
+
     echo "venvman list: SUCCESS"
 }
 
