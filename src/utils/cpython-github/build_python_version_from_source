@@ -24,16 +24,36 @@ build_python_version_from_source() {
             case "$3" in
                 "true")
                     LOCAL=$3
+                    shift 2
                     ;;
                 "false")
                     LOCAL=$3
+                    shift 2
                     ;;
                 *)
-                    echo "ERROR: build_python_version_from_source --local must be true for false"
+                    echo "ERROR: build_python_version_from_source --local must be true or false"
                     return 1
                     ;;
             esac
             ;;
+
+        --skip-tests)
+            case "$3" in
+                "true")
+                    SKIP_TESTS=$3
+                    shift 2
+                    ;;
+                "false")
+                    SKIP_TESTS=$3
+                    shift 2
+                    ;;
+                *)
+                    echo "ERROR: build_python_version_from_source --skip-tests must be true or false"
+                    return 1
+                    ;;
+            esac
+            ;;
+
         *)
             if [ -n "$2" ]; then
                 echo "ERROR build_python_version_from_source: invalid input $2"
@@ -60,8 +80,8 @@ build_python_version_from_source() {
         read -r response
         case "$response" in
             Y|y)
-                mkdir -p ${VENVMAN_CYPTHON_REPO_DIR}
-                git clone ${VENVMAN_CPYTHON_REMOTE_URL} ${VENVMAN_CYPTHON_REPO_DIR}
+                mkdir -p ${VENVMAN_CPYTHON_REPO_DIR}
+                git clone ${VENVMAN_CPYTHON_REMOTE_URL} ${VENVMAN_CPYTHON_REPO_DIR}
                 mkdir -p ${VENVMAN_PYTHON_BUILDS_DIR}
                 ;;
             *)
@@ -69,6 +89,10 @@ build_python_version_from_source() {
                 return 0
                 ;;
         esac
+
+    elif [ ! -d "$VENVMAN_CPYTHON_REPO_DIR/.git" ]; then
+        echo "ERROR: "$VENVMAN_CPYTHON_REPO_DIR/.git" is not found" >&2
+        return 1
     fi
 
     MY_PWD="$(pwd)"
@@ -76,15 +100,14 @@ build_python_version_from_source() {
     cd $VENVMAN_CPYTHON_REPO_DIR || return 1
 
     if [ "$(git remote get-url origin)" != "${VENVMAN_CPYTHON_REMOTE_URL}" ]; then
-        echo "The remote repo at ${VENVMAN_CYPTHON_REPO_DIR} does not match ${VENVMAN_CPYTHON_REMOTE_URL}" >&2
-        echo "Remote at ${VENVMAN_CYPTHON_REPO_DIR}: $(git remote get-url origin)" >&2
+        echo "The remote repo at ${VENVMAN_CPYTHON_REPO_DIR} does not match ${VENVMAN_CPYTHON_REMOTE_URL}" >&2
+        echo "Remote at ${VENVMAN_CPYTHON_REPO_DIR}: $(git remote get-url origin)" >&2
         return 1
     fi
 
-    git checkout main > /dev/null 2&>1
-    git reset --hard origin/main > /dev/null 2&>1
-    git pull > /dev/null 2&>1
-    git fetch --all > /dev/null 2&>1
+    git checkout main > /dev/null 2>&1
+    git reset --hard origin/main > /dev/null 2>&1
+    git pull > /dev/null 2>&1
 
     VERSION_PARTS=$(echo "${VERSION}" | tr '.' ' ')
     NUM_PARTS=$(echo "$(echo "${VERSION_PARTS}" | wc -w)" | xargs)
@@ -126,7 +149,6 @@ build_python_version_from_source() {
     echo "\$ git checkout "$CHECKOUT""
     echo "\$ git reset --hard "$CHECKOUT""
     echo "\$"
-    echo "\$ make distclean"
     echo "\$ ./configure --prefix="${VENVMAN_PYTHON_BUILDS_DIR}/${VERSION}""
     echo "\$ make"
     echo "\$ make test"
@@ -173,8 +195,19 @@ build_python_version_from_source() {
     else
         make || cd $MY_PWD return 1
     fi
-    make test
-    make install
+    
+    if [ "$SKIP_TESTS" = "false" ]; then
+        make test
+    fi
+
+    if ! make install; then
+        echo "ERROR: make install failed" >&2
+        echo "It is suggested to run"
+        echo "    rm -rf ${VENVMAN_CPYTHON_REPO_DIR}"
+        echo "    git clone ${VENVMAN_CPYTHON_REMOTE_URL} ${VENVMAN_CPYTHON_REPO_DIR}"
+        echo "Then rerun the venvman make command."
+        return 1
+    fi
 
     cd $MY_PWD
     unset MY_PWD
