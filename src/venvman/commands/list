@@ -84,7 +84,7 @@ venvman_list() {
     echo
     for VAR in $(list_local_python_versions); do
         bin=$(which "python${VAR}")
-        if [ -n "$bin" ]; then
+        if [ -n "$bin" ] && [ $VENVMAN_ROOT_DIR != *"$bin"* ]; then
             echo $bin
         else
             MAJOR=$(get_subversion_from_version --major $VAR)
