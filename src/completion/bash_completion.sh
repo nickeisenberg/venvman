@@ -8,9 +8,6 @@ function _venvman_shell_completion() {
 
     local version_options=$(ls -1 "$VENVMAN_ENVS_DIR" 2>/dev/null)
 
-    local version_options_make=($("${VENVMAN_UTILS_DIR}/list_local_python_versions"))
-    local version_options_make="${version_options_make[@]}"
-
     local has_version=false
     local has_name=false
     local has_path=false
@@ -63,6 +60,8 @@ function _venvman_shell_completion() {
                 COMPREPLY=($(compgen -W "--version" -- "$cur"))
                 return 0
             elif [[ "$prev" == "--version" ]]; then
+                local version_options_make=($("${VENVMAN_UTILS_DIR}/list_local_python_versions"))
+                local version_options_make="${version_options_make[@]}"
                 COMPREPLY=($(compgen -W "$version_options_make" -- "$cur"))
                 return 0
             elif [[ "$has_version" == true && "$has_name" == false && "$prev" != "--name" ]]; then
