@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+
+read_respone_and_clone() {
+    printf "$1"
+    read -r response
+    case "$response" in
+        Y|y)
+            rm -rf ${VENVMAN_CPYTHON_REPO_DIR}
+            mkdir -p ${VENVMAN_CPYTHON_REPO_DIR}
+            git clone ${VENVMAN_CPYTHON_REMOTE_URL} ${VENVMAN_CPYTHON_REPO_DIR}
+            mkdir -p ${VENVMAN_PYTHON_BUILDS_DIR}
+            ;;
+        *)
+            echo "Exiting. The ${VENVMAN_CPYTHON_REMOTE_URL} needs to be cloned to continue."
+            return 0
+            ;;
+    esac
+}
+
+
+verify_cpython_repo() {
+    if [ ! -d "${VENVMAN_CPYTHON_REPO_DIR}" ]; then
+        msg="The repo "${VENVMAN_CPYTHON_REMOTE_URL}" was not found at ${VENVMAN_CPYTHON_REPO_DIR}.
+To continue, it must be cloned to that location.
+Would you like to clone the repo and continue now? [y/N]: "
+        read_respone_and_clone "$msg"
+    
+    elif [ ! -d "$VENVMAN_CPYTHON_REPO_DIR/.git" ]; then
+        msg="ERROR: "${VENVMAN_CPYTHON_REPO_DIR}/.git" is not found. Inside ${VENVMAN_PYTHON_REPO_DIR}
+It is suggested to remove the existing directory found at ${VENVMAN_PYTHON_BUILDS_DIR}
+and re-clone. venvman can do the following:
+  $ rm -rf ${VENVMAN_PYTHON_REPO_DIR}
+  $ git clone ${VENVMAN_CPYTHON_REMOTE_URL} ${VENVMAN_CPYTHON_REPO_DIR}
+Would you like to continue with the re-cloning? [y/N]: "
+        read_respone_and_clone "$msg"
+    fi
+    
+    MY_PWD="$(pwd)"
+    
+    cd $VENVMAN_CPYTHON_REPO_DIR || return 1
+    
+    if [ "$(git remote get-url origin)" != "${VENVMAN_CPYTHON_REMOTE_URL}" ]; then
+        msg="The remote repo at ${VENVMAN_CPYTHON_REPO_DIR} does not match ${VENVMAN_CPYTHON_REMOTE_URL}
+Remote at ${VENVMAN_CPYTHON_REPO_DIR}: $(git remote get-url origin)
+It is suggested to remove the existing directory found at ${VENVMAN_PYTHON_BUILDS_DIR}
+and re-clone. venvman can do the following:
+  $ rm -rf ${VENVMAN_PYTHON_REPO_DIR}
+  $ git clone ${VENVMAN_CPYTHON_REMOTE_URL} ${VENVMAN_CPYTHON_REPO_DIR}
+Would you like to continue with the re-cloning? [y/N]: "
+        read_respone_and_clone "$msg"
+        return 1
+    fi
+    
+    cd $MY_PWD
+}
+
+
+verify_cpython_repo

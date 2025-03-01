@@ -60,9 +60,9 @@ function _venvman_shell_completion() {
                 COMPREPLY=($(compgen -W "--version" -- "$cur"))
                 return 0
             elif [[ "$prev" == "--version" ]]; then
-                local version_options_make=($("${VENVMAN_UTILS_DIR}/list_local_python_versions"))
-                local version_options_make="${version_options_make[@]}"
-                COMPREPLY=($(compgen -W "$version_options_make" -- "$cur"))
+                local version_options=($("${VENVMAN_UTILS_DIR}/list_local_python_versions"))
+                local version_options="${version_options[@]}"
+                COMPREPLY=($(compgen -W "$version_options" -- "$cur"))
                 return 0
             elif [[ "$has_version" == true && "$has_name" == false && "$prev" != "--name" ]]; then
                 COMPREPLY=($(compgen -W "--name" -- "$cur"))
