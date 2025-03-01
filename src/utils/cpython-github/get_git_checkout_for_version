@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+
+get_tag_from_version() {
+    ${VENVMAN_UTILS_DIR}/cpython-github/get_tag_from_version $@
+}
+
+
+version_is_branch() {
+    ${VENVMAN_UTILS_DIR}/cpython-github/version_is_branch $@
+}
+
+
+get_git_checkout_for_version() {
+    VERSION="$1"
+    TRY_FETCH=${2:-"true"}
+
+    MY_PWD="$(pwd)"
+    cd $VENVMAN_CPYTHON_REPO_DIR || return 1
+
+    VERSION_PARTS=$(echo "${VERSION}" | tr '.' ' ')
+    NUM_PARTS=$(echo "$(echo "${VERSION_PARTS}" | wc -w)" | xargs)
+
+    if [ "${#NUM_PARTS}" -ne "1" ]; then
+        echo "ERROR: NUM_PARTS has len longer than 1" >&2
+        return 1
+    fi
+    
+    BRANCH=
+    if [ "$NUM_PARTS" = 2 ]; then
+        if version_is_branch "$VERSION" --local "true"; then
+            BRANCH=$VERSION
+        fi
+
+    elif [ "$NUM_PARTS" != "3" ]; then
+        return 1
+    fi
+    
+    TAG=
+    TAG=$(get_tag_from_version "$VERSION" --local "true") || TAG=
+    
+    CHECKOUT=
+    CHECKOUT=$([ -n "$BRANCH" ] && echo "$BRANCH" || echo "$TAG")
+
+    if [ -z "$CHECKOUT" ] && $TRY_FETCH; then
+        echo "A branch or tag was not found for version ${VERSION}."
+        printf "Would you like to run 'git fetch --all' to see if the tag or branch could be found? [y/N]: "
+        read -r response
+        case "$response" in
+            Y|y)
+                git fetch --all --tag > /dev/null 2>&1
+                get_checkout_for_version $VERSION "false"
+                ;;
+            *)
+                cd $MY_PWD
+                echo "Exiting." >&2
+                return 1
+                ;;
+        esac
+
+    elif [ -z "$CHECKOUT" ] && ! $TRY_FETCH; then
+        cd $MY_PWD
+        echo "Version ${VERSION} can not be found." >&2
+        echo "Exiting." >&2
+        return 1
+
+    elif [ -n "$CHECKOUT" ] && [ -n "$TAG" ]; then
+        cd $MY_PWD
+        echo "${CHECKOUT} ${TAG}"
+    fi
+}
+
+
+get_git_checkout_for_version $@

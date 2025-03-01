@@ -25,8 +25,17 @@ verify_cpython_repo() {
 To continue, it must be cloned to that location.
 Would you like to clone the repo and continue now? [y/N]: "
         read_respone_and_clone "$msg"
+    fi
     
-    elif [ ! -d "$VENVMAN_CPYTHON_REPO_DIR/.git" ]; then
+    
+    #--------------------------------------------------
+    # Checks
+    #--------------------------------------------------
+    
+    MY_PWD="$(pwd)"
+    cd $VENVMAN_CPYTHON_REPO_DIR || return 1
+    
+    if [ ! -d "./.git" ]; then
         msg="ERROR: "${VENVMAN_CPYTHON_REPO_DIR}/.git" is not found. Inside ${VENVMAN_PYTHON_REPO_DIR}
 It is suggested to remove the existing directory found at ${VENVMAN_PYTHON_BUILDS_DIR}
 and re-clone. venvman can do the following:
@@ -35,14 +44,20 @@ and re-clone. venvman can do the following:
 Would you like to continue with the re-cloning? [y/N]: "
         read_respone_and_clone "$msg"
     fi
-    
-    MY_PWD="$(pwd)"
-    
-    cd $VENVMAN_CPYTHON_REPO_DIR || return 1
-    
+
     if [ "$(git remote get-url origin)" != "${VENVMAN_CPYTHON_REMOTE_URL}" ]; then
         msg="The remote repo at ${VENVMAN_CPYTHON_REPO_DIR} does not match ${VENVMAN_CPYTHON_REMOTE_URL}
 Remote at ${VENVMAN_CPYTHON_REPO_DIR}: $(git remote get-url origin)
+It is suggested to remove the existing directory found at ${VENVMAN_PYTHON_BUILDS_DIR}
+and re-clone. venvman can do the following:
+  $ rm -rf ${VENVMAN_PYTHON_REPO_DIR}
+  $ git clone ${VENVMAN_CPYTHON_REMOTE_URL} ${VENVMAN_CPYTHON_REPO_DIR}
+Would you like to continue with the re-cloning? [y/N]: "
+        read_respone_and_clone "$msg"
+    fi
+
+    if [ ! -f "./configure" ] || [ ! -f "./Makefile.pre.in" ]; then
+        msg="ERROR: configure and/or Makefile.pre.in is missing from ${VENVMAN_PYTHON_REPO_DIR}.
 It is suggested to remove the existing directory found at ${VENVMAN_PYTHON_BUILDS_DIR}
 and re-clone. venvman can do the following:
   $ rm -rf ${VENVMAN_PYTHON_REPO_DIR}

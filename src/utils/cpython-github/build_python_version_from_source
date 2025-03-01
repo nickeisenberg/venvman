@@ -6,18 +6,13 @@ get_python_bin_path() {
 }
 
 
-version_is_branch() {
-    ${VENVMAN_UTILS_DIR}/cpython-github/version_is_branch $@
-}
-
-
-get_tag_from_version() {
-    ${VENVMAN_UTILS_DIR}/cpython-github/get_tag_from_version $@
-}
-
-
 verify_cpython_repo() {
     ${VENVMAN_UTILS_DIR}/cpython-github/verify_cpython_repo
+}
+
+
+get_git_checkout_for_version() {
+    ${VENVMAN_UTILS_DIR}/cpython-github/get_git_checkout_for_version $@
 }
 
 
@@ -36,7 +31,7 @@ build_python_version_from_source() {
                     shift 2
                     ;;
                 *)
-                    echo "ERROR: build_python_version_from_source --local must be true or false"
+                    echo "ERROR: build_python_version_from_source --local must be true or false" >&2
                     return 1
                     ;;
             esac
@@ -53,7 +48,7 @@ build_python_version_from_source() {
                     shift 2
                     ;;
                 *)
-                    echo "ERROR: build_python_version_from_source --skip-tests must be true or false"
+                    echo "ERROR: build_python_version_from_source --skip-tests must be true or false" >&2
                     return 1
                     ;;
             esac
@@ -79,36 +74,30 @@ build_python_version_from_source() {
     
     verify_cpython_repo || return 1
 
+    OUT=$(get_git_checkout_for_version $VERSION)
+    CHECKOUT=$(echo $OUT | awk "{print \$1}")
+    TAG=$(echo $OUT | awk "{print \$2}")
+
     MY_PWD="$(pwd)"
     cd $VENVMAN_CPYTHON_REPO_DIR || return 1
 
+    echo "--------------------------------------------------"
+    echo "Checking out $CHECKOUT"
+    echo "--------------------------------------------------"
+    git checkout "$CHECKOUT" || return 1
+    git reset --hard "$CHECKOUT" || return 1
 
-    VERSION_PARTS=$(echo "${VERSION}" | tr '.' ' ')
-    NUM_PARTS=$(echo "$(echo "${VERSION_PARTS}" | wc -w)" | xargs)
-
-    if [ "${#NUM_PARTS}" -ne "1" ]; then
-        echo "ERROR: NUM_PARTS has len longer than 1" >&2
-        return 1
+    if [ -f "./Makefile.pre" ]; then
+        rm ./Makefile.pre
     fi
 
-    git fetch --all --tags
-
-    if [ "$NUM_PARTS" = 2 ]; then
-        if version_is_branch "$VERSION" --local $LOCAL; then
-            BRANCH=$VERSION
-        fi
-
-    elif [ "$NUM_PARTS" != 3 ]; then
-        return 1
+    if [ -f "./Makefile" ]; then
+        rm ./Makefile
     fi
 
-    TAG=$(get_tag_from_version "$VERSION" --local $LOCAL) || return 1
-
-    CHECKOUT=$([ -n "$BRANCH" ] && echo "$BRANCH" || echo $TAG)
-
-    echo 
+    echo "--------------------------------------------------"
     echo "Python $VERSION is available at ${VENVMAN_CPYTHON_REMOTE_URL} with 'git checkout ${CHECKOUT}'."
-    if [ -n "${BRANCH}" ]; then
+    if [[ ! "$CHECKOUT" == *"v"* ]] ; then
         echo "The version available at the ${VERSION} branch is ${TAG}"
     fi
     printf "We can install this version and the resulting installation "
@@ -141,38 +130,19 @@ build_python_version_from_source() {
             return 1
             ;;
     esac
-    
-    git checkout "$CHECKOUT" || return 1
-    git reset --hard "$CHECKOUT" || return 1
 
-    if [ ! -f "./configure" ]; then
-        echo "ERROR: ./configure is missing" >&2
-        return 1
-    fi
-
-    if [ ! -f "./Makefile.pre.in" ]; then
-        echo "ERROR: Makefile.pre.in is missing" >&2
-        return 1
-    fi
-
-    if [ -f "./Makefile.pre" ]; then
-        echo "Removing old Makefile.pre"
-        rm ./Makefile.pre
-    fi
-
-    if [ -f "./Makefile" ]; then
-        echo "Removing old Makefile"
-        rm ./Makefile
-    fi
- 
     ./configure --prefix="${VENVMAN_PYTHON_BUILDS_DIR}/${VERSION}" || return 1
     if [ $(command -v nproc &> /dev/null) ]; then
+        echo "Running make -j$(nproc)"
         make -j$(nproc) || cd $MY_PWD && return 1
-    elif [ $(command -v sysctl &> /dev/null) ]; then
+
+    elif [ $(command -v sysctl) ]; then
         ncpu=$(sysctl -n hw.ncpu)
         if [ -n "$ncpu" ]; then
+            echo "Running make -j${ncpu}"
             make -j${ncpu} || cd $MY_PWD && return 1
         fi
+
     else
         make || cd $MY_PWD return 1
     fi
@@ -190,18 +160,13 @@ build_python_version_from_source() {
         return 1
     fi
 
-    cd $MY_PWD
-    unset MY_PWD
-
-    if [ "$?" -gt 0 ]; then
-        echo "'make install' failed" >&2
-        return 1
-    fi
-
     if ! get_python_bin_path $VERSION > /dev/null; then
         echo "'make install' was successfull but the resulting binary for python ${VERSION} could not be found." >&2
+        cd $MY_PWD
         return 1
     fi
+
+    cd $MY_PWD
 }
 
 
