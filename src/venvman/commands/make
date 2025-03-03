@@ -126,6 +126,11 @@ venvman_make() {(
         return 1
     fi
 
+    if [ -d "$VENV_PATH" ]; then
+        echo "The venv ${NAME} already exists for python ${VERSION}" >&2
+        return 1
+    fi
+
     "$PYTHON_EXEC" -m venv $VENV_PATH || return 1
 
     PATH_TO_ACTIVATE=$(find "$VENV_PATH" -type f -name "activate")
