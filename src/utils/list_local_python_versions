@@ -10,13 +10,15 @@ list_local_python_versions() {
             fi
         done
     done
-    
-    for item in $(ls $VENVMAN_PYTHON_BUILDS_DIR); do
-        if _=$(echo "$avail" | grep "$item"); then
-            continue
-        fi
-        avail="${avail} ${item}"
-    done
+
+    if [[ -d "${VENVMAN_PYTHON_BUILDS_DIR}" ]]; then
+        for item in $(ls $VENVMAN_PYTHON_BUILDS_DIR); do
+            if _=$(echo "$avail" | grep "$item"); then
+                continue
+            fi
+            avail="${avail} ${item}"
+        done
+    fi
     
     avail=$(echo $avail | tr ' ' '\n' | sort -V | tr '\n' ' ')
     
