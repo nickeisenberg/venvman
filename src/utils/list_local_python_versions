@@ -4,7 +4,7 @@ list_local_python_versions() {
     avail=""
     for ((i = 1; i < 4; i++)); do
         for ((j = 0; j < 20; j++)); do
-            python_bin=$(eval "which python${i}.${j}")
+            python_bin=$(eval "which python${i}.${j} 2>/dev/null")
             if [ -n "$python_bin" ]; then
                 avail="${avail} ${i}.${j}"
             fi
