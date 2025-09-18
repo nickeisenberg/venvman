@@ -49,7 +49,7 @@ get_git_checkout_for_version() {
         case "$response" in
             Y|y)
                 git fetch --all --tag > /dev/null 2>&1
-                get_checkout_for_version $VERSION "false"
+                get_git_checkout_for_version $VERSION "false"
                 ;;
             *)
                 cd $MY_PWD
