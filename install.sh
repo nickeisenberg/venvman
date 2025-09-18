@@ -1,39 +1,24 @@
 #!/usr/bin/env bash
 
 
-try_profile() {
-    if [[ -z $1 ]] || [[ ! -f $1 ]]; then
-        return 1
-    fi
-    echo $1
-}
-
 detect_profile() {
     local DETECTED_PROFILE
     DETECTED_PROFILE=''
 
     if [[ "$SHELL" == *"bash"* ]]; then
-        if [ -f "$HOME/.bashrc" ]; then
-              DETECTED_PROFILE="$HOME/.bashrc"
-        elif [ -f "$HOME/.bash_profile" ]; then
+        if [ -f "$HOME/.bash_profile" ]; then
               DETECTED_PROFILE="$HOME/.bash_profile"
+        elif [ -f "$HOME/.bashrc" ]; then
+              DETECTED_PROFILE="$HOME/.bashrc"
         fi
 
     elif [[ "$SHELL" == *"zsh"* ]]; then
         DETECTED_PROFILE="$HOME/.zshrc"
     fi
 
-    if [[ -z "$DETECTED_PROFILE" ]]; then
-        echo "zzzz"
-        for EACH_PROFILE in ".profile" ".bashrc" ".bash_profile" ".zshrc"; do
-            if DETECTED_PROFILE="$(try_profile "${HOME}/${EACH_PROFILE}")"; then
-                break
-            fi
-        done
-    fi
-
     if [[ -n "$DETECTED_PROFILE" ]]; then
         echo "$DETECTED_PROFILE"
+
     else
         echo "ERROR: A profile (eg, bashrc, zshrc) was not found. Stopping install." >&2
         echo "Continue with the manual installation steps found in the README" >&2
@@ -47,10 +32,13 @@ make_dir_if_not_exitst() {
         echo "Stopping install to not overwrite anything." >&2
         return 1
     fi
+
     mkdir -p $1 || return 1
+
     if [[ -d $1 ]]; then
         echo "$1 was successfully created" 
         return 0
+
     else
         echo "$1 was not created. Stopping install." >&2
         return 1
@@ -75,11 +63,8 @@ install() {
     local VENVMAN_ENVS_DIR=${VENVMAN_ROOT_DIR}/envs
     local VENVMAN_PYTHON_BUILDS_DIR=${VENVMAN_ROOT_DIR}/builds/
     local VENVMAN_CPYTHON_REPO_DIR=${VENVMAN_ROOT_DIR}/cpython
-
-    local VENVMAN_URL="https://github.com/nickeisenberg/venvman.git"
     local VENVMAN_CPYTHON_REMOTE_URL="https://github.com/python/cpython.git"
-    local VENVMAN_CPYTHON_REPO_DIR=${VENVMAN_ROOT_DIR}/cpython
-    local VENVMAN_PYTHON_BUILDS_DIR=${VENVMAN_ROOT_DIR}/builds
+    local VENVMAN_URL="https://github.com/nickeisenberg/venvman.git"
 
     make_dir_if_not_exitst $VENVMAN_ROOT_DIR || return 1
     make_dir_if_not_exitst $VENVMAN_ENVS_DIR || return 1
