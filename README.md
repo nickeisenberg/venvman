@@ -26,6 +26,9 @@
       <li><a href="#delete-a-virtual-environment">
         Delete a virtual environment
       </a></li>
+      <li><a href="#update-venvman">
+        Update `venvman`
+      </a></li>
       <li><a href="#navigate-to-site-packages">
         Navigate to site-packages
       </a></li>
@@ -234,6 +237,10 @@ do the following:
 ```bash
 venvman delete --version <version> --name <venv_name> 
 ```
+
+### Update `venvman`
+To update `venvman`, just run `venvman update`. This will run 
+`git pull origin master` inside `VENVMAN_SRC_DIR`.
 
 ### Navigate to site-packages
 Some may find this feature useful. Suppose a virtual enviornment is activated.
