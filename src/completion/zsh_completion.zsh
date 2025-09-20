@@ -6,7 +6,7 @@ _venvman_shell_completion() {
     cur=${words[$CURRENT]:-}
     prev=${words[$CURRENT-1]:-}
 
-    local -a commands=("make" "clone" "activate" "list" "delete" "site-packages")
+    local -a commands=("make" "clone" "activate" "list" "delete" "site-packages update")
 
     get_options_from_dir() {
         local DIR=$1

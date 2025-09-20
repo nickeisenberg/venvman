@@ -27,6 +27,11 @@ venvman() {
             ${VENVMAN_COMMANDS_DIR}/delete "$@"
             ;;
 
+        update)
+            shift
+            ${VENVMAN_COMMANDS_DIR}/update "$@"
+            ;;
+
         sp | site-packages)
             shift
             . ${VENVMAN_COMMANDS_DIR}/site-packages.sh "$@"
@@ -41,6 +46,7 @@ venvman() {
                     "c, clone" \
                     "a, activate" \
                     "list" \
+                    "update" \
                     "sp, site-packages" \
                     "-h, --help" \
                 --commands-descriptions \
@@ -48,6 +54,7 @@ venvman() {
                     "Delete the specified virtual environment." \
                     "Activate the specified virtual environment." \
                     "List all available virtual environments." \
+                    "Runs 'git pull origin master' from ${VENVMAN_SRC_DIR} to update." \
                     "Navigate to the site-packages directory." \
                     "Display this help message." 
             ;;

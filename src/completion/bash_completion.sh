@@ -4,7 +4,7 @@ function _venvman_shell_completion() {
     local prev="${COMP_WORDS[COMP_CWORD-1]}"
     local words=("${COMP_WORDS[@]}")
 
-    local commands="make clone activate list delete site-packages"
+    local commands="make clone activate list delete site-packages update"
 
     local version_options=$(ls -1 "$VENVMAN_ENVS_DIR" 2>/dev/null)
 

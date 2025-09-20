@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+
+venvman_command_help_tag() {
+    ${VENVMAN_UTILS_DIR}/messages/venvman_command_help_tag "$@"
+}
+
+err_invalid_option() {
+    ${VENVMAN_UTILS_DIR}/messages/err_invalid_option "$@"
+}
+
+venvman_update() {
+    while [ "$#" -gt 0 ]; do
+        case $1 in
+            -h | --help)
+                echo "Usage:"
+                echo "  venvman update"
+                echo
+                echo "Runs 'git pull origin master' from ${VENVMAN_SRC_DIR} to update."
+                shift
+                return 0
+                ;;
+            *)
+                err_invalid_option "update" "$1"
+                return 1
+                ;;
+        esac
+    done
+
+    here=$(pwd)
+    cd $VENVMAN_SRC_DIR
+    git pull origin master
+    cd $here
+    unset here
+}
+
+venvman_update "$@"
