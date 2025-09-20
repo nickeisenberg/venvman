@@ -59,9 +59,9 @@ the [**CPython**](https://github.com/python/cpython) source repository.
   to modify and being written in shell, it is accessible to pretty much anyone
   with UNIX/LINUX experience.
 
-  4) Small and robust codebase – The `venvman` codebase should take only 10–15
-  minutes to read and understand, while still being robust enough to handle the
-  vast majority of user needs.
+  4) Small and robust codebase – The `venvman` codebase is pretty small and
+  would not take long to read and understand, while still being robust enough
+  to handle the vast majority of user needs.
 
 ## Installation
 
@@ -72,7 +72,7 @@ are ok with this, then to install run the following:
 
 ```bash
 curl -sSL https://raw.githubusercontent.com/nickeisenberg/venvman/master/install.sh -o install.sh 
-chmod +x install.sh && ./install.sh
+sh install.sh
 ```
 
 Moreover, upon installation the following enviornment variables will be set
@@ -88,7 +88,7 @@ If you would like install to a location other than `"${HOME}/.venvman"`, then ru
 ```bash
 curl -sSL https://raw.githubusercontent.com/nickeisenberg/venvman/master/install.sh -o install.sh 
 VENVMAN_ROOT_DIR="<location to install venvman>"
-chmod +x install.sh && ./install.sh --prefix $VENVMAN_ROOT_DIR
+sh install.sh --prefix $VENVMAN_ROOT_DIR
 ```
 
 Then restart your shell and `venvman` will be available.
