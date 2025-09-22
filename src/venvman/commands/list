@@ -83,7 +83,7 @@ venvman_list() {
     echo "--------------------------------------------------"
     echo
     for VAR in $(list_local_python_versions); do
-        bin=$(which "python${VAR}")
+        bin=$(which "python${VAR}" 2>/dev/null)
         if [ -n "$bin" ] && [ "$VENVMAN_ROOT_DIR" != *"$bin"* ]; then
             echo $bin
         else

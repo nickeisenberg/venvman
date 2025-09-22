@@ -20,7 +20,9 @@ build_python_version_from_source() {
     VERSION="$1"
 
     case "$2" in
-        --local)
+        --local) 
+            # I do not think that --local is used anywhere anymore.
+            # This should probably be removed.
             case "$3" in
                 "true")
                     LOCAL=$3
